@@ -1,0 +1,27 @@
+name: Publish to TestPyPi
+
+on: workflow_dispatch
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install setuptools wheel twine
+        python3 -m pip install -r requirements.txt
+    - name: Build and publish
+      env:
+        TWINE_REPOSITORY: testpypi
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+      run: |
+        python3 setup.py sdist bdist_wheel
+        python3 -m twine upload dist/*
