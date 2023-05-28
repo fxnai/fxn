@@ -39,11 +39,11 @@ setup(
         include=["fxn", "fxn.*"],
         exclude=["test", "examples"]
     ),
-    # entry_points={
-    #     "console_scripts": [
-    #         "fxn=fxn.cli.__init__:app"
-    #     ]
-    # },
+    entry_points={
+        "console_scripts": [
+            "fxn=fxn.cli.__init__:app"
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
