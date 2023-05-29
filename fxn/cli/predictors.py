@@ -7,10 +7,9 @@ from dataclasses import asdict
 from rich import print_json
 from pathlib import Path
 from typer import Argument, Option, Typer
-from typing import List, Optional, Tuple
-from typing_extensions import Annotated
+from typing import List
 
-from ..api import Acceleration, AccessMode, Predictor, PredictorStatus, PredictorType
+from ..api import Acceleration, AccessMode, Predictor, PredictorType
 from .auth import get_access_key
 from .misc import create_learn_callback
 
@@ -38,14 +37,14 @@ def search_predictors (
 def create_predictor (
     tag: str=Argument(..., help="Predictor tag."),
     notebook: Path=Argument(..., help="Path to predictor notebook."),
-    type: PredictorType=Option(None, case_sensitive=False, help="Predictor type."),
-    access: AccessMode=Option(None, case_sensitive=False, help="Predictor access mode."),
-    description: str=Option(None, help="Predictor description."),
-    media: Path=Option(None, help="Predictor image."),
-    acceleration: Acceleration=Option(None, case_sensitive=False, help="Predictor acceleration."),
-    environment: Annotated[Optional[List[str]], Option(default=[], help="Predictor environment variables.")] = None,
+    type: PredictorType=Option(None, case_sensitive=False, help="Predictor type. This defaults to `CLOUD`."),
+    access: AccessMode=Option(None, case_sensitive=False, help="Predictor access mode. This defaults to `PUBLIC`."),
+    description: str=Option(None, help="Predictor description. This supports Markdown."),
+    media: Path=Option(None, help="Predictor image path."),
+    acceleration: Acceleration=Option(None, case_sensitive=False, help="Cloud predictor acceleration. This defaults to `CPU`."),
+    environment: List[str]=Option([], help="Predictor environment variables."),
     license: str=Option(None, help="Predictor license URL."),
-    overwrite: Annotated[bool, Option("--overwrite")] = None
+    overwrite: bool=Option(None, "--overwrite", help="Overwrite any existing predictor with the same tag.")
 ):
     environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in environment }
     predictor = Predictor.create(

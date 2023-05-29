@@ -1,5 +1,5 @@
 ## 0.0.5
-*INCOMPLETE*
++ Updated `Predictor.create` method `type` argument to be optional. Cloud predictors are now the default.
 
 ## 0.0.4
 + Added `Predictor.create` class method for creating predictors.

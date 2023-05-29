@@ -173,9 +173,9 @@ class Predictor:
 
         Parameters:
             tag (str): Predictor tag.
-            type (PredictorType): Predictor type.
             notebook (str | Path): Predictor notebook path or URL.
-            access (AccessMode): Predictor access mode. This defaults to public.
+            type (PredictorType): Predictor type. This defaults to `CLOUD`.
+            access (AccessMode): Predictor access mode. This defaults to `PUBLIC`.
             description (str): Predictor description. This supports Markdown.
             media (str | Path): Predictor media path or URL.
             acceleration (Acceleration): Predictor acceleration. This only applies for cloud predictors and defaults to `CPU`. 
