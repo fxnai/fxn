@@ -21,7 +21,7 @@ setup(
     version=version,
     author="NatML Inc.",
     author_email="hi@fxn.ai",
-    description="Edge and cloud prediction functions for building AI applications.",
+    description="Run on-device and cloud AI prediction functions in Python. Register at https://hub.fxn.ai.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
