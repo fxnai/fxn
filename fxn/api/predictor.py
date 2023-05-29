@@ -24,9 +24,9 @@ class Predictor:
         owner (Profile): Predictor owner.
         name (str): Predictor name.
         type (PredictorType): Predictor type.
-        description (str): Predictor description. This supports Markdown.
         status (PredictorStatus): Predictor status.
         access (AccessMode): Predictor access.
+        description (str): Predictor description. This supports Markdown.
         created (str): Date created.
         media (str): Predictor media URL.
         acceleration (Acceleration): Predictor acceleration. This only applies to cloud predictors.
@@ -37,9 +37,9 @@ class Predictor:
     owner: Profile
     name: str
     type: PredictorType
-    description: str
     status: PredictorStatus
     access: AccessMode
+    description: str
     created: Optional[str] = None
     media: Optional[str] = None
     acceleration: Optional[Acceleration] = None
@@ -52,9 +52,9 @@ class Predictor:
     }}
     name
     type
-    description
     status
     access
+    description
     created
     media
     acceleration
@@ -154,7 +154,7 @@ class Predictor:
         return predictors
     
     @classmethod
-    def create ( # DEPLOY
+    def create (
         cls,
         tag: str,
         type: PredictorType,
@@ -165,6 +165,7 @@ class Predictor:
         acceleration: Acceleration=None,
         environment: Dict[str, str]=None,
         license: str=None,
+        overwrite: bool=None,
         access_key: str=None
     ) -> Predictor:
         """
@@ -180,6 +181,7 @@ class Predictor:
             acceleration (Acceleration): Predictor acceleration. This only applies for cloud predictors and defaults to `CPU`. 
             environment (dict): Predictor environment variables.
             license (str): Predictor license URL.
+            overwrite (bool): Overwrite any existing predictor with the same tag. Existing predictor will be deleted.
             access_key (str): Function access key.
 
         Returns:
@@ -207,6 +209,7 @@ class Predictor:
                     "media": media,
                     "acceleration": acceleration,
                     "environment": environment,
+                    "overwrite": overwrite,
                     "license": license
                 }
             },

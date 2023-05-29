@@ -14,6 +14,11 @@ class User (Profile):
     """
     User.
     """
+    FIELDS = f"""
+    ... on User {{
+        email
+    }}
+    """
 
     @classmethod
     def retrieve (
@@ -36,7 +41,7 @@ class User (Profile):
             query {"($input: UserInput)" if username else ""} {{
                 user {"(input: $input)" if username else ""} {{
                     {Profile.FIELDS}
-                    {"email" if not username else ""}
+                    {cls.FIELDS if not username else ""}
                 }}
             }}
             """,

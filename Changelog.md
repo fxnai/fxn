@@ -1,6 +1,8 @@
 ## 0.0.4
 + Added `Predictor.create` class method for creating predictors.
 + Added `fxn predictors create` CLI command for creating predictors.
++ Fixed `User.retrieve` method raising exception when retrieving current user.
++ Fixed `fxn auth logout` CLI command erroring when user was already logged out.
 
 ## 0.0.3
 + Added `Signature` type for inspecting predictor signatures.

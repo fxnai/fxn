@@ -44,7 +44,8 @@ def create_predictor (
     media: Path=Option(None, help="Predictor image."),
     acceleration: Acceleration=Option(None, case_sensitive=False, help="Predictor acceleration."),
     environment: Annotated[Optional[List[str]], Option(default=[], help="Predictor environment variables.")] = None,
-    license: str=Option(None, help="Predictor license URL.")
+    license: str=Option(None, help="Predictor license URL."),
+    overwrite: Annotated[bool, Option("--overwrite")] = None
 ):
     environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in environment }
     predictor = Predictor.create(
@@ -56,7 +57,8 @@ def create_predictor (
         media=media,
         acceleration=acceleration,
         environment=environment,
-        license=license
+        license=license,
+        overwrite=overwrite
     )
     predictor = asdict(predictor)
     print_json(data=predictor)

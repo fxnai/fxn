@@ -57,5 +57,5 @@ def _set_access_key (key: str):
     if key:
         with open(credentials_path, "w") as f:
             f.write(key)
-    else:
+    elif credentials_path.exists():
         credentials_path.unlink()
