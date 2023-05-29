@@ -1,5 +1,8 @@
 ## 0.0.3
-*INCOMPLETE*
++ Added `Signature` type for inspecting predictor signatures.
++ Added `Parameter` type for inspecting predictor signature parameters.
++ Added `Acceleration` enumeration for specifying predictor acceleration.
++ Added `PredictorType` enumeration for specifying predictor type.
 
 ## 0.0.2
 + Added Function API types and services.

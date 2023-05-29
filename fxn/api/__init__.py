@@ -6,8 +6,8 @@
 from .dtype import Dtype
 from .feature import Feature
 from .featureinput import FeatureInput
-#from .prediction import EndpointPrediction, FeatureInput
-from .predictor import Predictor, PredictorStatus, AccessMode
+#from .prediction import EndpointPrediction, FeatureInput # INCOMPLETE
+from .predictor import Acceleration, AccessMode, Parameter, Predictor, PredictorStatus, PredictorType, Signature
 from .profile import Profile
 from .storage import Storage, UploadType
 from .user import User

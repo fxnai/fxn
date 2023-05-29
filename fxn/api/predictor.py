@@ -15,7 +15,7 @@ from .profile import Profile
 from .storage import Storage, UploadType
 
 @dataclass(frozen=True)
-class Predictor:
+class Predictor: # INCOMPLETE # `create`
     """
     Predictor.
 
