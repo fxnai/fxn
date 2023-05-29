@@ -1,3 +1,6 @@
+## 0.0.5
+*INCOMPLETE*
+
 ## 0.0.4
 + Added `Predictor.create` class method for creating predictors.
 + Added `fxn predictors create` CLI command for creating predictors.
