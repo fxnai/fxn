@@ -1,3 +1,6 @@
+## 0.0.6
+*INCOMPLETE*
+
 ## 0.0.5
 + Added `Prediction` class for making predictions.
 + Added `fxn predict` CLI command for makong predictions.
