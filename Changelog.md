@@ -1,5 +1,5 @@
 ## 0.0.6
-*INCOMPLETE*
++ Fix `fxn predictors create` CLI command raising error.
 
 ## 0.0.5
 + Added `Prediction` class for making predictions.

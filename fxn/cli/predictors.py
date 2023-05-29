@@ -48,9 +48,9 @@ def create_predictor (
 ):
     environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in environment }
     predictor = Predictor.create(
-        tag,
-        type,
-        notebook,
+        tag=tag
+        notebook=notebook,
+        type=type,
         access=access,
         description=description,
         media=media,
