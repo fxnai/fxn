@@ -1,4 +1,6 @@
 ## 0.0.5
++ Added `Prediction` class for making predictions.
++ Added `fxn predict` CLI command for makong predictions.
 + Updated `Predictor.create` method `type` argument to be optional. Cloud predictors are now the default.
 
 ## 0.0.4

@@ -25,7 +25,10 @@ def query (query: str, variables: dict=None, access_key: str=None) -> dict:
         fxn.api_url,
         json={ "query": query, "variables": variables },
         headers=headers
-    ).json()
+    )
+    # Check
+    response.raise_for_status()
+    response = response.json()
     # Check error
     if "errors" in response:
         raise RuntimeError(response["errors"][0]["message"])
