@@ -157,8 +157,8 @@ class Predictor:
     def create (
         cls,
         tag: str,
-        type: PredictorType,
         notebook: Union[str, Path],
+        type: PredictorType=None,
         access: AccessMode=None,
         description: str=None,
         media: Union[str, Path]=None,

@@ -37,8 +37,8 @@ def search_predictors (
 @app.command(name="create", help="Create a predictor.")
 def create_predictor (
     tag: str=Argument(..., help="Predictor tag."),
-    type: PredictorType=Argument(..., case_sensitive=False, help="Predictor type."),
     notebook: Path=Argument(..., help="Path to predictor notebook."),
+    type: PredictorType=Option(None, case_sensitive=False, help="Predictor type."),
     access: AccessMode=Option(None, case_sensitive=False, help="Predictor access mode."),
     description: str=Option(None, help="Predictor description."),
     media: Path=Option(None, help="Predictor image."),
