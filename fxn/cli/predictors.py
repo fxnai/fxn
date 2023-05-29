@@ -19,7 +19,10 @@ app = Typer(no_args_is_help=True)
 def retrieve_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    predictor = Predictor.retrieve(tag, access_key=get_access_key())
+    predictor = Predictor.retrieve(
+        tag=tag,
+        access_key=get_access_key()
+    )
     predictor = asdict(predictor) if predictor else None
     print_json(data=predictor)
 
@@ -29,7 +32,12 @@ def search_predictors (
     offset: int=Option(None, help="Pagination offset."),
     count: int=Option(None, help="Pagination count.")
 ):
-    predictors = Predictor.search(query=query, offset=offset, count=count, access_key=get_access_key())
+    predictors = Predictor.search(
+        query=query,
+        offset=offset,
+        count=count,
+        access_key=get_access_key()
+    )
     predictors = [asdict(predictor) for predictor in predictors]
     print_json(data=predictors)
 
@@ -57,7 +65,8 @@ def create_predictor (
         acceleration=acceleration,
         environment=environment,
         license=license,
-        overwrite=overwrite
+        overwrite=overwrite,
+        access_key=get_access_key()
     )
     predictor = asdict(predictor)
     print_json(data=predictor)
@@ -66,14 +75,20 @@ def create_predictor (
 def delete_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    result = Predictor.delete(tag, access_key=get_access_key())
+    result = Predictor.delete(
+        tag=tag,
+        access_key=get_access_key()
+    )
     print_json(data=result)
 
 @app.command(name="archive", help="Archive an active predictor.")
 def archive_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    predictor = Predictor.archive(tag, access_key=get_access_key())
+    predictor = Predictor.archive(
+        tag=tag,
+        access_key=get_access_key()
+    )
     print_json(data=asdict(predictor))
 
 @app.callback()

@@ -1,8 +1,11 @@
+## 0.0.8
++ Fixed `fxn predictors create` CLI command raising authentication error.
+
 ## 0.0.7
-+ Fix `fxn predictors create` CLI command raising error.
++ Fixed `fxn predictors create` CLI command raising error.
 
 ## 0.0.6
-+ Fix `fxn predictors create` CLI command raising error.
++ Fixed `fxn predictors create` CLI command raising error.
 
 ## 0.0.5
 + Added `Prediction` class for making predictions.

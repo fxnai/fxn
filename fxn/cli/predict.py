@@ -21,7 +21,12 @@ def predict (
 ):
     # Predict
     inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
-    prediction = Prediction.create(tag, **inputs, raw_outputs=raw_outputs, access_key=get_access_key())
+    prediction = Prediction.create(
+        tag=tag,
+        **inputs,
+        raw_outputs=raw_outputs,
+        access_key=get_access_key()
+    )
     # Parse results
     if hasattr(prediction, "results"):
         images = [feature for feature in prediction.results if isinstance(feature, Image.Image)]
