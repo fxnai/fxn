@@ -1,3 +1,6 @@
+## 0.0.4
+*INCOMPLETE*
+
 ## 0.0.3
 + Added `Signature` type for inspecting predictor signatures.
 + Added `Parameter` type for inspecting predictor signature parameters.
