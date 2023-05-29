@@ -1,5 +1,5 @@
 ## 0.0.7
-*INCOMPLETE*
++ Fix `fxn predictors create` CLI command raising error.
 
 ## 0.0.6
 + Fix `fxn predictors create` CLI command raising error.
