@@ -5,10 +5,12 @@
 
 from dataclasses import asdict
 from rich import print_json
+from pathlib import Path
 from typer import Argument, Option, Typer
-from typing import List, Tuple
+from typing import List, Optional, Tuple
+from typing_extensions import Annotated
 
-from ..api import AccessMode, Predictor, PredictorStatus
+from ..api import Acceleration, AccessMode, Predictor, PredictorStatus, PredictorType
 from .auth import get_access_key
 from .misc import create_learn_callback
 
@@ -17,7 +19,7 @@ app = Typer(no_args_is_help=True)
 @app.command(name="retrieve", help="Retrieve a predictor.")
 def retrieve_predictor (
     tag: str=Argument(..., help="Predictor tag.")
-) -> None:
+):
     predictor = Predictor.retrieve(tag, access_key=get_access_key())
     predictor = asdict(predictor) if predictor else None
     print_json(data=predictor)
@@ -27,22 +29,49 @@ def search_predictors (
     query: str=Argument(..., help="Search query."),
     offset: int=Option(None, help="Pagination offset."),
     count: int=Option(None, help="Pagination count.")
-) -> None:
+):
     predictors = Predictor.search(query=query, offset=offset, count=count, access_key=get_access_key())
     predictors = [asdict(predictor) for predictor in predictors]
     print_json(data=predictors)
 
+@app.command(name="create", help="Create a predictor.")
+def create_predictor (
+    tag: str=Argument(..., help="Predictor tag."),
+    type: PredictorType=Argument(..., case_sensitive=False, help="Predictor type."),
+    notebook: Path=Argument(..., help="Path to predictor notebook."),
+    access: AccessMode=Option(None, case_sensitive=False, help="Predictor access mode."),
+    description: str=Option(None, help="Predictor description."),
+    media: Path=Option(None, help="Predictor image."),
+    acceleration: Acceleration=Option(None, case_sensitive=False, help="Predictor acceleration."),
+    environment: Annotated[Optional[List[str]], Option(default=[], help="Predictor environment variables.")] = None,
+    license: str=Option(None, help="Predictor license URL.")
+):
+    environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in environment }
+    predictor = Predictor.create(
+        tag,
+        type,
+        notebook,
+        access=access,
+        description=description,
+        media=media,
+        acceleration=acceleration,
+        environment=environment,
+        license=license
+    )
+    predictor = asdict(predictor)
+    print_json(data=predictor)
+
 @app.command(name="delete", help="Delete a predictor.")
 def delete_predictor (
     tag: str=Argument(..., help="Predictor tag.")
-) -> None:
+):
     result = Predictor.delete(tag, access_key=get_access_key())
     print_json(data=result)
 
 @app.command(name="archive", help="Archive an active predictor.")
 def archive_predictor (
     tag: str=Argument(..., help="Predictor tag.")
-) -> None:
+):
     predictor = Predictor.archive(tag, access_key=get_access_key())
     print_json(data=asdict(predictor))
 

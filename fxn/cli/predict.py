@@ -9,5 +9,5 @@ def predict ( # INCOMPLETE
     tag: str = Argument(..., help="Predictor tag."),
     raw_outputs: bool = Option(False, "--raw-outputs", help="Generate raw output features instead of parsing."),
     context: Context = 0
-) -> None:
+):
     print("Predict!")

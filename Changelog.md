@@ -1,5 +1,6 @@
 ## 0.0.4
-*INCOMPLETE*
++ Added `Predictor.create` class method for creating predictors.
++ Added `fxn predictors create` CLI command for creating predictors.
 
 ## 0.0.3
 + Added `Signature` type for inspecting predictor signatures.

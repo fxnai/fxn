@@ -15,7 +15,7 @@ app = Typer(no_args_is_help=True)
 @app.command(name="retrieve", help="Retrieve a user.")
 def retrieve_user (
     username: str=Argument(..., help="Username.")
-) -> None:
+):
     user = User.retrieve(username, access_key=get_access_key())
     user = asdict(user) if user else None
     print_json(data=user)

@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from .api import query
 from .dtype import Dtype
@@ -15,7 +15,7 @@ from .profile import Profile
 from .storage import Storage, UploadType
 
 @dataclass(frozen=True)
-class Predictor: # INCOMPLETE # `create`
+class Predictor:
     """
     Predictor.
 
@@ -80,8 +80,10 @@ class Predictor: # INCOMPLETE # `create`
     """
 
     def __post_init__ (self):
-        self.owner = Profile(**self.owner, email=None) if isinstance(self.owner, dict) else self.owner
-        self.signature = Signature(**self.signature) if isinstance(self.signature, dict) else self.signature
+        owner = Profile(**self.owner, email=None) if isinstance(self.owner, dict) else self.owner
+        signature = Signature(**self.signature) if isinstance(self.signature, dict) else self.signature
+        object.__setattr__(self, "owner", owner)
+        object.__setattr__(self, "signature", signature)
 
     @classmethod
     def retrieve (
@@ -152,13 +154,78 @@ class Predictor: # INCOMPLETE # `create`
         return predictors
     
     @classmethod
+    def create ( # DEPLOY
+        cls,
+        tag: str,
+        type: PredictorType,
+        notebook: Union[str, Path],
+        access: AccessMode=None,
+        description: str=None,
+        media: Union[str, Path]=None,
+        acceleration: Acceleration=None,
+        environment: Dict[str, str]=None,
+        license: str=None,
+        access_key: str=None
+    ) -> Predictor:
+        """
+        Create a predictor.
+
+        Parameters:
+            tag (str): Predictor tag.
+            type (PredictorType): Predictor type.
+            notebook (str | Path): Predictor notebook path or URL.
+            access (AccessMode): Predictor access mode. This defaults to public.
+            description (str): Predictor description. This supports Markdown.
+            media (str | Path): Predictor media path or URL.
+            acceleration (Acceleration): Predictor acceleration. This only applies for cloud predictors and defaults to `CPU`. 
+            environment (dict): Predictor environment variables.
+            license (str): Predictor license URL.
+            access_key (str): Function access key.
+
+        Returns:
+            Predictor: Created predictor.
+        """
+        # Prepare
+        environment = [{ "name": name, "value": value } for name, value in environment.items()] if environment is not None else []
+        notebook = Storage.upload(notebook, UploadType.Notebook) if isinstance(notebook, Path) else notebook
+        media = Storage.upload(media, UploadType.Media) if isinstance(media, Path) else media
+        # Query
+        response = query(f"""
+            mutation ($input: CreatePredictorInput!) {{
+                createPredictor (input: $input) {{
+                    {cls.FIELDS}
+                }}
+            }}
+            """,
+            {
+                "input": {
+                    "tag": tag,
+                    "type": type,
+                    "notebook": notebook,
+                    "access": access,
+                    "description": description,
+                    "media": media,
+                    "acceleration": acceleration,
+                    "environment": environment,
+                    "license": license
+                }
+            },
+            access_key=access_key
+        )
+        # Create predictor
+        predictor = response["createPredictor"]
+        predictor = Predictor(**predictor) if predictor else None
+        # Return
+        return predictor
+    
+    @classmethod
     def delete (
         cls,
         tag: str,
         access_key: str=None
     ) -> bool:
         """
-        Delete a draft predictor.
+        Delete a predictor.
 
         Parameters:
             tag (str): Predictor tag.
@@ -187,7 +254,7 @@ class Predictor: # INCOMPLETE # `create`
         access_key: str=None
     ) -> Predictor:
         """
-        Archive a published predictor.
+        Archive an active predictor.
 
         Parameters:
             tag (str): Predictor tag.
@@ -226,8 +293,10 @@ class Signature:
     outputs: List[Parameter]
 
     def __post_init__ (self):
-        self.inputs = [Parameter(**parameter) if isinstance(parameter, dict) else parameter for parameter in self.inputs]
-        self.outputs = [Parameter(**parameter) if isinstance(parameter, dict) else parameter for parameter in self.outputs]
+        inputs = [Parameter(**parameter) if isinstance(parameter, dict) else parameter for parameter in self.inputs]
+        outputs = [Parameter(**parameter) if isinstance(parameter, dict) else parameter for parameter in self.outputs]
+        object.__setattr__(self, "inputs", inputs)
+        object.__setattr__(self, "outputs", outputs)
 
 @dataclass(frozen=True)
 class Parameter:
@@ -255,13 +324,6 @@ class Parameter:
     int_default: Optional[int] = None
     bool_default: Optional[bool] = None
 
-class AccessMode (str, Enum):
-    """
-    Predictor access mode.
-    """
-    Public = "PUBLIC"
-    Private = "PRIVATE"
-
 class Acceleration (str, Enum):
     """
     Predictor acceleration.
@@ -269,6 +331,13 @@ class Acceleration (str, Enum):
     CPU = "CPU"
     A40 = "A40"
     A100 = "A100"
+
+class AccessMode (str, Enum):
+    """
+    Predictor access mode.
+    """
+    Public = "PUBLIC"
+    Private = "PRIVATE"
 
 class PredictorType (str, Enum):
     """
