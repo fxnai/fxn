@@ -1,3 +1,6 @@
+# 0.0.10
+*INCOMPLETE*
+
 ## 0.0.9
 + Added `EnvironmentVariable` class for managing predictor environment variables.
 + Added `fxn env` CLI command for managing predictor environment variables.
