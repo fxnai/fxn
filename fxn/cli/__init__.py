@@ -6,6 +6,7 @@
 from typer import Typer
 
 from .auth import app as auth_app
+from .envs import app as env_app
 from .misc import cli_options
 from .predict import predict
 from .predictors import app as predictors_app
@@ -25,7 +26,8 @@ app = Typer(
 app.callback()(cli_options)
 
 # Add subcommands
-app.add_typer(auth_app, name="auth", help="Login, logout, and perform other authentication tasks.")
+app.add_typer(auth_app, name="auth", help="Login, logout, and check your authentication status.")
+app.add_typer(env_app, name="envs", help="Manage predictor environment variables.")
 app.add_typer(predictors_app, name="predictors", help="Manage predictors.")
 app.add_typer(users_app, name="users", help="Manage users.")
 

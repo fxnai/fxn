@@ -4,6 +4,7 @@
 #
 
 from .dtype import Dtype
+from .environment import EnvironmentVariable
 from .feature import Feature
 from .featureinput import FeatureInput
 from .prediction import CloudPrediction, EdgePrediction, Prediction

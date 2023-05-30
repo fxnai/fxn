@@ -1,3 +1,7 @@
+## 0.0.9
++ Added `EnvironmentVariable` class for managing predictor environment variables.
++ Added `fxn envs` CLI command for managing predictor environment variables.
+
 ## 0.0.8
 + Fixed `fxn predictors create` CLI command raising authentication error.
 
