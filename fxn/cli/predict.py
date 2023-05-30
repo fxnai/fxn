@@ -28,7 +28,8 @@ def predict (
         access_key=get_access_key()
     )
     # Parse results
-    if hasattr(prediction, "results"):
+    images = []
+    if hasattr(prediction, "results") and prediction.results is not None:
         images = [feature for feature in prediction.results if isinstance(feature, Image.Image)]
         results = [_serialize_feature(feature) for feature in prediction.results]
         object.__setattr__(prediction, "results", results)

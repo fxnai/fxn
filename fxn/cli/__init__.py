@@ -6,11 +6,10 @@
 from typer import Typer
 
 from .auth import app as auth_app
-from .envs import app as env_app
+from .env import app as env_app
 from .misc import cli_options
 from .predict import predict
-from .predictors import app as predictors_app
-from .users import app as users_app
+from .predictors import archive_predictor, create_predictor, delete_predictor, retrieve_predictor, search_predictors
 from ..version import __version__
 
 # Define CLI
@@ -27,16 +26,15 @@ app.callback()(cli_options)
 
 # Add subcommands
 app.add_typer(auth_app, name="auth", help="Login, logout, and check your authentication status.")
-app.add_typer(env_app, name="envs", help="Manage predictor environment variables.")
-app.add_typer(predictors_app, name="predictors", help="Manage predictors.")
-app.add_typer(users_app, name="users", help="Manage users.")
+app.add_typer(env_app, name="env", help="Manage predictor environment variables.")
 
 # Add top-level commands
-app.command(
-    name="predict",
-    context_settings={ "allow_extra_args": True, "ignore_unknown_options": True },
-    help="Make predictions."
-)(predict)
+app.command(name="create", help="Create a predictor.")(create_predictor)
+app.command(name="delete", help="Delete a predictor.")(delete_predictor)
+app.command(name="predict", help="Make a prediction.", context_settings={ "allow_extra_args": True, "ignore_unknown_options": True })(predict)
+app.command(name="search", help="Search predictors.")(search_predictors)
+app.command(name="retrieve", help="Retrieve a predictor.")(retrieve_predictor)
+app.command(name="archive", help="Archive a predictor.")(archive_predictor)
 
 # Run
 if __name__ == "__main__":

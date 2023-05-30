@@ -6,16 +6,12 @@
 from dataclasses import asdict
 from rich import print_json
 from pathlib import Path
-from typer import Argument, Option, Typer
+from typer import Argument, Option
 from typing import List
 
 from ..api import Acceleration, AccessMode, Predictor, PredictorType
 from .auth import get_access_key
-from .misc import create_learn_callback
 
-app = Typer(no_args_is_help=True)
-
-@app.command(name="retrieve", help="Retrieve a predictor.")
 def retrieve_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
@@ -26,7 +22,6 @@ def retrieve_predictor (
     predictor = asdict(predictor) if predictor else None
     print_json(data=predictor)
 
-@app.command(name="search", help="Search predictors.")
 def search_predictors (
     query: str=Argument(..., help="Search query."),
     offset: int=Option(None, help="Pagination offset."),
@@ -41,7 +36,6 @@ def search_predictors (
     predictors = [asdict(predictor) for predictor in predictors]
     print_json(data=predictors)
 
-@app.command(name="create", help="Create a predictor.")
 def create_predictor (
     tag: str=Argument(..., help="Predictor tag."),
     notebook: Path=Argument(..., help="Path to predictor notebook."),
@@ -71,7 +65,6 @@ def create_predictor (
     predictor = asdict(predictor)
     print_json(data=predictor)
 
-@app.command(name="delete", help="Delete a predictor.")
 def delete_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
@@ -81,7 +74,6 @@ def delete_predictor (
     )
     print_json(data=result)
 
-@app.command(name="archive", help="Archive an active predictor.")
 def archive_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
@@ -90,9 +82,3 @@ def archive_predictor (
         access_key=get_access_key()
     )
     print_json(data=asdict(predictor))
-
-@app.callback()
-def predictor_options (
-    learn: bool = Option(None, "--learn", callback=create_learn_callback("https://docs.fxn.ai/predictors"), help="Learn about predictors in Function.")
-):
-    pass

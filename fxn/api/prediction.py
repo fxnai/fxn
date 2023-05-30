@@ -113,7 +113,7 @@ class Prediction:
             return None
         # Parse results
         if "results" in prediction and not raw_outputs:
-            prediction["results"] = [_parse_output_feature(feature) for feature in prediction["results"]]
+            prediction["results"] = [_parse_output_feature(feature) for feature in prediction["results"]] if prediction["results"] is not None else None
         # Create
         prediction = CloudPrediction(**prediction) if prediction["type"] == PredictorType.Cloud else EdgePrediction(**prediction)
         # Return

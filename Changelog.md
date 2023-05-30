@@ -1,7 +1,9 @@
 ## 0.0.9
 + Added `EnvironmentVariable` class for managing predictor environment variables.
-+ Added `fxn envs` CLI command for managing predictor environment variables.
++ Added `fxn env` CLI command for managing predictor environment variables.
 + Added Function magics to customize how predictors are provisioned. Use `%load_ext fxn.magic` in your predictor notebook.
++ Fixed `Prediction.create` raising exception when the prediction resulted in an error.
++ Moved `fxn predictors` CLI commands to top-level. You can now use commands like `fxn create` directly.
 
 ## 0.0.8
 + Fixed `fxn predictors create` CLI command raising authentication error.

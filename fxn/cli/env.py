@@ -9,7 +9,6 @@ from typer import Argument, Option, Typer
 
 from ..api import EnvironmentVariable
 from .auth import get_access_key
-from .misc import create_learn_callback
 
 app = Typer(no_args_is_help=True)
 
@@ -21,7 +20,7 @@ def list_envs (
         organization=organization,
         access_key=get_access_key()
     )
-    environments = asdict(environments)
+    environments = [asdict(env) for env in environments]
     print_json(data=environments)
 
 @app.command(name="create", help="Create an environment variable.")
@@ -50,9 +49,3 @@ def delete_env (
         access_key=get_access_key()
     )
     print_json(data=result)
-
-@app.callback()
-def env_options (
-    learn: bool = Option(None, "--learn", callback=create_learn_callback("https://docs.fxn.ai/environment"), help="Learn about environment variables in Function.")
-):
-    pass
