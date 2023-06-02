@@ -44,11 +44,11 @@ def create_predictor (
     description: str=Option(None, help="Predictor description. This supports Markdown."),
     media: Path=Option(None, help="Predictor image path."),
     acceleration: Acceleration=Option(None, case_sensitive=False, help="Cloud predictor acceleration. This defaults to `CPU`."),
-    environment: List[str]=Option([], help="Predictor environment variables."),
     license: str=Option(None, help="Predictor license URL."),
+    env: List[str]=Option([], help="Specify a predictor environment variable."),
     overwrite: bool=Option(None, "--overwrite", help="Overwrite any existing predictor with the same tag.")
 ):
-    environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in environment }
+    environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in env }
     predictor = Predictor.create(
         tag=tag,
         notebook=notebook,
