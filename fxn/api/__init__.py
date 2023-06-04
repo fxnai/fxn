@@ -6,7 +6,6 @@
 from .dtype import Dtype
 from .environment import EnvironmentVariable
 from .feature import Feature
-from .featureinput import FeatureInput
 from .prediction import CloudPrediction, EdgePrediction, Prediction
 from .predictor import Acceleration, AccessMode, Parameter, Predictor, PredictorStatus, PredictorType, Signature
 from .profile import Profile
