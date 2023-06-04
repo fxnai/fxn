@@ -1,4 +1,7 @@
-# 0.0.10
+## 0.0.11
+*INCOMPLETE*
+
+## 0.0.10
 + Added `Feature.from_value` class method for creating `Feature` instances from plain Python values.
 + Added `Feature.to_value` method for converting a `Feature` instance to a plain Python value.
 + Added `Predictor.list` class method for listing a user's predictors.
