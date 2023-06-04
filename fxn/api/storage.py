@@ -63,8 +63,8 @@ class Storage:
         file: Union[str, Path, BytesIO],
         type: UploadType,
         name: str=None,
+        data_url_limit: int=None,
         key: str=None,
-        data_url_limit: int=0,
         verbose: bool=False
     ) -> str:
         """
@@ -74,8 +74,8 @@ class Storage:
             file (str | Path | BytesIO): File path.
             type (UploadType): File type.
             name (str): File name. This MUST be provided if `file` is not a file path.
-            key (str): File key. This is useful for grouping related files.
             data_url_limit (int): Return a data URL if the output feature is smaller than this limit (in bytes).
+            key (str): File key. This is useful for grouping related files.
             verbose (bool): Print a progress bar for the upload.
 
         Returns:
@@ -94,7 +94,7 @@ class Storage:
         type: UploadType,
         name: str=None,
         key: str=None,
-        data_url_limit: int=0,
+        data_url_limit: int=None,
         verbose: bool=False
     ) -> str:
         # Check file
@@ -102,7 +102,7 @@ class Storage:
         assert file.is_file(), f"Cannot upload {file.name} becaause it does not point to a file"   
         # Create data URL
         mime = guess_mime(file) or "application/octet-stream"
-        if file.stat().st_size <= data_url_limit:
+        if file.stat().st_size <= (data_url_limit or 0):
             with open(file, mode="rb") as f:
                 buffer = BytesIO(f.read())
             return cls.__create_data_url(buffer, mime)
@@ -121,7 +121,7 @@ class Storage:
         type: UploadType,
         name: str=None,
         key: str=None,
-        data_url_limit: int=0,
+        data_url_limit: int=None,
         verbose: bool=False
     ) -> str:
         # Check name
@@ -130,7 +130,7 @@ class Storage:
         file.seek(0)
         mime = guess_mime(file) or "application/octet-stream"
         size = file.getbuffer().nbytes
-        if size <= data_url_limit:
+        if size <= (data_url_limit or 0):
             return cls.__create_data_url(file, mime)
         # Upload
         url = cls.create_upload_url(name, type, key=key)

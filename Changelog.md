@@ -1,5 +1,6 @@
 # 0.0.10
-*INCOMPLETE*
++ Removed `features` argument in `Prediction.create` method. Use `inputs` kwargs instead.
++ Removed `FeatureInput` class.
 
 ## 0.0.9
 + Added `EnvironmentVariable` class for managing predictor environment variables.
