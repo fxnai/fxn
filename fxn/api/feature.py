@@ -7,11 +7,14 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, is_dataclass
 from filetype import guess_mime
 from io import BytesIO
-from json import dumps
-from numpy import array, float32, int32, ndarray
+from json import loads, dumps
+from numpy import array, float32, frombuffer, int32, ndarray
 from pathlib import Path
 from PIL import Image
-from typing import Any, Dict, List, Optional, Union
+from requests import get
+from tempfile import NamedTemporaryFile
+from typing import Dict, List, Optional, Union
+from urllib.request import urlopen
 
 from .dtype import Dtype
 from .storage import Storage, UploadType
@@ -29,14 +32,49 @@ class Feature:
     data: str
     type: Dtype
     shape: Optional[List[int]] = None
-    stringValue: str = None
-    floatValue: float = None
-    floatArray: List[float] = None
-    intValue: int = None
-    intArray: List[int] = None
-    boolValue: bool = None
-    listValue: list = None
-    dictValue: Dict[str, Any] = None
+
+    def to_value (
+        self,
+        return_binary_path: bool=True
+    ) -> Union[str, float, int, bool, ndarray, list, dict, Image.Image, Path]:
+        """
+        Convert a feature to a plain Python value.
+
+        Parameters:
+            return_binary_path (str): Write binary features to file and return a `Path` instead of returning `BytesIO` instance.
+
+        Returns:
+            str | float | int | bool | ndarray | list | dict | Image.Image | Path: Feature value.
+        """
+        buffer = Feature.__download_feature_data(self.data)
+        # Array
+        if self.type in [
+            Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64,
+            Dtype.uint8, Dtype.uint16, Dtype.uint32, Dtype.uint64,
+            Dtype.float16, Dtype.float32, Dtype.float64, Dtype.bool
+        ]:
+            assert self.shape is not None, "Array feature must have a shape specified"
+            array = frombuffer(buffer.getbuffer(), dtype=self.type).reshape(self.shape)
+            return array if len(self.shape) > 0 else array.item()
+        # String
+        if self.type == Dtype.string:
+            return buffer.getvalue().decode("utf-8")
+        # List
+        if self.type == Dtype.list:
+            return loads(buffer.getvalue().decode("utf-8"))
+        # Dict
+        if self.type == Dtype.dict:
+            return loads(buffer.getvalue().decode("utf-8"))
+        # Image
+        if self.type == Dtype.image:
+            return Image.open(buffer)
+        # Binary
+        if return_binary_path:
+            with NamedTemporaryFile(mode="wb", delete=False) as f:
+                f.write(buffer.getbuffer())
+            return Path(f.name)
+        # Return
+        return buffer
 
     @classmethod
     def from_value (
@@ -133,3 +171,14 @@ class Feature:
         if path.suffix in [".obj", ".gltf", ".glb", ".fbx", ".usd", ".usdz", ".blend"]:
             return Dtype._3d
         return Dtype.binary
+
+    @classmethod
+    def __download_feature_data (cls, url: str) -> BytesIO:
+        # Check if data URL
+        if url.startswith("data:"):
+            with urlopen(url) as response:
+                return BytesIO(response.read())
+        # Download
+        response = get(url)
+        result = BytesIO(response.content)
+        return result

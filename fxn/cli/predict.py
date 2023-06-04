@@ -4,8 +4,9 @@
 #
 
 from dataclasses import asdict
+from io import BytesIO
 from numpy import ndarray
-from pathlib import Path
+from pathlib import Path, PurePath
 from PIL import Image
 from rich import print_json
 from tempfile import mkstemp
@@ -25,6 +26,7 @@ def predict (
         tag=tag,
         **inputs,
         raw_outputs=raw_outputs,
+        return_binary_path=True,
         access_key=get_access_key()
     )
     # Parse results
@@ -79,6 +81,12 @@ def _serialize_feature (feature):
         _, path = mkstemp(suffix=".png" if feature.mode == "RGBA" else ".jpg")
         feature.save(path)
         return path
+    # Serialize `BytesIO`
+    if isinstance(feature, BytesIO):
+        return str(feature)
+    # Serialize `Path`
+    if isinstance(feature, PurePath):
+        return str(feature)
     # Return    
     return feature
 
