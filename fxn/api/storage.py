@@ -3,12 +3,13 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
+from base64 import b64encode
 from enum import Enum
 from io import BytesIO
-from mimetypes import guess_type
+from filetype import guess_mime
 from pathlib import Path
 from requests import put
-from rich.progress import open as open_progress
+from rich.progress import open as open_progress, wrap_file
 from typing import Union
 
 from .api import query
@@ -57,9 +58,9 @@ class Storage:
         return url
 
     @classmethod
-    def upload ( # INCOMPLETE # `bytes` and `BytesIO` support` # Data URL limit
+    def upload (
         cls,
-        file: Union[str, Path, BytesIO, bytes],
+        file: Union[str, Path, BytesIO],
         type: UploadType,
         name: str=None,
         key: str=None,
@@ -70,30 +71,76 @@ class Storage:
         Upload a file and return the URL.
 
         Parameters:
-            file (str | Path | BytesIO | bytes): File path.
+            file (str | Path | BytesIO): File path.
             type (UploadType): File type.
             name (str): File name. This MUST be provided if `file` is not a file path.
             key (str): File key. This is useful for grouping related files.
             data_url_limit (int): Return a data URL if the output feature is smaller than this limit (in bytes).
-            check_extension (bool): Validate file extensions before uploading.
             verbose (bool): Print a progress bar for the upload.
 
         Returns:
             str: Upload URL.
         """
-        # Create path
         file = Path(file) if isinstance(file, str) else file
-        # Check path
-        if not file.exists():
-            raise RuntimeError(f"Cannot upload {file.name} because the file does not exist")
+        if isinstance(file, Path):
+            return cls.__upload_file(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
+        else:
+            return cls.__upload_buffer(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
+    
+    @classmethod
+    def __upload_file (
+        cls,
+        file: Path,
+        type: UploadType,
+        name: str=None,
+        key: str=None,
+        data_url_limit: int=0,
+        verbose: bool=False
+    ) -> str:
         # Check file
-        if not file.is_file():
-            raise RuntimeError(f"Cannot upload {file.name} becaause it does not point to a file")
-        # Get upload URL
+        assert file.exists(), f"Cannot upload {file.name} because the file does not exist"
+        assert file.is_file(), f"Cannot upload {file.name} becaause it does not point to a file"   
+        # Create data URL
+        mime = guess_mime(file) or "application/octet-stream"
+        if file.stat().st_size <= data_url_limit:
+            with open(file, mode="rb") as f:
+                buffer = BytesIO(f.read())
+            return cls.__create_data_url(buffer, mime)
+        # Upload
         name = name or file.name
-        mime = guess_type(file, strict=False)[0] or "application/octet-stream"
         url = cls.create_upload_url(name, type, key=key)
-        with open_progress(file, "rb", description=name, disable=not verbose) as f:
+        with open_progress(file, mode="rb", description=name, disable=not verbose) as f:
             put(url, data=f, headers={ "Content-Type": mime }).raise_for_status()
         # Return
+        return url
+    
+    @classmethod
+    def __upload_buffer (
+        cls,
+        file: BytesIO,
+        type: UploadType,
+        name: str=None,
+        key: str=None,
+        data_url_limit: int=0,
+        verbose: bool=False
+    ) -> str:
+        # Check name
+        assert name, "You must specify the file `name` if the `file` is not a path"
+        # Create data URL
+        file.seek(0)
+        mime = guess_mime(file) or "application/octet-stream"
+        size = file.getbuffer().nbytes
+        if size <= data_url_limit:
+            return cls.__create_data_url(file, mime)
+        # Upload
+        url = cls.create_upload_url(name, type, key=key)
+        with wrap_file(file, total=size, description=name, disable=not verbose) as f:
+            put(url, data=f, headers={ "Content-Type": mime }).raise_for_status()
+        # Return
+        return url
+    
+    @classmethod
+    def __create_data_url (cls, file: BytesIO, mime: str) -> str:
+        encoded_data = b64encode(file.getvalue()).decode("ascii")
+        url = f"data:{mime};base64,{encoded_data}"
         return url

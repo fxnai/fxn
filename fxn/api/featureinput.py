@@ -14,6 +14,7 @@ from PIL import Image
 from typing import Any, Dict, List, Optional, Union
 
 from .dtype import Dtype
+from .storage import Storage, UploadType
 
 @dataclass(frozen=True)
 class FeatureInput:
@@ -43,7 +44,8 @@ class FeatureInput:
     def from_value (
         cls,
         value: Union[ndarray, str, float, int, bool, List, Dict[str, any], Path, Image.Image],
-        name: str
+        name: str,
+        min_upload_size: int=4096
     ) -> FeatureInput:
         """
         Create a feature input from a given value.
@@ -51,6 +53,7 @@ class FeatureInput:
         Parameters:
             value (any): Value.
             name (str): Feature name.
+            min_upload_size (int): Features larger than this size in bytes will be uploaded.
 
         Returns:
             FeatureInput: Feature input.
@@ -84,6 +87,7 @@ class FeatureInput:
             channels = { "L": 1, "RGB": 3, "RGBA": 4 }[value.mode]
             format = "PNG" if value.mode == "RGBA" else "JPEG"
             value.save(image_buffer, format=format)
+            #data = Storage.upload(image_buffer, UploadType.Feature, name=name, data_url_limit=)
             encoded_data = b64encode(image_buffer.getvalue()).decode("ascii")
             data = f"data:{value.get_format_mimetype()};base64,{encoded_data}"
             shape = [1, value.height, value.width, channels]
@@ -102,7 +106,7 @@ class FeatureInput:
         # Unsupported
         raise RuntimeError(f"Cannot create input feature for value {value} of type {type(value)}")
     
-def _file_to_dtype (path: Path) -> str:
+def _file_to_dtype (path: Path) -> str: # INCOMPLETE
     mime = guess_mime(str(path))
     if not mime:
         return Dtype.binary

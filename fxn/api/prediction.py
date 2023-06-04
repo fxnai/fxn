@@ -162,6 +162,7 @@ def _parse_output_feature (feature: dict) -> Union[Feature, str, float, int, boo
         array = frombuffer(_download_feature_data(data).getbuffer(), dtype=type).reshape(shape)
         return array if len(shape) > 0 else array.item()
     # Handle generic feature
+    feature = { key: value for key, value in feature.items() if key in ["data", "type", "shape"] }
     feature = Feature(**feature)
     return feature
 
