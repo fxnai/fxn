@@ -1,6 +1,8 @@
 # 0.0.10
 + Added `Feature.from_value` class method for creating `Feature` instances from plain Python values.
 + Added `Feature.to_value` method for converting a `Feature` instance to a plain Python value.
++ Added `Predictor.list` class method for listing a user's predictors.
++ Added `fxn list` CLI command for listing a user's predictors.
 + Removed `features` argument in `Prediction.create` method. Use `inputs` kwargs instead.
 + Removed `FeatureInput` class.
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from typer import Argument, Option
 from typing import List
 
-from ..api import Acceleration, AccessMode, Predictor, PredictorType
+from ..api import Acceleration, AccessMode, Predictor, PredictorStatus, PredictorType
 from .auth import get_access_key
 
 def retrieve_predictor (
@@ -21,6 +21,22 @@ def retrieve_predictor (
     )
     predictor = asdict(predictor) if predictor else None
     print_json(data=predictor)
+
+def list_predictors (
+    owner: str=Option(None, help="Predictor owner. This defaults to the current user."),
+    status: PredictorStatus=Option(PredictorStatus.Active, help="Predictor status. This defaults to `ACTIVE`."),
+    offset: int=Option(None, help="Pagination offset."),
+    count: int=Option(None, help="Pagination count.")
+):
+    predictors = Predictor.list(
+        owner=owner,
+        status=status,
+        offset=offset,
+        count=count,
+        access_key=get_access_key()
+    )
+    predictors = [asdict(predictor) for predictor in predictors] if predictors is not None else None
+    print_json(data=predictors)
 
 def search_predictors (
     query: str=Argument(..., help="Search query."),

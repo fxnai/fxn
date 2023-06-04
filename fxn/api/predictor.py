@@ -119,6 +119,54 @@ class Predictor:
         return predictor
     
     @classmethod
+    def list (
+        cls,
+        owner: str=None,
+        status: PredictorStatus=None,
+        offset: int=None,
+        count: int=None,
+        access_key: str=None
+    ) -> List[Predictor]:
+        """
+        List the current user's predictors.
+
+        Parameters:
+            owner (str): Predictor owner. This defaults to the current user.
+            status (PredictorStatus): Predictor status. This defaults to `ACTIVE`.
+            offset (int): Pagination offset.
+            count (int): Pagination count.
+            access_key (str): Function access key.
+
+        Returns:
+            list: User predictors.
+        """
+        # Query
+        response = query(f"""
+            query ($user: UserInput, $predictors: UserPredictorsInput) {{
+                user (input: $user) {{
+                    predictors (input: $predictors) {{
+                        {cls.FIELDS}
+                    }}
+                }}
+            }}
+            """,
+            {
+                "user": { "username": owner } if owner else None,
+                "predictors": { "status": status, "offset": offset, "count": count }
+            },
+            access_key=access_key
+        )
+        # Check
+        user = response["user"]
+        if not user:
+            return None
+        # Create predictors
+        predictors = response["user"]["predictors"]
+        predictors = [Predictor(**predictor) for predictor in predictors]
+        # Return
+        return predictors
+    
+    @classmethod
     def search (
         cls,
         query: str,
@@ -131,6 +179,8 @@ class Predictor:
 
         Parameters:
             query (str): Search query.
+            offset (int): Pagination offset.
+            count (int): Pagination count.
             access_key (str): Function access key.
 
         Returns:
