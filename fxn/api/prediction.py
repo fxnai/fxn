@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 from dataclasses import asdict, dataclass
-from filetype import guess_mime
 from io import BytesIO
 from numpy import frombuffer, ndarray
 from pathlib import Path
@@ -20,7 +19,6 @@ from .api import query
 from .dtype import Dtype
 from .feature import Feature
 from .predictor import PredictorType
-from .storage import Storage, UploadType
 
 @dataclass(frozen=True)
 class Prediction:
@@ -96,8 +94,8 @@ class Prediction:
             CloudPrediction | EdgePrediction: Created prediction.
         """
         # Collect inputs
-        upload_key = uuid4().hex
-        inputs = { name: cls.__create_input_feature(name, value, key=upload_key) for name, value in inputs.items() }
+        key = uuid4().hex
+        inputs = { name: Feature.from_value(value, name, key=key) for name, value in inputs.items() }
         inputs = [{ "name": name, **asdict(feature) } for name, feature in inputs.items()]
         # Query
         response = query(f"""
@@ -120,55 +118,7 @@ class Prediction:
         prediction = CloudPrediction(**prediction) if prediction["type"] == PredictorType.Cloud else EdgePrediction(**prediction)
         # Return
         return prediction
-    
-    @classmethod
-    def __create_input_feature (
-        cls,
-        name: str,
-        value: Union[ndarray, str, float, int, bool, List, Dict[str, any], Path, Image.Image],
-        min_upload_size: int=4096,
-        key: str=None
-    ) -> Feature:
-        # Array
-        if isinstance(value, ndarray):
-            buffer = BytesIO(value.tobytes())
-            data = Storage.upload(buffer, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            return Feature(data, value.dtype.name, shape=list(value.shape))
-        # String
-        if isinstance(value, str):
-            return Feature(None, None, stringValue=value)
-        # Float
-        if isinstance(value, float):
-            return Feature(None, None, floatValue=value)
-        # Boolean
-        if isinstance(value, bool):
-            return Feature(None, None, boolValue=value)
-        # Integer
-        if isinstance(value, int):
-            return Feature(None, None, intValue=value)
-        # List
-        if isinstance(value, list):
-            return Feature(None, None, listValue=value)
-        # Dict
-        if isinstance(value, dict):
-            return Feature(None, None, dictValue=value)
-        # Image
-        if isinstance(value, Image.Image):
-            buffer = BytesIO()
-            format = "PNG" if value.mode == "RGBA" else "JPEG"
-            value.save(buffer, format=format)
-            data = Storage.upload(buffer, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            return Feature(data, Dtype.image)
-        # Path
-        if isinstance(value, Path):
-            assert value.is_file(), "Input feature path must point to a file, not a directory"
-            value = value.expanduser().resolve()
-            data = Storage.upload(value, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            type = cls.__get_file_dtype(value)
-            return Feature(data, type)
-        # Unsupported
-        raise RuntimeError(f"Cannot create input feature '{name}' for value {value} of type {type(value)}")
-    
+
     @classmethod
     def __create_output_feature (
         cls,
@@ -198,22 +148,8 @@ class Prediction:
         # Handle generic feature
         feature = { key: value for key, value in feature.items() if key in ["data", "type", "shape"] }
         feature = Feature(**feature)
+        # Return
         return feature
-    
-    @classmethod
-    def __get_file_dtype (cls, path: Path) -> Dtype:
-        mime = guess_mime(str(path))
-        if not mime:
-            return Dtype.binary
-        if mime.startswith("image"):
-            return Dtype.image
-        if mime.startswith("video"):
-            return Dtype.video
-        if mime.startswith("audio"):
-            return Dtype.audio
-        if path.suffix in [".obj", ".gltf", ".glb", ".fbx", ".usd", ".usdz", ".blend"]:
-            return Dtype._3d
-        return Dtype.binary
     
     @classmethod
     def __download_feature_data (cls, url: str) -> BytesIO:

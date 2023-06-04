@@ -16,7 +16,7 @@ from .auth import get_access_key
 
 def predict (
     tag: str = Argument(..., help="Predictor tag."),
-    raw_outputs: bool = Option(False, "--raw-outputs", help="Generate raw output features instead of parsing."),
+    raw_outputs: bool = Option(False, "--raw-outputs", help="Output raw features instead of parsing into Pythonic data."),
     context: Context = 0
 ):
     # Predict
@@ -34,7 +34,7 @@ def predict (
         results = [_serialize_feature(feature) for feature in prediction.results]
         object.__setattr__(prediction, "results", results)
     # Print
-    print_json(data=asdict(prediction))
+    print_json(data=asdict(prediction, dict_factory=_prediction_dict_factory))
     # Show images
     for image in images:
         image.show()
@@ -81,3 +81,12 @@ def _serialize_feature (feature):
         return path
     # Return    
     return feature
+
+def _prediction_dict_factory (kv_pairs):
+    # Check if feature
+    FEATURE_KEYS = ["data", "type", "shape"]
+    keys = [k for k, _ in kv_pairs]
+    is_feature = all(k in keys for k in FEATURE_KEYS)
+    kv_pairs = [(k, v) for k, v in kv_pairs if v is not None] if is_feature else kv_pairs
+    # Construct
+    return dict(kv_pairs)

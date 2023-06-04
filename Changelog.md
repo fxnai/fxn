@@ -1,4 +1,5 @@
 # 0.0.10
++ Added `Feature.from_value` function for creating `Feature` instances from plain Python values.
 + Removed `features` argument in `Prediction.create` method. Use `inputs` kwargs instead.
 + Removed `FeatureInput` class.
 
