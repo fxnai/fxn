@@ -1,5 +1,5 @@
 ## 0.0.11
-*INCOMPLETE*
++ Renamed `Dtype._3d` data type to `model`.
 
 ## 0.0.10
 + Added `Feature.from_value` class method for creating `Feature` instances from plain Python values.

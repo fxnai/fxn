@@ -28,5 +28,5 @@ class Dtype (str, Enum):
     image = "image"
     video = "video"
     audio = "audio"
-    _3d = "3d"
+    model = "model"
     binary = "binary"
