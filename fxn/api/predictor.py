@@ -374,6 +374,10 @@ class Parameter:
     enumeration: Optional[List[EnumerationMember]] = None
     default_value: Optional[Union[str, float, int, bool]] = None
 
+    def __post_init__ (self):
+        enumeration = [EnumerationMember(**member) if isinstance(member, dict) else member for member in self.enumeration] if self.enumeration else self.enumeration
+        object.__setattr__(self, "enumeration", enumeration)
+
 @dataclass(frozen=True)
 class EnumerationMember:
     """
