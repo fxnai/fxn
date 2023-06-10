@@ -1,5 +1,12 @@
 ## 0.0.11
++ Added `EnumerationMember` class for working with parameters that are enumeration values.
++ Added `Parameter.enumeration` field for inspecting parameters which hold enumeration values.
++ Added `Parameter.default_value` field for inspecting the default value of a predictor parameter.
 + Renamed `Dtype._3d` data type to `model`.
++ Removed `Parameter.string_default` field. Use `Parameter.default_value` field instead.
++ Removed `Parameter.int_default` field. Use `Parameter.default_value` field instead.
++ Removed `Parameter.float_default` field. Use `Parameter.default_value` field instead.
++ Removed `Parameter.bool_default` field. Use `Parameter.default_value` field instead.
 
 ## 0.0.10
 + Added `Feature.from_value` class method for creating `Feature` instances from plain Python values.

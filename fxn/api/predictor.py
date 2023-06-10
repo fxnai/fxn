@@ -65,10 +65,11 @@ class Predictor:
             description
             range
             optional
-            string_default: stringDefault
-            float_default: floatDefault
-            int_default: intDefault
-            bool_default: boolDefault
+            enumeration {{
+                name
+                value
+            }}
+            default_value: defaultValue
         }}
         outputs {{
             name
@@ -362,20 +363,28 @@ class Parameter:
         description (str): Parameter description.
         optional (bool): Parameter is optional.
         range (tuple): Parameter value range for numeric parameters.
-        stringDefault (str): Parameter default string value.
-        floatDefault (float): Parameter default float value.
-        intDefault (int): Parameter default integer value.
-        boolDefault (bool): Parameter default boolean value.
+        enumeration (list): Parameter value choices for enumeration parameters.
+        default_value (str | float | int | bool): Parameter default value.
     """
     name: Optional[str] = None
     type: Optional[Dtype] = None
     description: Optional[str] = None
     optional: Optional[bool] = None
     range: Optional[Tuple[float, float]] = None
-    string_default: Optional[str] = None
-    float_default: Optional[float] = None
-    int_default: Optional[int] = None
-    bool_default: Optional[bool] = None
+    enumeration: Optional[List[EnumerationMember]] = None
+    default_value: Optional[Union[str, float, int, bool]] = None
+
+@dataclass(frozen=True)
+class EnumerationMember:
+    """
+    Prediction parameter enumeration member.
+
+    Members:
+        name (str): Enumeration member name.
+        value (str | float | int): Enumeration member value.
+    """
+    name: str
+    value: Union[str, float, int]
 
 class Acceleration (str, Enum):
     """
