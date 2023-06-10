@@ -1,3 +1,6 @@
+## 0.0.12
+*INCOMPLETE*
+
 ## 0.0.11
 + Added `EnumerationMember` class for working with parameters that are enumeration values.
 + Added `Parameter.enumeration` field for inspecting parameters which hold enumeration values.
