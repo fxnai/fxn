@@ -26,8 +26,9 @@ class Predictor:
         type (PredictorType): Predictor type.
         status (PredictorStatus): Predictor status.
         access (AccessMode): Predictor access.
-        description (str): Predictor description. This supports Markdown.
         created (str): Date created.
+        description (str): Predictor description.
+        readme (str): Predictor readme. This supports Markdown.
         media (str): Predictor media URL.
         acceleration (Acceleration): Predictor acceleration. This only applies to cloud predictors.
         signature (Signature): Predictor signature. This is only populated once predictor has been successfully provisioned.
@@ -39,8 +40,9 @@ class Predictor:
     type: PredictorType
     status: PredictorStatus
     access: AccessMode
-    description: str
-    created: Optional[str] = None
+    created: str
+    description: Optional[str] = None
+    readme: Optional[str] = None
     media: Optional[str] = None
     acceleration: Optional[Acceleration] = None
     signature: Optional[Signature] = None
@@ -54,8 +56,9 @@ class Predictor:
     type
     status
     access
-    description
     created
+    description
+    readme
     media
     acceleration
     signature {{

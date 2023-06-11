@@ -1,5 +1,5 @@
 ## 0.0.12
-*INCOMPLETE*
++ Added `Predictor.readme` field for inspecting the readme of a predictor notebook.
 
 ## 0.0.11
 + Added `EnumerationMember` class for working with parameters that are enumeration values.
