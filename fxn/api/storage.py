@@ -102,7 +102,7 @@ class Storage:
         assert file.is_file(), f"Cannot upload {file.name} becaause it does not point to a file"   
         # Create data URL
         mime = guess_mime(file) or "application/octet-stream"
-        if file.stat().st_size <= (data_url_limit or 0):
+        if file.stat().st_size < (data_url_limit or 0):
             with open(file, mode="rb") as f:
                 buffer = BytesIO(f.read())
             return cls.__create_data_url(buffer, mime)
