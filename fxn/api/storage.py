@@ -130,7 +130,7 @@ class Storage:
         file.seek(0)
         mime = guess_mime(file) or "application/octet-stream"
         size = file.getbuffer().nbytes
-        if size <= (data_url_limit or 0):
+        if size < (data_url_limit or 0):
             return cls.__create_data_url(file, mime)
         # Upload
         url = cls.create_upload_url(name, type, key=key)
