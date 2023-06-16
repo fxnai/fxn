@@ -1,3 +1,6 @@
+## 0.0.13
+*INCOMPLETE*
+
 ## 0.0.12
 + Added `Predictor.readme` field for inspecting the readme of a predictor notebook.
 
