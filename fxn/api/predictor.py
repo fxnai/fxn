@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from .api import query
 from .dtype import Dtype
+from .feature import Feature
 from .profile import Profile
 from .storage import Storage, UploadType
 
@@ -72,7 +73,11 @@ class Predictor:
                 name
                 value
             }}
-            default_value: defaultValue
+            default_value: defaultValue {{
+                data
+                type
+                shape
+            }}
         }}
         outputs {{
             name
@@ -378,7 +383,9 @@ class Parameter:
     default_value: Optional[Union[str, float, int, bool]] = None
 
     def __post_init__ (self):
+        default_value = Feature(**self.default_value).to_value() if isinstance(self.default_value, dict) and all(x in self.default_value for x in ["data", "type", "shape"]) else self.default_value
         enumeration = [EnumerationMember(**member) if isinstance(member, dict) else member for member in self.enumeration] if self.enumeration else self.enumeration
+        object.__setattr__(self, "default_value", default_value)
         object.__setattr__(self, "enumeration", enumeration)
 
 @dataclass(frozen=True)
@@ -388,10 +395,10 @@ class EnumerationMember:
 
     Members:
         name (str): Enumeration member name.
-        value (str | float | int): Enumeration member value.
+        value (str | int): Enumeration member value.
     """
     name: str
-    value: Union[str, float, int]
+    value: Union[str, int]
 
 class Acceleration (str, Enum):
     """
