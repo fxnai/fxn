@@ -235,7 +235,7 @@ class Predictor:
             notebook (str | Path): Predictor notebook path or URL.
             type (PredictorType): Predictor type. This defaults to `CLOUD`.
             access (AccessMode): Predictor access mode. This defaults to `PRIVATE`.
-            description (str): Predictor description. This supports Markdown.
+            description (str): Predictor description. This must be under 200 characters long.
             media (str | Path): Predictor media path or URL.
             acceleration (Acceleration): Predictor acceleration. This only applies for cloud predictors and defaults to `CPU`. 
             environment (dict): Predictor environment variables.
