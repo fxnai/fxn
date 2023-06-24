@@ -26,7 +26,7 @@ You should see information about your Function account:
 
 ![login to CLI](https://raw.githubusercontent.com/fxnai/.github/main/auth_login.gif)
 
-## Running a Predictor
+## Making a Prediction
 You can start off by running an existing predictor [on Function](https://fxn.ai/explore). Let's run the [`@natml/stable-diffusion`](https://fxn.ai/@natml/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image. In terminal, run the following command:
 
 ```sh
