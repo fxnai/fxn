@@ -149,6 +149,7 @@ class Feature:
             return Feature(data, type)
         # Path
         if isinstance(value, Path):
+            assert value.exists(), "Feature does not exist at the given path"
             assert value.is_file(), "Feature path must point to a file, not a directory"
             value = value.expanduser().resolve()
             data = Storage.upload(value, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
