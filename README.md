@@ -35,7 +35,18 @@ fxn predict @natml/stable-diffusion --prompt "An astronaut riding a horse on the
 
 And within a few seconds, you should see a creepy-looking image pop up 😅:
 
-[GIF here]
+![prediction](https://raw.githubusercontent.com/fxnai/.github/main/predict.gif)
 
 ## Creating a Predictor
-At some point, you might want to create your own predictor. With Function, you don't have to deal with GitHub repos, Dockerfiles, or weird YAMLs. All you need is a Jupyter Notebook with a `predict` function. See [examples](examples/) for more.
+At some point, you might want to create your own predictor. With Function, you don't have to deal with GitHub repos, Dockerfiles, or weird YAMLs. All you need is a Jupyter Notebook with a `predict` function. See our [samples project](https://github.com/fxnai/samples) for more.
+
+___
+
+## Useful Links
+- [Discover predictors to use in your apps](https://fxn.ai/explore).
+- [Join our Discord community](https://fxn.ai/community).
+- [Check out our docs](https://docs.fxn.ai).
+- Learn more about us [on our blog](https://blog.fxn.ai).
+- Reach out to us at [hi@fxn.ai](mailto:hi@fxn.ai).
+
+Function is a product of [NatML Inc](https://github.com/natmlx).
