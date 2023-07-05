@@ -1,5 +1,6 @@
 ## 0.0.13
-*INCOMPLETE*
++ Refactored `Feature` class to `Value` for improved clarity.
++ Refactored `UploadType.Feature` enumeration member to `UploadType.Value`.
 
 ## 0.0.12
 + Added `Predictor.readme` field for inspecting the readme of a predictor notebook.

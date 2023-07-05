@@ -11,9 +11,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from .api import query
 from .dtype import Dtype
-from .feature import Feature
 from .profile import Profile
 from .storage import Storage, UploadType
+from .value import Value
 
 @dataclass(frozen=True)
 class Predictor:
@@ -383,7 +383,7 @@ class Parameter:
     default_value: Optional[Union[str, float, int, bool]] = None
 
     def __post_init__ (self):
-        default_value = Feature(**self.default_value).to_value() if isinstance(self.default_value, dict) and all(x in self.default_value for x in ["data", "type", "shape"]) else self.default_value
+        default_value = Value(**self.default_value).to_value() if isinstance(self.default_value, dict) and all(x in self.default_value for x in ["data", "type", "shape"]) else self.default_value
         enumeration = [EnumerationMember(**member) if isinstance(member, dict) else member for member in self.enumeration] if self.enumeration else self.enumeration
         object.__setattr__(self, "default_value", default_value)
         object.__setattr__(self, "enumeration", enumeration)

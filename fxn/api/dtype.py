@@ -7,7 +7,7 @@ from enum import Enum
 
 class Dtype (str, Enum):
     """
-    Feature data type.
+    Value type.
     This follows `numpy` dtypes.
     """
     int8 = "int8"

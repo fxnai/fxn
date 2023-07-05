@@ -18,9 +18,9 @@ class UploadType (str, Enum):
     """
     Upload URL type.
     """
-    Feature = "FEATURE"
     Media = "MEDIA"
     Notebook = "NOTEBOOK"
+    Value = "VALUE"
 
 class Storage:
     """
@@ -71,10 +71,10 @@ class Storage:
         Upload a file and return the URL.
 
         Parameters:
-            file (str | Path | BytesIO): File path.
+            file (str | Path | BytesIO): Input file.
             type (UploadType): File type.
             name (str): File name. This MUST be provided if `file` is not a file path.
-            data_url_limit (int): Return a data URL if the output feature is smaller than this limit (in bytes).
+            data_url_limit (int): Return a data URL if the file is smaller than this limit (in bytes).
             key (str): File key. This is useful for grouping related files.
             verbose (bool): Print a progress bar for the upload.
 

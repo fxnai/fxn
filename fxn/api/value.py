@@ -20,14 +20,14 @@ from .dtype import Dtype
 from .storage import Storage, UploadType
 
 @dataclass(frozen=True)
-class Feature:
+class Value:
     """
-    Prediction feature.
+    Prediction value.
 
     Members:
-        data (str): Feature data URL. This can be a web URL or a data URL.
-        type (Dtype): Feature data type.
-        shape (list): Feature shape. This is `None` if shape information is not available or applicable.
+        data (str): Value URL. This can be a web URL or a data URL.
+        type (Dtype): Value type.
+        shape (list): Value shape. This is `None` if shape information is not available or applicable.
     """
     data: str
     type: Dtype
@@ -36,24 +36,24 @@ class Feature:
     def to_value (
         self,
         return_binary_path: bool=True
-    ) -> Union[str, float, int, bool, ndarray, list, dict, Image.Image, Path]:
+    ) -> Union[str, float, int, bool, ndarray, list, dict, Image.Image, BytesIO, Path]:
         """
-        Convert a feature to a plain Python value.
+        Convert a Function value to a plain value.
 
         Parameters:
-            return_binary_path (str): Write binary features to file and return a `Path` instead of returning `BytesIO` instance.
+            return_binary_path (str): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
 
         Returns:
-            str | float | int | bool | ndarray | list | dict | Image.Image | Path: Feature value.
+            str | float | int | bool | ndarray | list | dict | Image.Image | BytesIO | Path: Value.
         """
-        buffer = Feature.__download_feature_data(self.data)
+        buffer = Value.__download_value_data(self.data)
         # Array
         if self.type in [
             Dtype.int8, Dtype.int16, Dtype.int32, Dtype.int64,
             Dtype.uint8, Dtype.uint16, Dtype.uint32, Dtype.uint64,
             Dtype.float16, Dtype.float32, Dtype.float64, Dtype.bool
         ]:
-            assert self.shape is not None, "Array feature must have a shape specified"
+            assert self.shape is not None, "Array value must have a shape specified"
             array = frombuffer(buffer.getbuffer(), dtype=self.type).reshape(self.shape)
             return array if len(self.shape) > 0 else array.item()
         # String
@@ -81,82 +81,78 @@ class Feature:
         cls,
         value: Union[str, float, int, bool, ndarray, List, Dict[str, any], Path, Image.Image],
         name: str,
-        type: Dtype=None,
         min_upload_size: int=4096,
         key: str=None
-    ) -> Feature:
+    ) -> Value:
         """
-        Create a feature input from a given value.
+        Create a Function value from a plain value.
 
         Parameters:
-            value (str | float | int | bool | ndarray | list | dict | dataclass | Path | PIL.Image): Value.
-            name (str): Feature name.
-            type (Dtype): Feature data type override.
-            min_upload_size (int): Features larger than this size in bytes will be uploaded.
+            value (str | float | int | bool | ndarray | list | dict | dataclass | Path | PIL.Image): Input value.
+            name (str): Value name.
+            min_upload_size (int): Values larger than this size in bytes will be uploaded.
 
         Returns:
-            Feature: Feature.
+            Value: Function value.
         """
-        # Feature
-        if isinstance(value, Feature):
+        # Value
+        if isinstance(value, Value):
             return value
         # Array
         if isinstance(value, ndarray):
             buffer = BytesIO(value.tobytes())
-            data = Storage.upload(buffer, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            type = type or value.dtype.name
-            return Feature(data, type, shape=list(value.shape))
+            data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            return Value(data, type=value.dtype.name, shape=list(value.shape))
         # String
         if isinstance(value, str):
             buffer = BytesIO(value.encode("utf-8"))
-            data = Storage.upload(buffer, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            type = type or Dtype.string
-            return Feature(data, type)
+            data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            return Value(data, type=Dtype.string)
         # Float
         if isinstance(value, float):
             value = array(value, dtype=float32)
-            return cls.from_value(value, name, type=type, min_upload_size=min_upload_size, key=key)
+            return Value.from_value(value, name, min_upload_size=min_upload_size, key=key)
         # Boolean
         if isinstance(value, bool):
             value = array(value, dtype=bool)
-            return cls.from_value(value, name, type=type, min_upload_size=min_upload_size, key=key)
+            return Value.from_value(value, name, min_upload_size=min_upload_size, key=key)
         # Integer
         if isinstance(value, int):
             value = array(value, dtype=int32)
-            return cls.from_value(value, name, type=type, min_upload_size=min_upload_size, key=key)
+            return Value.from_value(value, name, min_upload_size=min_upload_size, key=key)
         # List
         if isinstance(value, list):
             value = dumps(value)
-            type = type or Dtype.list
-            return cls.from_value(value, name, type=type, min_upload_size=min_upload_size, key=key)
+            buffer = BytesIO(value.encode("utf-8"))
+            data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            return Value(data, type=Dtype.list)
         # Dict
         if isinstance(value, dict):
             value = dumps(value)
-            type = type or Dtype.dict
-            return cls.from_value(value, name, type=type, min_upload_size=min_upload_size, key=key)
+            buffer = BytesIO(value.encode("utf-8"))
+            data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            return Value(data, type=Dtype.dict)
         # Dataclass # https://docs.python.org/3/library/dataclasses.html#dataclasses.is_dataclass
         if is_dataclass(value) and not isinstance(value, type):
             value = asdict(value)
-            type = type or Dtype.dict
-            return cls.from_value(value, name=name, type=type, min_upload_size=min_upload_size, key=key)
+            return Value.from_value(value, name=name, min_upload_size=min_upload_size, key=key)
         # Image
         if isinstance(value, Image.Image):
             buffer = BytesIO()
             format = "PNG" if value.mode == "RGBA" else "JPEG"
             value.save(buffer, format=format)
-            data = Storage.upload(buffer, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            type = type or Dtype.image
-            return Feature(data, type)
+            data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            return Value(data, type=Dtype.image)
         # Path
         if isinstance(value, Path):
-            assert value.exists(), "Feature does not exist at the given path"
-            assert value.is_file(), "Feature path must point to a file, not a directory"
+            assert value.exists(), "Value does not exist at the given path"
+            assert value.is_file(), "Value path must point to a file, not a directory"
             value = value.expanduser().resolve()
-            data = Storage.upload(value, UploadType.Feature, name=name, data_url_limit=min_upload_size, key=key)
-            type = type or cls.__get_file_dtype(value)
-            return Feature(data, type)
+            data = Storage.upload(value, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            type = Value.__get_file_dtype(value)
+            return Value(data, type=type)
         # Unsupported
-        raise RuntimeError(f"Cannot create feature '{name}' for value {value} of type {type(value)}")
+        raise RuntimeError(f"Cannot create Function value '{name}' for value {value} of type {type(value)}")
 
     @classmethod
     def __get_file_dtype (cls, path: Path) -> Dtype:
@@ -174,7 +170,7 @@ class Feature:
         return Dtype.binary
 
     @classmethod
-    def __download_feature_data (cls, url: str) -> BytesIO:
+    def __download_value_data (cls, url: str) -> BytesIO:
         # Check if data URL
         if url.startswith("data:"):
             with urlopen(url) as response:

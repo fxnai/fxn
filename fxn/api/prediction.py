@@ -13,8 +13,8 @@ from typing import Any, Dict, List, Union
 from uuid import uuid4
 
 from .api import query
-from .feature import Feature
 from .predictor import PredictorType
+from .value import Value
 
 @dataclass(frozen=True)
 class Prediction:
@@ -56,26 +56,26 @@ class Prediction:
         return_binary_path: bool=True,
         data_url_limit: int=None,
         access_key: str=None,
-        **inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Feature]],
+        **inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]],
     ) -> Union[CloudPrediction, EdgePrediction]:
         """
         Create a prediction.
 
         Parameters:
             tag (str): Predictor tag.
-            raw_outputs (bool): Skip parsing output features into Pythonic data types.
-            return_binary_path (bool): Write binary features to file and return a `Path` instead of returning `BytesIO` instance.
-            data_url_limit (int): Return a data URL if a given output feature is smaller than this size in bytes. Only applies to `CLOUD` predictions.
+            raw_outputs (bool): Skip converting output values into Pythonic types.
+            return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
+            data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. Only applies to `CLOUD` predictions.
             access_key (str): Function access key.
-            inputs (dict): Input features. Only applies to `CLOUD` predictions.
+            inputs (dict): Input values. Only applies to `CLOUD` predictions.
 
         Returns:
             CloudPrediction | EdgePrediction: Created prediction.
         """
         # Collect inputs
         key = uuid4().hex
-        inputs = { name: Feature.from_value(value, name, key=key) for name, value in inputs.items() }
-        inputs = [{ "name": name, **asdict(feature) } for name, feature in inputs.items()]
+        inputs = { name: Value.from_value(value, name, key=key) for name, value in inputs.items() }
+        inputs = [{ "name": name, **asdict(value) } for name, value in inputs.items()]
         # Query
         response = query(f"""
             mutation ($input: CreatePredictionInput!) {{
@@ -92,7 +92,9 @@ class Prediction:
             return None
         # Parse results
         if "results" in prediction and prediction["results"] is not None:
-            prediction["results"] = [Feature(**feature).to_value(return_binary_path=return_binary_path) if not raw_outputs else Feature(**feature) for feature in prediction["results"]]
+            prediction["results"] = [Value(**value) for value in prediction["results"]]
+            if not raw_outputs:
+                prediction["results"] = [value.to_value(return_binary_path=return_binary_path) for value in prediction["results"]]
         # Create
         prediction = CloudPrediction(**prediction) if prediction["type"] == PredictorType.Cloud else EdgePrediction(**prediction)
         # Return
@@ -120,7 +122,7 @@ class CloudPrediction (Prediction):
         error (str): Prediction error. This is `null` if the prediction completed successfully.
         logs (str): Prediction logs.
     """
-    results: List[Feature] = None
+    results: List[Value] = None
     latency: float = None
     error: str = None
     logs: str = None

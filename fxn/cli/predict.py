@@ -17,7 +17,7 @@ from .auth import get_access_key
 
 def predict (
     tag: str = Argument(..., help="Predictor tag."),
-    raw_outputs: bool = Option(False, "--raw-outputs", help="Output raw features instead of parsing into Pythonic data."),
+    raw_outputs: bool = Option(False, "--raw-outputs", help="Output raw Function values instead of converting into plain Python values."),
     context: Context = 0
 ):
     # Predict
@@ -32,8 +32,8 @@ def predict (
     # Parse results
     images = []
     if hasattr(prediction, "results") and prediction.results is not None:
-        images = [feature for feature in prediction.results if isinstance(feature, Image.Image)]
-        results = [_serialize_feature(feature) for feature in prediction.results]
+        images = [value for value in prediction.results if isinstance(value, Image.Image)]
+        results = [_serialize_value(value) for value in prediction.results]
         object.__setattr__(prediction, "results", results)
     # Print
     print_json(data=asdict(prediction, dict_factory=_prediction_dict_factory))
@@ -72,29 +72,29 @@ def _parse_value (value: str):
     # String
     return value
     
-def _serialize_feature (feature):
+def _serialize_value (value):
     # Convert ndarray to list
-    if isinstance(feature, ndarray):
-        return feature.tolist()
+    if isinstance(value, ndarray):
+        return value.tolist()
     # Write image
-    if isinstance(feature, Image.Image):
-        _, path = mkstemp(suffix=".png" if feature.mode == "RGBA" else ".jpg")
-        feature.save(path)
+    if isinstance(value, Image.Image):
+        _, path = mkstemp(suffix=".png" if value.mode == "RGBA" else ".jpg")
+        value.save(path)
         return path
     # Serialize `BytesIO`
-    if isinstance(feature, BytesIO):
-        return str(feature)
+    if isinstance(value, BytesIO):
+        return str(value)
     # Serialize `Path`
-    if isinstance(feature, PurePath):
-        return str(feature)
+    if isinstance(value, PurePath):
+        return str(value)
     # Return    
-    return feature
+    return value
 
 def _prediction_dict_factory (kv_pairs):
-    # Check if feature
-    FEATURE_KEYS = ["data", "type", "shape"]
+    # Check if value
+    VALUE_KEYS = ["data", "type", "shape"]
     keys = [k for k, _ in kv_pairs]
-    is_feature = all(k in keys for k in FEATURE_KEYS)
-    kv_pairs = [(k, v) for k, v in kv_pairs if v is not None] if is_feature else kv_pairs
+    is_value = all(k in keys for k in VALUE_KEYS)
+    kv_pairs = [(k, v) for k, v in kv_pairs if v is not None] if is_value else kv_pairs
     # Construct
     return dict(kv_pairs)
