@@ -1,3 +1,6 @@
+## 0.0.14
+*INCOMPLETE*
+
 ## 0.0.13
 + Refactored `Feature` class to `Value` for improved clarity.
 + Refactored `UploadType.Feature` enumeration member to `UploadType.Value`.
