@@ -10,6 +10,7 @@ class Dtype (str, Enum):
     Value type.
     This follows `numpy` dtypes.
     """
+    null = "null"
     int8 = "int8"
     int16 = "int16"
     int32 = "int32"

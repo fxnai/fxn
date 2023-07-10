@@ -1,5 +1,5 @@
 ## 0.0.14
-*INCOMPLETE*
++ Added `Dtype.null` constant for working with `None` prediction values.
 
 ## 0.0.13
 + Refactored `Feature` class to `Value` for improved clarity.

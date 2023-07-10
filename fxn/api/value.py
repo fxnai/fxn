@@ -46,6 +46,10 @@ class Value:
         Returns:
             str | float | int | bool | ndarray | list | dict | Image.Image | BytesIO | Path: Value.
         """
+        # Null
+        if self.type == Dtype.null:
+            return None
+        # Download
         buffer = Value.__download_value_data(self.data)
         # Array
         if self.type in [
@@ -95,6 +99,9 @@ class Value:
         Returns:
             Value: Function value.
         """
+        # None
+        if value is None:
+            return Value(None, type=Dtype.null)
         # Value
         if isinstance(value, Value):
             return value
