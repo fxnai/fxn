@@ -7,33 +7,35 @@ Run AI prediction functions (a.k.a "predictors") in your Python apps. With Funct
 ## Installing Function
 Function is distributed on PyPi. This distribution contains both the Python client and the command line interface (CLI). To install, open a terminal and run the following command:
 ```sh
-pip install fxn
+pip install --upgrade fxn
 ```
 
 > Note that Function requires Python 3.9+
 
-## Signing in to Function
-Head over to [fxn.ai](https://fxn.ai) to create an account by logging in. Once you do, generate an access key:
-
-![generate access key](https://raw.githubusercontent.com/fxnai/.github/main/access_key.gif)
-
-Now, let's login to the Function CLI with your access key. Open a terminal and run the following command:
-```sh
-fxn auth login <ACCESS KEY>
-```
-
-You should see information about your Function account:
-
-![login to CLI](https://raw.githubusercontent.com/fxnai/.github/main/auth_login.gif)
-
 ## Making a Prediction
-You can start off by running an existing predictor [on Function](https://fxn.ai/explore). Let's run the [`@natml/stable-diffusion`](https://fxn.ai/@natml/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image. In terminal, run the following command:
+Let's run the [`@samplefxn/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image.
 
-```sh
-fxn predict @natml/stable-diffusion --prompt "An astronaut riding a horse on the moon"
+### In Python
+Run the following Python script:
+```py
+import fxn
+
+prediction = fxn.Prediction.create(
+    tag="@samplefxn/stable-diffusion",
+    prompt="An astronaut riding a horse on Mars"
+)
+image = prediction.results[0]
+image.show()
 ```
 
-And within a few seconds, you should see a creepy-looking image pop up 😅:
+### In the CLI
+Open up a terminal and run the following command:
+
+```sh
+fxn predict @samplefxn/stable-diffusion --prompt "An astronaut riding a horse on the moon"
+```
+
+Within a few seconds, you should see a creepy-looking image pop up 😅:
 
 ![prediction](https://raw.githubusercontent.com/fxnai/.github/main/predict.gif)
 
