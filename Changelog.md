@@ -1,3 +1,6 @@
+## 0.0.17
++ Refactored `Predictor.readme` field to `card`.
+
 ## 0.0.16
 + Add loading indicator when making predictions in CLI.
 

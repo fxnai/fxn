@@ -29,7 +29,7 @@ class Predictor:
         access (AccessMode): Predictor access.
         created (str): Date created.
         description (str): Predictor description.
-        readme (str): Predictor readme. This supports Markdown.
+        card (str): Predictor card.
         media (str): Predictor media URL.
         acceleration (Acceleration): Predictor acceleration. This only applies to cloud predictors.
         signature (Signature): Predictor signature. This is only populated once predictor has been successfully provisioned.
@@ -43,7 +43,7 @@ class Predictor:
     access: AccessMode
     created: str
     description: Optional[str] = None
-    readme: Optional[str] = None
+    card: Optional[str] = None
     media: Optional[str] = None
     acceleration: Optional[Acceleration] = None
     signature: Optional[Signature] = None
@@ -59,7 +59,7 @@ class Predictor:
     access
     created
     description
-    readme
+    card
     media
     acceleration
     signature {{
