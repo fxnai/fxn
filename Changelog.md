@@ -1,3 +1,6 @@
+## 0.0.18
+*INCOMPLETE*
+
 ## 0.0.17
 + Refactored `Predictor.readme` field to `card`.
 
