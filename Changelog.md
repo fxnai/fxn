@@ -1,5 +1,5 @@
 ## 0.0.15
-*INCOMPLETE*
++ Fixed `Predictor.search` method raising error.
 
 ## 0.0.14
 + Added `Dtype.null` constant for working with `None` prediction values.

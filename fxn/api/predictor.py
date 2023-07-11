@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-from .api import query
+from .api import query as queryfxn
 from .dtype import Dtype
 from .profile import Profile
 from .storage import Storage, UploadType
@@ -111,7 +111,7 @@ class Predictor:
             Predictor: Predictor.
         """
         # Query
-        response = query(f"""
+        response = queryfxn(f"""
             query ($input: PredictorInput!) {{
                 predictor (input: $input) {{
                     {cls.FIELDS}
@@ -150,7 +150,7 @@ class Predictor:
             list: User predictors.
         """
         # Query
-        response = query(f"""
+        response = queryfxn(f"""
             query ($user: UserInput, $predictors: UserPredictorsInput) {{
                 user (input: $user) {{
                     predictors (input: $predictors) {{
@@ -187,7 +187,7 @@ class Predictor:
         Search predictors.
 
         Parameters:
-            query (str): Search query.
+            q (str): Search query.
             offset (int): Pagination offset.
             count (int): Pagination count.
             access_key (str): Function access key.
@@ -196,7 +196,7 @@ class Predictor:
             list: Relevant predictors.
         """
         # Query
-        response = query(f"""
+        response = queryfxn(f"""
             query ($input: PredictorsInput!) {{
                 predictors (input: $input) {{
                     {cls.FIELDS}
@@ -251,7 +251,7 @@ class Predictor:
         notebook = Storage.upload(notebook, UploadType.Notebook) if isinstance(notebook, Path) else notebook
         media = Storage.upload(media, UploadType.Media) if isinstance(media, Path) else media
         # Query
-        response = query(f"""
+        response = queryfxn(f"""
             mutation ($input: CreatePredictorInput!) {{
                 createPredictor (input: $input) {{
                     {cls.FIELDS}
@@ -297,7 +297,7 @@ class Predictor:
             bool: Whether the predictor was successfully deleted.
         """
         # Query
-        response = query(f"""
+        response = queryfxn(f"""
             mutation ($input: DeletePredictorInput!) {{
                 deletePredictor (input: $input)
             }}
@@ -326,7 +326,7 @@ class Predictor:
             Predictor: Archived predictor.
         """
         # Query
-        response = query(f"""
+        response = queryfxn(f"""
             mutation ($input: ArchivePredictorInput!) {{
                 archivePredictor (input: $input) {{
                     {cls.FIELDS}
