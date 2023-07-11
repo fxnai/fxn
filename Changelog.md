@@ -1,5 +1,5 @@
 ## 0.0.16
-*INCOMPLETE*
++ Add loading indicator when making predictions in CLI.
 
 ## 0.0.15
 + Fixed `Predictor.search` method raising error.

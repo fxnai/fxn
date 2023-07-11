@@ -9,6 +9,7 @@ from numpy import ndarray
 from pathlib import Path, PurePath
 from PIL import Image
 from rich import print_json
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from tempfile import mkstemp
 from typer import Argument, Context, Option
 
@@ -21,14 +22,20 @@ def predict (
     context: Context = 0
 ):
     # Predict
-    inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
-    prediction = Prediction.create(
-        tag=tag,
-        **inputs,
-        raw_outputs=raw_outputs,
-        return_binary_path=True,
-        access_key=get_access_key()
-    )
+    with Progress(
+        SpinnerColumn(spinner_name="point"),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True
+    ) as progress:
+        progress.add_task(description="Making prediction...", total=None)
+        inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
+        prediction = Prediction.create(
+            tag=tag,
+            **inputs,
+            raw_outputs=raw_outputs,
+            return_binary_path=True,
+            access_key=get_access_key()
+        )
     # Parse results
     images = []
     if hasattr(prediction, "results") and prediction.results is not None:
