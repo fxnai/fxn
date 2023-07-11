@@ -1,3 +1,6 @@
+## 0.0.16
+*INCOMPLETE*
+
 ## 0.0.15
 + Fixed `Predictor.search` method raising error.
 
