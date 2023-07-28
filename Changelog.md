@@ -1,5 +1,5 @@
 ## 0.0.18
-*INCOMPLETE*
++ Switched to more ergonomic loading indicator in CLI.
 
 ## 0.0.17
 + Refactored `Predictor.readme` field to `card`.

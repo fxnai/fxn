@@ -23,11 +23,11 @@ def predict (
 ):
     # Predict
     with Progress(
-        SpinnerColumn(spinner_name="point"),
+        SpinnerColumn(spinner_name="dots"),
         TextColumn("[progress.description]{task.description}"),
         transient=True
     ) as progress:
-        progress.add_task(description="Making prediction...", total=None)
+        progress.add_task(description="Running Function...", total=None)
         inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
         prediction = Prediction.create(
             tag=tag,
