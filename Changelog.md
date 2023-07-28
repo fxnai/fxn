@@ -1,3 +1,6 @@
+## 0.0.19
+*INCOMPLETE*
+
 ## 0.0.18
 + Switched to more ergonomic loading indicator in CLI.
 
