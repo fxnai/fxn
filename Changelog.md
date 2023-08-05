@@ -1,5 +1,5 @@
 ## 0.0.19
-*INCOMPLETE*
++ Fixed `UnboundLocalError` when calling `Value.from_value` method with unsupported value type.
 
 ## 0.0.18
 + Switched to more ergonomic loading indicator in CLI.

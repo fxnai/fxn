@@ -156,8 +156,8 @@ class Value:
             assert value.is_file(), "Value path must point to a file, not a directory"
             value = value.expanduser().resolve()
             data = Storage.upload(value, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
-            type = Value.__get_file_dtype(value)
-            return Value(data, type=type)
+            dtype = Value.__get_file_dtype(value)
+            return Value(data, type=dtype)
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for value {value} of type {type(value)}")
 
