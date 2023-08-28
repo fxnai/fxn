@@ -1,4 +1,5 @@
 ## 0.0.19
++ Added `Parameter.schema` field for inspecting the JSON schema for `dict` and `list` parameters.
 + Fixed `UnboundLocalError` when calling `Value.from_value` method with unsupported value type.
 
 ## 0.0.18

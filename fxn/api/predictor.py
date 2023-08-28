@@ -78,6 +78,7 @@ class Predictor:
                 type
                 shape
             }}
+            schema
         }}
         outputs {{
             name
@@ -373,6 +374,7 @@ class Parameter:
         range (tuple): Parameter value range for numeric parameters.
         enumeration (list): Parameter value choices for enumeration parameters.
         default_value (str | float | int | bool): Parameter default value.
+        schema (dict): Parameter JSON schema. This is only populated for `list` and `dict` parameters.
     """
     name: Optional[str] = None
     type: Optional[Dtype] = None
@@ -381,6 +383,7 @@ class Parameter:
     range: Optional[Tuple[float, float]] = None
     enumeration: Optional[List[EnumerationMember]] = None
     default_value: Optional[Union[str, float, int, bool]] = None
+    schema: Optional[dict] = None
 
     def __post_init__ (self):
         default_value = Value(**self.default_value).to_value() if isinstance(self.default_value, dict) and all(x in self.default_value for x in ["data", "type", "shape"]) else self.default_value
