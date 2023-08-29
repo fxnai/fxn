@@ -11,6 +11,7 @@ from json import loads, dumps
 from numpy import array, float32, frombuffer, int32, ndarray
 from pathlib import Path
 from PIL import Image
+from pydantic import BaseModel
 from requests import get
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional, Union
@@ -139,6 +140,10 @@ class Value:
             buffer = BytesIO(value.encode("utf-8"))
             data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data, type=Dtype.dict)
+        # Pydantic model
+        if isinstance(value, BaseModel):
+            value = value.model_dump(mode="json")
+            return Value.from_value(value, name=name, min_upload_size=min_upload_size, key=key)
         # Dataclass # https://docs.python.org/3/library/dataclasses.html#dataclasses.is_dataclass
         if is_dataclass(value) and not isinstance(value, type):
             value = asdict(value)

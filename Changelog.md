@@ -1,5 +1,5 @@
 ## 0.0.20
-*INCOMPLETE*
++ Added support for serializing Pydantic models in `Value.from_value` method.
 
 ## 0.0.19
 + Added `Parameter.schema` field for inspecting the JSON schema for `dict` and `list` parameters.
