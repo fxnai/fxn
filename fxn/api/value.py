@@ -14,7 +14,7 @@ from PIL import Image
 from pydantic import BaseModel
 from requests import get
 from tempfile import NamedTemporaryFile
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.request import urlopen
 
 from .dtype import Dtype
@@ -84,7 +84,7 @@ class Value:
     @classmethod
     def from_value (
         cls,
-        value: Union[str, float, int, bool, ndarray, List, Dict[str, any], Path, Image.Image],
+        value: Union[str, float, int, bool, ndarray, List[Any], Dict[str, any], Path, Image.Image],
         name: str,
         min_upload_size: int=4096,
         key: str=None
@@ -100,6 +100,7 @@ class Value:
         Returns:
             Value: Function value.
         """
+        value = cls.__try_ensure_serializable(value)
         # None
         if value is None:
             return Value(None, type=Dtype.null)
@@ -140,14 +141,6 @@ class Value:
             buffer = BytesIO(value.encode("utf-8"))
             data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data, type=Dtype.dict)
-        # Pydantic model
-        if isinstance(value, BaseModel):
-            value = value.model_dump(mode="json")
-            return Value.from_value(value, name=name, min_upload_size=min_upload_size, key=key)
-        # Dataclass # https://docs.python.org/3/library/dataclasses.html#dataclasses.is_dataclass
-        if is_dataclass(value) and not isinstance(value, type):
-            value = asdict(value)
-            return Value.from_value(value, name=name, min_upload_size=min_upload_size, key=key)
         # Image
         if isinstance(value, Image.Image):
             buffer = BytesIO()
@@ -155,7 +148,7 @@ class Value:
             value.save(buffer, format=format)
             data = Storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data, type=Dtype.image)
-        # Path
+        # Binary
         if isinstance(value, Path):
             assert value.exists(), "Value does not exist at the given path"
             assert value.is_file(), "Value path must point to a file, not a directory"
@@ -183,11 +176,23 @@ class Value:
 
     @classmethod
     def __download_value_data (cls, url: str) -> BytesIO:
-        # Check if data URL
         if url.startswith("data:"):
             with urlopen(url) as response:
                 return BytesIO(response.read())
-        # Download
         response = get(url)
         result = BytesIO(response.content)
         return result
+    
+    @classmethod
+    def __try_ensure_serializable (cls, value: Any) -> Any:
+        if value is None:
+            return value
+        if isinstance(value, Value): # passthrough
+            return value
+        if isinstance(value, list):
+            return [cls.__try_ensure_serializable(x) for x in value]
+        if is_dataclass(value) and not isinstance(value, type):
+            return asdict(value)
+        if isinstance(value, BaseModel):
+            return value.model_dump(mode="json")
+        return value

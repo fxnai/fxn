@@ -1,5 +1,5 @@
 ## 0.0.21
-*INCOMPLETE*
++ Fixed `Value.from_value` method raising exception when serializing a list of Pydantic models.
 
 ## 0.0.20
 + Added support for serializing Pydantic models in `Value.from_value` method.
