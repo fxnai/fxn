@@ -7,7 +7,7 @@ dist/
 *.egg-info/
 
 # IDE
-#.vscode
+.vscode
 .vs
 .idea
 
