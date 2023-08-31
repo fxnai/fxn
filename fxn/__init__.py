@@ -6,7 +6,7 @@
 from os import environ
 
 # Define API URL and access key
-api_url = environ.get("FXN_API_URL", "https://api.fxn.ai/graph")
+api_url = environ.get("FXN_API_URL", "https://api.fxn.ai")
 access_key: str = environ.get("FXN_ACCESS_KEY", None)
 
 # Import everything

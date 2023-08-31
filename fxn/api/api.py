@@ -22,7 +22,7 @@ def query (query: str, variables: dict=None, access_key: str=None) -> Dict[str, 
     access_key = access_key or fxn.access_key
     headers = { "Authorization": f"Bearer {access_key}" } if access_key else { }
     response = post(
-        fxn.api_url,
+        f"{fxn.api_url}/graph",
         json={ "query": query, "variables": variables },
         headers=headers
     )

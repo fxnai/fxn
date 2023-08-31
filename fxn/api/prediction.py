@@ -124,12 +124,10 @@ class Prediction:
         key = uuid4().hex
         inputs = { name: asdict(Value.from_value(value, name, key=key)) for name, value in inputs.items() }
         # Request
-        api_root = fxn.api_url.replace("/graph", "")
-        access_key = access_key or fxn.access_key
-        url = f"{api_root}/predict/{tag}?stream=true&rawOutputs=true&dataUrlLimit={data_url_limit}"
+        url = f"{fxn.api_url}/predict/{tag}?stream=true&rawOutputs=true&dataUrlLimit={data_url_limit}"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_key}",
+            "Authorization": f"Bearer {access_key or fxn.access_key}",
             "fxn-client": cls.__get_client()
         }
         async with ClientSession(headers=headers) as session:
