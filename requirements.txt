@@ -1,4 +1,9 @@
+aiohttp
+filetype
 numpy
 pillow
 requests
+rich
 typer
+pytest
+pytest_asyncio

@@ -3,11 +3,11 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from requests import post
-
 import fxn
+from requests import post
+from typing import Any, Dict
 
-def query (query: str, variables: dict=None, access_key: str=None) -> dict:
+def query (query: str, variables: dict=None, access_key: str=None) -> Dict[str, Any]:
     """
     Query the Function graph API.
 
@@ -27,11 +27,14 @@ def query (query: str, variables: dict=None, access_key: str=None) -> dict:
         headers=headers
     )
     # Check
-    response.raise_for_status()
-    response = response.json()
+    payload = response.json()
+    try:
+        response.raise_for_status()
+    except:
+        raise RuntimeError(payload.get("error"))
     # Check error
-    if "errors" in response:
-        raise RuntimeError(response["errors"][0]["message"])
+    if "errors" in payload:
+        raise RuntimeError(payload["errors"][0]["message"])
     # Return
-    result = response["data"]
+    result = payload["data"]
     return result

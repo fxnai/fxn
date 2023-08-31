@@ -1,3 +1,6 @@
+## 0.0.22
++ Added `Prediction.stream` method for creating streaming predictions.
+
 ## 0.0.21
 + Fixed `Value.from_value` method raising exception when serializing a list of Pydantic models.
 
