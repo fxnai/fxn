@@ -75,7 +75,7 @@ class Prediction:
         Returns:
             CloudPrediction | EdgePrediction: Created prediction.
         """
-        # Collect inputs
+        # Serialize inputs
         key = uuid4().hex
         inputs = { name: Value.from_value(value, name, key=key) for name, value in inputs.items() }
         inputs = [{ "name": name, **asdict(value) } for name, value in inputs.items()]
@@ -120,7 +120,7 @@ class Prediction:
         Returns:
             CloudPrediction | EdgePrediction: Created prediction.
         """
-        # Collect inputs
+        # Serialize inputs
         key = uuid4().hex
         inputs = { name: asdict(Value.from_value(value, name, key=key)) for name, value in inputs.items() }
         # Request
