@@ -1,5 +1,6 @@
 ## 0.0.23
-*INCOMPLETE*
++ Added `AccessMode.Protected` enumeration member for working with protected predictors.
++ Added `pydantic` as an explicit dependency.
 
 ## 0.0.22
 + Added `Prediction.stream` method for creating streaming predictions.

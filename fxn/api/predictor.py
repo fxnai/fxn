@@ -417,6 +417,7 @@ class AccessMode (str, Enum):
     """
     Public = "PUBLIC"
     Private = "PRIVATE"
+    Protected = "PROTECTED"
 
 class PredictorType (str, Enum):
     """

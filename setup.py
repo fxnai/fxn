@@ -31,6 +31,7 @@ setup(
         "filetype",
         "numpy",
         "pillow",
+        "pydantic",
         "requests",
         "rich",
         "typer"
