@@ -1,3 +1,6 @@
+## 0.0.24
++ Changed `Parameter.default_value` field type to `Value`.
+
 ## 0.0.23
 + Added `AccessMode.Protected` enumeration member for working with protected predictors.
 + Added `pydantic` as an explicit dependency.

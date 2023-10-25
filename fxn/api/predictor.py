@@ -373,7 +373,7 @@ class Parameter:
         optional (bool): Parameter is optional.
         range (tuple): Parameter value range for numeric parameters.
         enumeration (list): Parameter value choices for enumeration parameters.
-        default_value (str | float | int | bool): Parameter default value.
+        default_value (Value): Parameter default value.
         schema (dict): Parameter JSON schema. This is only populated for `list` and `dict` parameters.
     """
     name: Optional[str] = None
@@ -382,11 +382,11 @@ class Parameter:
     optional: Optional[bool] = None
     range: Optional[Tuple[float, float]] = None
     enumeration: Optional[List[EnumerationMember]] = None
-    default_value: Optional[Union[str, float, int, bool]] = None
+    default_value: Optional[Value] = None
     schema: Optional[dict] = None
 
     def __post_init__ (self):
-        default_value = Value(**self.default_value).to_value() if isinstance(self.default_value, dict) and all(x in self.default_value for x in ["data", "type", "shape"]) else self.default_value
+        default_value = Value(**self.default_value) if isinstance(self.default_value, dict) else self.default_value
         enumeration = [EnumerationMember(**member) if isinstance(member, dict) else member for member in self.enumeration] if self.enumeration else self.enumeration
         object.__setattr__(self, "default_value", default_value)
         object.__setattr__(self, "enumeration", enumeration)
