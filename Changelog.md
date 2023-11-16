@@ -1,3 +1,6 @@
+## 0.0.26
+*INCOMPLETE*
+
 ## 0.0.25
 + Fixed JSON serialization errors when using the CLI to perform some operations.
 
