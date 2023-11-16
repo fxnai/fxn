@@ -3,11 +3,10 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from dataclasses import dataclass
+from pydantic import BaseModel
 from typing import Optional
 
-@dataclass(frozen=True)
-class Profile:
+class Profile (BaseModel):
     """
     Function user profile.
 
@@ -29,12 +28,3 @@ class Profile:
     bio: Optional[str] = None
     website: Optional[str] = None
     github: Optional[str] = None
-    FIELDS = f"""
-    username
-    created
-    name
-    avatar
-    bio
-    website
-    github
-    """

@@ -3,11 +3,10 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from dataclasses import asdict
 from rich import print_json
 from typer import Argument, Option, Typer
 
-from ..api import EnvironmentVariable
+from ..function import Function
 from .auth import get_access_key
 
 app = Typer(no_args_is_help=True)
@@ -16,11 +15,9 @@ app = Typer(no_args_is_help=True)
 def list_envs (
     organization: str=Option(None, help="Organization username. Use this for organization environment variables."),
 ):
-    environments = EnvironmentVariable.list(
-        organization=organization,
-        access_key=get_access_key()
-    )
-    environments = [asdict(env) for env in environments]
+    fxn = Function(get_access_key())
+    environments = fxn.environment_variables.list(organization=organization)
+    environments = [dict(env) for env in environments]
     print_json(data=environments)
 
 @app.command(name="create", help="Create an environment variable.")
@@ -29,13 +26,9 @@ def create_env (
     value: str=Argument(..., help="Variable value."),
     organization: str=Option(None, help="Organization username. Use this for organization environment variables."),
 ):
-    environment = EnvironmentVariable.create(
-        name=name,
-        value=value,
-        organization=organization,
-        access_key=get_access_key()
-    )
-    environment = asdict(environment)
+    fxn = Function(get_access_key())
+    environment = fxn.environment_variables.create(name=name, value=value, organization=organization)
+    environment = dict(environment)
     print_json(data=environment)
 
 @app.command(name="delete", help="Delete an environment variable.")
@@ -43,9 +36,6 @@ def delete_env (
     name: str=Argument(..., help="Variable name."),
     organization: str=Option(None, help="Organization username. Use this for organization environment variables."),
 ):
-    result = EnvironmentVariable.delete(
-        name=name,
-        organization=organization,
-        access_key=get_access_key()
-    )
+    fxn = Function(get_access_key())
+    result = fxn.environment_variables.delete(name=name, organization=organization)
     print_json(data=result)

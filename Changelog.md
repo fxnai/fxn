@@ -1,5 +1,10 @@
 ## 0.0.24
++ Added `Function` client class to replace functions on individual API types.
++ Refactored `Value.from_value` method to `fxn.predictions.from_value`.
++ Refactored `Value.to_value` method to `fxn.predictions.to_value`.
 + Changed `Parameter.default_value` field type to `Value`.
++ Removed `CloudPrediction` class. Use `Prediction` class instead.
++ Removed `EdgePrediction` class. Use `Prediction` class instead.
 
 ## 0.0.23
 + Added `AccessMode.Protected` enumeration member for working with protected predictors.

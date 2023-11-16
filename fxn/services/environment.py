@@ -1,71 +1,58 @@
-# 
+#
 #   Function
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from __future__ import annotations
-from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
-from .api import query
+from ..graph import GraphClient
+from ..types import EnvironmentVariable
 
-@dataclass(frozen=True)
-class EnvironmentVariable:
-    """
-    Predictor environment variable.
+class EnvironmentVariableService:
 
-    Members:
-        name (str): Variable name.
-        value (str): Variable value.
-    """
-    name: str
-    value: Optional[str]=None
-    FIELDS = f"""
-    name
-    """
-    DEFAULT_VALUE = "xxxxxxxx"
+    def __init__ (self, client: GraphClient) -> None:
+        self.client = client
+        self.__value = "xxxxxxxx"
 
-    @classmethod
-    def list (
-        cls,
-        organization: str=None,
-        access_key: str=None
-    ) -> List[EnvironmentVariable]:
+    def list (self, organization: str=None) -> List[EnvironmentVariable]:
+        """
+        List the current user's environment variables.
+
+        Note that the variable values can only viewed at https://fxn.ai.
+
+        Parameters:
+            organization (str): Organization username.
+
+        Returns:
+            list: User environment variables.
+        """
         # Query
-        response = query(f"""
+        response = self.client.query(f"""
             query ($input: UserInput) {{
                 user (input: $input) {{
                     ... on User {{
                         environmentVariables {{
-                            {cls.FIELDS}
+                            {ENVIRONMENT_VARIABLE_FIELDS}
                         }}
                     }}
                     ... on Organization {{
                         environmentVariables {{
-                            {cls.FIELDS}
+                            {ENVIRONMENT_VARIABLE_FIELDS}
                         }}
                     }}
                 }}
             }}
             """,
-            { "input": { "username": organization } if organization is not None else None },
-            access_key=access_key
+            { "input": { "username": organization } if organization is not None else None }
         )
         # Create envs
         assert response["user"] is not None, "Failed to list environment variables because user could not be found. Check that you are authenticated."
         environments = response["user"]["environmentVariables"]
-        environments = [EnvironmentVariable(**env, value=cls.DEFAULT_VALUE) for env in environments]
+        environments = [EnvironmentVariable(**env, value=self.__value) for env in environments]
         # Return
         return environments
-
-    @classmethod
-    def create (
-        cls,
-        name: str,
-        value: str,
-        organization: str=None,
-        access_key: str=None
-    ) -> EnvironmentVariable:
+    
+    def create (self, name: str, value: str, organization: str=None) -> EnvironmentVariable:
         """
         Create an environment variable.
 
@@ -75,35 +62,27 @@ class EnvironmentVariable:
             name (str): Variable name.
             value (str): Variable value.
             organization (str): Organization username. Use this for organization environment variables.
-            access_key (str): Function access key.
 
         Returns:
             EnvironmentVariable: Created environment variable.
         """
         # Query
-        response = query(f"""
+        response = self.client.query(f"""
             mutation ($input: CreateEnvironmentVariableInput!) {{
                 environment: createEnvironmentVariable (input: $input) {{
-                    {cls.FIELDS}
+                    {ENVIRONMENT_VARIABLE_FIELDS}
                 }}
             }}
             """,
-            { "input": { "name": name, "value": value, "organization": organization } },
-            access_key=access_key
+            { "input": { "name": name, "value": value, "organization": organization } }
         )
         # Create env
         environment = response["environment"]
-        environment = EnvironmentVariable(**environment, value=cls.DEFAULT_VALUE)
+        environment = EnvironmentVariable(**environment, value=self.__value)
         # Return
         return environment
-
-    @classmethod
-    def delete (
-        cls,
-        name: str,
-        organization: str=None,
-        access_key: str=None
-    ) -> bool:
+    
+    def delete (self, name: str, organization: str=None) -> bool:
         """
         Delete an environment variable.
 
@@ -116,14 +95,17 @@ class EnvironmentVariable:
             bool: Whether the environment variable was successfully deleted.
         """
         # Query
-        response = query(f"""
+        response = self.client.query(f"""
             mutation ($input: DeleteEnvironmentVariableInput!) {{
                 result: deleteEnvironmentVariable (input: $input)
             }}
             """,
-            { "input": { "name": name, "organization": organization } },
-            access_key=access_key
+            { "input": { "name": name, "organization": organization } }
         )
         # Return
-        result = response["result"]
-        return result
+        return response["result"]
+
+    
+ENVIRONMENT_VARIABLE_FIELDS = f"""
+name
+"""
