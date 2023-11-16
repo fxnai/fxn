@@ -5,7 +5,6 @@
 
 from rich import print
 from typer import Exit, Option
-from typing import Callable
 from webbrowser import open as open_browser
 
 from ..version import __version__

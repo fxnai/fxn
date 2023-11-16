@@ -3,9 +3,6 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from dataclasses import dataclass
-
-@dataclass(frozen=True)
 class Tag:
     """
     Predictor tag.

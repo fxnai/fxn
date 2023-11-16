@@ -3,29 +3,15 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from __future__ import annotations
-from dataclasses import dataclass
+from ..graph import GraphClient
+from ..types import Profile
 
-from .api import query
-from .profile import Profile
+class UserService:
 
-@dataclass(frozen=True)
-class User (Profile):
-    """
-    User.
-    """
-    FIELDS = f"""
-    ... on User {{
-        email
-    }}
-    """
+    def __init__ (self, client: GraphClient) -> None:
+        self.client = client
 
-    @classmethod
-    def retrieve (
-        cls,
-        username: str=None,
-        access_key: str=None
-    ) -> User:
+    def retrieve (self, username: str=None) -> Profile:
         """
         Retrieve a user.
 
@@ -37,19 +23,34 @@ class User (Profile):
             User: User.
         """
         # Query
-        response = query(f"""
+        response = self.client.query(f"""
             query {"($input: UserInput)" if username else ""} {{
                 user {"(input: $input)" if username else ""} {{
-                    {Profile.FIELDS}
-                    {cls.FIELDS if not username else ""}
+                    {PROFILE_FIELDS}
+                    {USER_FIELDS if not username else ""}
                 }}
             }}
             """,
             { "input": { "username": username } },
-            access_key=access_key
         )
         # Create user
         user = response["user"]
-        user = User(**user) if user else None
+        user = Profile(**user) if user else None
         # Return
         return user
+
+PROFILE_FIELDS = f"""
+username
+created
+name
+avatar
+bio
+website
+github
+"""
+
+USER_FIELDS = f"""
+... on User {{
+    email
+}}
+"""

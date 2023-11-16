@@ -3,12 +3,11 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from dataclasses import asdict
 from pathlib import Path
 from rich import print, print_json
 from typer import Argument, Typer
 
-from ..api import User
+from ..function import Function
 
 app = Typer(no_args_is_help=True)
 
@@ -16,15 +15,17 @@ app = Typer(no_args_is_help=True)
 def login (
     access_key: str=Argument(..., help="Function access key.", envvar="FXN_ACCESS_KEY")
 ):
-    user = User.retrieve(access_key=access_key)
-    user = asdict(user) if user else None
+    fxn = Function(access_key)
+    user = fxn.users.retrieve()
+    user = dict(user) if user else None
     _set_access_key(access_key if user is not None else None)
     print_json(data=user)
 
 @app.command(name="status", help="Get current authentication status.")
 def auth_status ():
-    user = User.retrieve(access_key=get_access_key())
-    user = asdict(user) if user else None
+    fxn = Function(get_access_key())
+    user = fxn.users.retrieve()
+    user = dict(user) if user else None
     print_json(data=user)
 
 @app.command(name="logout", help="Logout from Function.")

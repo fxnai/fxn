@@ -4,36 +4,22 @@
 #
 
 from base64 import b64encode
-from enum import Enum
-from io import BytesIO
 from filetype import guess_mime
+from io import BytesIO
 from pathlib import Path
 from requests import put
 from rich.progress import open as open_progress, wrap_file
 from typing import Union
 
-from .api import query
+from ..graph import GraphClient
+from ..types import UploadType
 
-class UploadType (str, Enum):
-    """
-    Upload URL type.
-    """
-    Media = "MEDIA"
-    Notebook = "NOTEBOOK"
-    Value = "VALUE"
+class StorageService:
 
-class Storage:
-    """
-    Upload and download files.
-    """
+    def __init__ (self, client: GraphClient) -> None:
+        self.client = client
 
-    @classmethod
-    def create_upload_url (
-        cls,
-        name: str,
-        type: UploadType,
-        key: str=None
-    ) -> str:
+    def create_upload_url (self, name: str, type: UploadType, key: str=None) -> str:
         """
         Create an upload URL.
 
@@ -46,20 +32,18 @@ class Storage:
             str: File upload URL.
         """
         # Query
-        response = query(f"""
+        response = self.client.query(f"""
             mutation ($input: CreateUploadUrlInput!) {{
                 createUploadUrl (input: $input)
             }}
             """,
             { "input": { "type": type, "name": name, "key": key } }
         )
-        url = response["createUploadUrl"]
         # Return
-        return url
-
-    @classmethod
+        return response["createUploadUrl"]
+    
     def upload (
-        cls,
+        self,
         file: Union[str, Path, BytesIO],
         type: UploadType,
         name: str=None,
@@ -83,13 +67,12 @@ class Storage:
         """
         file = Path(file) if isinstance(file, str) else file
         if isinstance(file, Path):
-            return cls.__upload_file(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
+            return self.__upload_file(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
         else:
-            return cls.__upload_buffer(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
-    
-    @classmethod
+            return self.__upload_buffer(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
+        
     def __upload_file (
-        cls,
+        self,
         file: Path,
         type: UploadType,
         name: str=None,
@@ -105,18 +88,17 @@ class Storage:
         if file.stat().st_size < (data_url_limit or 0):
             with open(file, mode="rb") as f:
                 buffer = BytesIO(f.read())
-            return cls.__create_data_url(buffer, mime)
+            return self.__create_data_url(buffer, mime)
         # Upload
         name = name or file.name
-        url = cls.create_upload_url(name, type, key=key)
+        url = self.create_upload_url(name, type, key=key)
         with open_progress(file, mode="rb", description=name, disable=not verbose) as f:
             put(url, data=f, headers={ "Content-Type": mime }).raise_for_status()
         # Return
         return url
     
-    @classmethod
     def __upload_buffer (
-        cls,
+        self,
         file: BytesIO,
         type: UploadType,
         name: str=None,
@@ -131,16 +113,15 @@ class Storage:
         mime = guess_mime(file) or "application/octet-stream"
         size = file.getbuffer().nbytes
         if size < (data_url_limit or 0):
-            return cls.__create_data_url(file, mime)
+            return self.__create_data_url(file, mime)
         # Upload
-        url = cls.create_upload_url(name, type, key=key)
+        url = self.create_upload_url(name, type, key=key)
         with wrap_file(file, total=size, description=name, disable=not verbose) as f:
             put(url, data=f, headers={ "Content-Type": mime }).raise_for_status()
         # Return
         return url
     
-    @classmethod
-    def __create_data_url (cls, file: BytesIO, mime: str) -> str:
+    def __create_data_url (self, file: BytesIO, mime: str) -> str:
         encoded_data = b64encode(file.getvalue()).decode("ascii")
         url = f"data:{mime};base64,{encoded_data}"
         return url

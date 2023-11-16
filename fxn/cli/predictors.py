@@ -3,23 +3,21 @@
 #   Copyright © 2023 NatML Inc. All Rights Reserved.
 #
 
-from dataclasses import asdict
 from rich import print_json
 from pathlib import Path
 from typer import Argument, Option
 from typing import List
 
-from ..api import Acceleration, AccessMode, Predictor, PredictorStatus, PredictorType
+from ..function import Function
+from ..types import Acceleration, AccessMode, PredictorStatus, PredictorType
 from .auth import get_access_key
 
 def retrieve_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    predictor = Predictor.retrieve(
-        tag=tag,
-        access_key=get_access_key()
-    )
-    predictor = asdict(predictor) if predictor else None
+    fxn = Function(get_access_key())
+    predictor = fxn.predictors.retrieve(tag)
+    predictor = dict(predictor) if predictor else None
     print_json(data=predictor)
 
 def list_predictors (
@@ -28,14 +26,14 @@ def list_predictors (
     offset: int=Option(None, help="Pagination offset."),
     count: int=Option(None, help="Pagination count.")
 ):
-    predictors = Predictor.list(
+    fxn = Function(get_access_key())
+    predictors = fxn.predictors.list(
         owner=owner,
         status=status,
         offset=offset,
-        count=count,
-        access_key=get_access_key()
+        count=count
     )
-    predictors = [asdict(predictor) for predictor in predictors] if predictors is not None else None
+    predictors = [dict(predictor) for predictor in predictors] if predictors is not None else None
     print_json(data=predictors)
 
 def search_predictors (
@@ -43,13 +41,9 @@ def search_predictors (
     offset: int=Option(None, help="Pagination offset."),
     count: int=Option(None, help="Pagination count.")
 ):
-    predictors = Predictor.search(
-        query=query,
-        offset=offset,
-        count=count,
-        access_key=get_access_key()
-    )
-    predictors = [asdict(predictor) for predictor in predictors]
+    fxn = Function(get_access_key())
+    predictors = fxn.predictors.search(query=query, offset=offset, count=count)
+    predictors = [dict(predictor) for predictor in predictors]
     print_json(data=predictors)
 
 def create_predictor (
@@ -64,8 +58,9 @@ def create_predictor (
     env: List[str]=Option([], help="Specify a predictor environment variable."),
     overwrite: bool=Option(None, "--overwrite", help="Overwrite any existing predictor with the same tag.")
 ):
+    fxn = Function(get_access_key())
     environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in env }
-    predictor = Predictor.create(
+    predictor = fxn.predictors.create(
         tag=tag,
         notebook=notebook,
         type=type,
@@ -75,26 +70,20 @@ def create_predictor (
         acceleration=acceleration,
         environment=environment,
         license=license,
-        overwrite=overwrite,
-        access_key=get_access_key()
+        overwrite=overwrite
     )
-    predictor = asdict(predictor)
-    print_json(data=predictor)
+    print_json(data=dict(predictor))
 
 def delete_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    result = Predictor.delete(
-        tag=tag,
-        access_key=get_access_key()
-    )
+    fxn = Function(get_access_key())
+    result = fxn.predictors.delete(tag)
     print_json(data=result)
 
 def archive_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    predictor = Predictor.archive(
-        tag=tag,
-        access_key=get_access_key()
-    )
-    print_json(data=asdict(predictor))
+    fxn = Function(get_access_key())
+    predictor = fxn.predictors.archive(tag)
+    print_json(data=dict(predictor))
