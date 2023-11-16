@@ -1,5 +1,5 @@
 ## 0.0.25
-*INCOMPLETE*
++ Fixed JSON serialization errors when using the CLI to perform some operations.
 
 ## 0.0.24
 + Added `Function` client class to replace functions on individual API types.

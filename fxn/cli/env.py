@@ -17,7 +17,7 @@ def list_envs (
 ):
     fxn = Function(get_access_key())
     environments = fxn.environment_variables.list(organization=organization)
-    environments = [dict(env) for env in environments]
+    environments = [env.model_dump() for env in environments]
     print_json(data=environments)
 
 @app.command(name="create", help="Create an environment variable.")
@@ -28,8 +28,7 @@ def create_env (
 ):
     fxn = Function(get_access_key())
     environment = fxn.environment_variables.create(name=name, value=value, organization=organization)
-    environment = dict(environment)
-    print_json(data=environment)
+    print_json(data=environment.model_dump())
 
 @app.command(name="delete", help="Delete an environment variable.")
 def delete_env (

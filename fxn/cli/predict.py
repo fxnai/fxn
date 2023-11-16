@@ -42,7 +42,7 @@ def predict (
         results = [_serialize_value(value) for value in prediction.results]
         object.__setattr__(prediction, "results", results)
     # Print
-    print_json(data=dict(prediction))
+    print_json(data=prediction.model_dump())
     # Show images
     for image in images:
         image.show()

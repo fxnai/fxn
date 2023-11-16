@@ -17,7 +17,7 @@ def login (
 ):
     fxn = Function(access_key)
     user = fxn.users.retrieve()
-    user = dict(user) if user else None
+    user = user.model_dump() if user else None
     _set_access_key(access_key if user is not None else None)
     print_json(data=user)
 
@@ -25,7 +25,7 @@ def login (
 def auth_status ():
     fxn = Function(get_access_key())
     user = fxn.users.retrieve()
-    user = dict(user) if user else None
+    user = user.model_dump() if user else None
     print_json(data=user)
 
 @app.command(name="logout", help="Logout from Function.")

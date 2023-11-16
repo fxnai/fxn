@@ -52,7 +52,7 @@ class PredictionService:
         """
         # Serialize inputs
         key = uuid4().hex
-        inputs = [{ "name": name, **dict(self.from_value(value, name, key=key)) } for name, value in inputs.items()]
+        inputs = [{ "name": name, **self.from_value(value, name, key=key).model_dump() } for name, value in inputs.items()]
         # Query
         response = self.client.query(f"""
             mutation ($input: CreatePredictionInput!) {{
@@ -93,7 +93,7 @@ class PredictionService:
         """
         # Serialize inputs
         key = uuid4().hex
-        inputs = { name: dict(self.from_value(value, name, key=key)) for name, value in inputs.items() }
+        inputs = { name: self.from_value(value, name, key=key).model_dump() for name, value in inputs.items() }
         # Request
         url = f"{self.client.api_url}/predict/{tag}?stream=true&rawOutputs=true&dataUrlLimit={data_url_limit}"
         headers = {

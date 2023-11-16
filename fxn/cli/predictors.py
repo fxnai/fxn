@@ -17,7 +17,7 @@ def retrieve_predictor (
 ):
     fxn = Function(get_access_key())
     predictor = fxn.predictors.retrieve(tag)
-    predictor = dict(predictor) if predictor else None
+    predictor = predictor.model_dump() if predictor else None
     print_json(data=predictor)
 
 def list_predictors (
@@ -33,7 +33,7 @@ def list_predictors (
         offset=offset,
         count=count
     )
-    predictors = [dict(predictor) for predictor in predictors] if predictors is not None else None
+    predictors = [predictor.model_dump() for predictor in predictors] if predictors is not None else None
     print_json(data=predictors)
 
 def search_predictors (
@@ -43,7 +43,7 @@ def search_predictors (
 ):
     fxn = Function(get_access_key())
     predictors = fxn.predictors.search(query=query, offset=offset, count=count)
-    predictors = [dict(predictor) for predictor in predictors]
+    predictors = [predictor.model_dump() for predictor in predictors]
     print_json(data=predictors)
 
 def create_predictor (
@@ -72,7 +72,7 @@ def create_predictor (
         license=license,
         overwrite=overwrite
     )
-    print_json(data=dict(predictor))
+    print_json(data=predictor.model_dump())
 
 def delete_predictor (
     tag: str=Argument(..., help="Predictor tag.")
@@ -86,4 +86,4 @@ def archive_predictor (
 ):
     fxn = Function(get_access_key())
     predictor = fxn.predictors.archive(tag)
-    print_json(data=dict(predictor))
+    print_json(data=predictor.model_dump())
