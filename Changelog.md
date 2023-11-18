@@ -1,4 +1,5 @@
 ## 0.0.26
++ Added support for serializing `BytesIO` instances in `fxn.predictions.to_value` method.
 + Refactored `fxn.predictions.to_value` method to `to_object` for clarity.
 + Refactored `fxn.predictions.from_value` method to `to_value` for clarity.
 + Updated `fxn.predictions.to_object` method to always use aliased field names when serializing Pydantic types.
