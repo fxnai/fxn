@@ -5,8 +5,10 @@
 
 from dataclasses import dataclass
 from fxn import Function, Dtype, Value
+from io import BytesIO
 from numpy import allclose
 from numpy.random import randint, randn
+from PIL import Image
 from pydantic import BaseModel, Field
 
 def test_rountrip_null ():
@@ -102,3 +104,17 @@ def test_roundtrip_model ():
     output = fxn.predictions.to_object(value)
     assert value.type == Dtype.dict
     assert input.model_dump(by_alias=True) == output
+
+def test_roundtrip_buffer ():
+    # Create image buffer
+    buffer = BytesIO()
+    image = Image.open("test/media/cat.jpg")
+    image.save(buffer, format="JPEG")
+    # Serialize
+    fxn = Function()
+    value = fxn.predictions.to_value(buffer, "pydantic", min_upload_size=buffer.getbuffer().nbytes + 1)
+    assert value.type == Dtype.image
+    # Deserialize
+    value.type = Dtype.binary
+    output = fxn.predictions.to_object(value, return_binary_path=False)
+    assert buffer.read() == output.read()

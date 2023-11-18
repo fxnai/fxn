@@ -225,12 +225,17 @@ class PredictionService:
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.image)
         # Binary
+        if isinstance(object, BytesIO):
+            data = self.storage.upload(object, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            dtype = self.__get_data_dtype(object)
+            return Value(data=data, type=dtype)
+        # Path
         if isinstance(object, Path):
             assert object.exists(), "Value does not exist at the given path"
             assert object.is_file(), "Value path must point to a file, not a directory"
             object = object.expanduser().resolve()
             data = self.storage.upload(object, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
-            dtype = self.__get_file_dtype(object)
+            dtype = self.__get_data_dtype(object)
             return Value(data=data, type=dtype)
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
@@ -255,8 +260,8 @@ class PredictionService:
         # Return
         return Prediction(**prediction)
 
-    def __get_file_dtype (self, path: Path) -> Dtype:
-        mime = guess_mime(str(path))
+    def __get_data_dtype (self, data: Union[Path, BytesIO]) -> Dtype:
+        mime = guess_mime(str(data) if isinstance(data, Path) else data)
         if not mime:
             return Dtype.binary
         if mime.startswith("image"):
@@ -265,7 +270,7 @@ class PredictionService:
             return Dtype.video
         if mime.startswith("audio"):
             return Dtype.audio
-        if path.suffix in [".obj", ".gltf", ".glb", ".fbx", ".usd", ".usdz", ".blend"]:
+        if isinstance(data, Path) and data.suffix in [".obj", ".gltf", ".glb", ".fbx", ".usd", ".usdz", ".blend"]:
             return Dtype._3d
         return Dtype.binary
 
