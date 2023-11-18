@@ -1,3 +1,6 @@
+## 0.0.27
+*INCOMPLETE*
+
 ## 0.0.26
 + Added support for serializing `BytesIO` instances in `fxn.predictions.to_value` method.
 + Refactored `fxn.predictions.to_value` method to `to_object` for clarity.
