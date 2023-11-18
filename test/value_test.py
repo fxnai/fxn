@@ -5,51 +5,69 @@
 
 from dataclasses import dataclass
 from fxn import Function, Dtype, Value
-from numpy.random import randn
-from pydantic import BaseModel
+from numpy import allclose
+from numpy.random import randint, randn
+from pydantic import BaseModel, Field
 
-def test_serialize_null ():
+def test_rountrip_null ():
     fxn = Function()
-    value = fxn.predictions.from_value(None, "null")
+    input = None
+    value = fxn.predictions.to_value(input, "null")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.null
     assert value.data == None
     assert value.shape == None
+    assert input == output
 
-def test_serialize_value ():
+def test_roundtrip_value ():
     fxn = Function()
     value = Value(data="https://fxn.ai", type=Dtype.int64)
-    serialized = fxn.predictions.from_value(value, "value")
+    serialized = fxn.predictions.to_value(value, "value")
     assert serialized == value
 
-def test_serialize_tensor ():
+def test_roundtrip_tensor ():
     fxn = Function()
-    tensor = randn(1, 3, 720, 1280)
-    value = fxn.predictions.from_value(tensor, "tensor")
-    assert value.type == str(tensor.dtype)
-    assert value.shape == list(tensor.shape)
+    input = randn(1, 3, 720, 1280)
+    value = fxn.predictions.to_value(input, "tensor", min_upload_size=input.nbytes + 1)
+    output = fxn.predictions.to_object(value)
+    assert value.type == str(input.dtype)
+    assert value.shape == list(input.shape)
+    assert allclose(input, output)
 
-def test_serialize_string ():
+def test_roundtrip_string ():
     fxn = Function()
-    value = fxn.predictions.from_value("Hello fxn!", "string")
+    input = "Hello fxn!"
+    value = fxn.predictions.to_value(input, "string")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.string
+    assert input == output
 
-def test_serialize_float ():
+def test_roundtrip_float ():
     fxn = Function()
-    value = fxn.predictions.from_value(3.1415, "integer")
+    input = 3.1415
+    value = fxn.predictions.to_value(input, "integer")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.float32
     assert value.shape == []
+    assert allclose(input, output)
 
-def test_serialize_int ():
+def test_roundtrip_int ():
     fxn = Function()
-    value = fxn.predictions.from_value(24, "integer")
+    input = randint(0, 1_000)
+    value = fxn.predictions.to_value(input, "integer")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.int32
     assert value.shape == []
+    assert input == output
 
-def test_serialize_bool ():
+def test_roundtrip_bool ():
     fxn = Function()
-    value = fxn.predictions.from_value(True, "boolean")
+    input = randint(0, 1_000) % 2 == 1
+    value = fxn.predictions.to_value(input, "boolean")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.bool
     assert value.shape == []
+    assert input == output
 
 def test_serialize_list ():
     class Person (BaseModel):
@@ -62,19 +80,25 @@ def test_serialize_list ():
     person = Person(name="Jake", age=32)
     city = City(name="New York", state="New York")
     fxn = Function()
-    value = fxn.predictions.from_value(["cat", 365, person, city], "list")
+    input = ["cat", 365, person, city]
+    value = fxn.predictions.to_value(input, "list")
     assert value.type == Dtype.list
 
-def test_serialize_dict ():
+def test_roundtrip_dict ():
     fxn = Function()
-    value = fxn.predictions.from_value({ "language": "typescript" }, "dict")
+    input = { "language": "typescript" }
+    value = fxn.predictions.to_value(input, "dict")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.dict
+    assert input == output
 
-def test_serialize_model ():
+def test_roundtrip_model ():
     class Vehicle (BaseModel):
         wheels: int
-        mileage: float
-    vehicle = Vehicle(wheels=4, mileage=324.2)
+        mileage: float = Field(serialization_alias="miles")
     fxn = Function()
-    value = fxn.predictions.from_value(vehicle, "pydantic")
+    input = Vehicle(wheels=4, mileage=324.2)
+    value = fxn.predictions.to_value(input, "pydantic")
+    output = fxn.predictions.to_object(value)
     assert value.type == Dtype.dict
+    assert input.model_dump(by_alias=True) == output

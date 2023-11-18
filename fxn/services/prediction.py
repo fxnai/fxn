@@ -52,7 +52,7 @@ class PredictionService:
         """
         # Serialize inputs
         key = uuid4().hex
-        inputs = [{ "name": name, **self.from_value(value, name, key=key).model_dump() } for name, value in inputs.items()]
+        inputs = [{ "name": name, **self.to_value(value, name, key=key).model_dump() } for name, value in inputs.items()]
         # Query
         response = self.client.query(f"""
             mutation ($input: CreatePredictionInput!) {{
@@ -93,7 +93,7 @@ class PredictionService:
         """
         # Serialize inputs
         key = uuid4().hex
-        inputs = { name: self.from_value(value, name, key=key).model_dump() for name, value in inputs.items() }
+        inputs = { name: self.to_value(value, name, key=key).model_dump() for name, value in inputs.items() }
         # Request
         url = f"{self.client.api_url}/predict/{tag}?stream=true&rawOutputs=true&dataUrlLimit={data_url_limit}"
         headers = {
@@ -112,19 +112,19 @@ class PredictionService:
                     prediction = self.__parse_cloud_prediction(payload, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
                     yield prediction
 
-    def to_value (
+    def to_object (
         self,
         value: Value,
         return_binary_path: bool=True
     ) -> Union[str, float, int, bool, ndarray, list, dict, Image.Image, BytesIO, Path]:
         """
-        Convert a Function value to a plain value.
+        Convert a Function value to a plain object.
 
         Parameters:
             return_binary_path (str): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
 
         Returns:
-            str | float | int | bool | ndarray | list | dict | Image.Image | BytesIO | Path: Value.
+            str | float | int | bool | list | dict | ndarray | Image.Image | BytesIO | Path: Plain objectt.
         """
         # Null
         if value.type == Dtype.null:
@@ -160,82 +160,80 @@ class PredictionService:
         # Return
         return buffer
 
-    def from_value (
+    def to_value (
         self,
-        value: Union[str, float, int, bool, ndarray, List[Any], Dict[str, any], Path, Image.Image],
+        object: Union[str, float, int, bool, ndarray, List[Any], Dict[str, any], Path, Image.Image],
         name: str,
         min_upload_size: int=4096,
         key: str=None
     ) -> Value:
         """
-        Create a Function value from a plain value.
+        Convert a plain object to a Function value.
 
         Parameters:
-            value (str | float | int | bool | ndarray | list | dict | dataclass | Path | PIL.Image): Input value.
+            object (str | float | int | bool | ndarray | list | dict | dataclass | Path | PIL.Image): Input object.
             name (str): Value name.
             min_upload_size (int): Values larger than this size in bytes will be uploaded.
 
         Returns:
             Value: Function value.
         """
-        value = self.__try_ensure_serializable(value)
+        object = self.__try_ensure_serializable(object)
         # None
-        if value is None:
+        if object is None:
             return Value(data=None, type=Dtype.null)
         # Value
-        if isinstance(value, Value):
-            return value
+        if isinstance(object, Value):
+            return object
         # Array
-        if isinstance(value, ndarray):
-            buffer = BytesIO(value.tobytes())
+        if isinstance(object, ndarray):
+            buffer = BytesIO(object.tobytes())
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
-            return Value(data=data, type=value.dtype.name, shape=list(value.shape))
+            return Value(data=data, type=object.dtype.name, shape=list(object.shape))
         # String
-        if isinstance(value, str):
-            buffer = BytesIO(value.encode("utf-8"))
+        if isinstance(object, str):
+            buffer = BytesIO(object.encode("utf-8"))
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.string)
         # Float
-        if isinstance(value, float):
-            value = array(value, dtype=float32)
-            return self.from_value(value, name, min_upload_size=min_upload_size, key=key)
+        if isinstance(object, float):
+            object = array(object, dtype=float32)
+            return self.to_value(object, name, min_upload_size=min_upload_size, key=key)
         # Boolean
-        if isinstance(value, bool):
-            value = array(value, dtype=bool)
-            return self.from_value(value, name, min_upload_size=min_upload_size, key=key)
+        if isinstance(object, bool):
+            object = array(object, dtype=bool)
+            return self.to_value(object, name, min_upload_size=min_upload_size, key=key)
         # Integer
-        if isinstance(value, int):
-            value = array(value, dtype=int32)
-            return self.from_value(value, name, min_upload_size=min_upload_size, key=key)
+        if isinstance(object, int):
+            object = array(object, dtype=int32)
+            return self.to_value(object, name, min_upload_size=min_upload_size, key=key)
         # List
-        if isinstance(value, list):
-            value = dumps(value)
-            buffer = BytesIO(value.encode("utf-8"))
+        if isinstance(object, list):
+            buffer = BytesIO(dumps(object).encode("utf-8"))
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.list)
         # Dict
-        if isinstance(value, dict):
-            value = dumps(value)
-            buffer = BytesIO(value.encode("utf-8"))
+        if isinstance(object, dict):
+            buffer = BytesIO(dumps(object).encode("utf-8"))
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.dict)
         # Image
-        if isinstance(value, Image.Image):
+        if isinstance(object, Image.Image):
             buffer = BytesIO()
-            format = "PNG" if value.mode == "RGBA" else "JPEG"
-            value.save(buffer, format=format)
+            format = "PNG" if object.mode == "RGBA" else "JPEG"
+            object.save(buffer, format=format)
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.image)
         # Binary
-        if isinstance(value, Path):
-            assert value.exists(), "Value does not exist at the given path"
-            assert value.is_file(), "Value path must point to a file, not a directory"
-            value = value.expanduser().resolve()
-            data = self.storage.upload(value, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
-            dtype = self.__get_file_dtype(value)
+        if isinstance(object, Path):
+            assert object.exists(), "Value does not exist at the given path"
+            assert object.is_file(), "Value path must point to a file, not a directory"
+            object = object.expanduser().resolve()
+            data = self.storage.upload(object, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            dtype = self.__get_file_dtype(object)
             return Value(data=data, type=dtype)
         # Unsupported
-        raise RuntimeError(f"Cannot create Function value '{name}' for value {value} of type {type(value)}")
+        raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
     
     def __parse_cloud_prediction (
         self,
@@ -253,7 +251,7 @@ class PredictionService:
         if "results" in prediction and prediction["results"] is not None:
             prediction["results"] = [Value(**value) for value in prediction["results"]]
             if not raw_outputs:
-                prediction["results"] = [self.to_value(value, return_binary_path=return_binary_path) for value in prediction["results"]]
+                prediction["results"] = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction["results"]]
         # Return
         return Prediction(**prediction)
 
@@ -280,18 +278,18 @@ class PredictionService:
         return result
     
     @classmethod
-    def __try_ensure_serializable (cls, value: Any) -> Any:
-        if value is None:
-            return value
-        if isinstance(value, Value): # passthrough
-            return value
-        if isinstance(value, list):
-            return [cls.__try_ensure_serializable(x) for x in value]
-        if is_dataclass(value) and not isinstance(value, type):
-            return asdict(value)
-        if isinstance(value, BaseModel):
-            return value.model_dump(mode="json")
-        return value
+    def __try_ensure_serializable (cls, object: Any) -> Any:
+        if object is None:
+            return object
+        if isinstance(object, Value): # passthrough
+            return object
+        if isinstance(object, list):
+            return [cls.__try_ensure_serializable(x) for x in object]
+        if is_dataclass(object) and not isinstance(object, type):
+            return asdict(object)
+        if isinstance(object, BaseModel):
+            return object.model_dump(mode="json", by_alias=True)
+        return object
     
     @classmethod
     def __get_client_id (self) -> str:
