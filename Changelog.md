@@ -1,5 +1,5 @@
 ## 0.0.27
-*INCOMPLETE*
++ Fixed `model_dump` error when making predictions in Google Colab due to outdated `pydantic` dependency.
 
 ## 0.0.26
 + Added support for serializing `BytesIO` instances in `fxn.predictions.to_value` method.

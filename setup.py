@@ -1,6 +1,6 @@
 # 
 #   Function
-#   Copyright © 2023 NatML Inc. All Rights Reserved.
+#   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
 from setuptools import find_packages, setup
@@ -31,7 +31,7 @@ setup(
         "filetype",
         "numpy",
         "pillow",
-        "pydantic",
+        "pydantic>=2.0",
         "requests",
         "rich",
         "typer"

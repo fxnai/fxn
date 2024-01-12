@@ -1,6 +1,6 @@
 # 
 #   Function
-#   Copyright © 2023 NatML Inc. All Rights Reserved.
+#   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
 from pathlib import Path
