@@ -1,4 +1,5 @@
 ## 0.0.27
++ Fixed pydantic forward reference errors when constructing `Signature` and `Predictor` instances.
 + Fixed `model_dump` error when making predictions in Google Colab due to outdated `pydantic` dependency.
 
 ## 0.0.26

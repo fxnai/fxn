@@ -3,7 +3,6 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from __future__ import annotations
 from pydantic import BaseModel
 
 class EnvironmentVariable (BaseModel):

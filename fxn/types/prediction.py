@@ -3,11 +3,21 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from __future__ import annotations
 from pydantic import BaseModel
 from typing import Any, List, Optional
 
 from .predictor import PredictorType
+
+class PredictionResource (BaseModel):
+    """
+    Prediction resource.
+
+    Members:
+        id (str): Resource identifier.
+        url (str): Resource URL.
+    """
+    id: str
+    url: str
 
 class Prediction (BaseModel):
     """
@@ -36,15 +46,4 @@ class Prediction (BaseModel):
     logs: Optional[str] = None
     implementation: Optional[str] = None
     resources: Optional[List[PredictionResource]] = None
-    configuration: Optional[str] = None    
-
-class PredictionResource (BaseModel):
-    """
-    Prediction resource.
-
-    Members:
-        id (str): Resource identifier.
-        url (str): Resource URL.
-    """
-    id: str
-    url: str
+    configuration: Optional[str] = None
