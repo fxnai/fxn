@@ -19,9 +19,9 @@ from typing import Any, AsyncIterator, Dict, List, Union
 from uuid import uuid4
 from urllib.request import urlopen
 
-from ..graph import GraphClient
-from ..types import Dtype, PredictorType, Prediction, Value, UploadType
-from .storage import StorageService
+from ...graph import GraphClient
+from ...types import Dtype, PredictorType, Prediction, Value, UploadType
+from ..storage import StorageService
 
 class PredictionService:
 
