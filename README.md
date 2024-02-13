@@ -20,12 +20,18 @@ Let's run the [`@samplefxn/stable-diffusion`](https://fxn.ai/@samplefxn/stable-d
 ### In Python
 Run the following Python script:
 ```py
-import fxn
+from fxn import Function
 
-prediction = fxn.Prediction.create(
+# Create the Function client
+fxn = Function()
+# Create a prediction
+prediction = fxn.predictions.create(
     tag="@samplefxn/stable-diffusion",
-    prompt="An astronaut riding a horse on Mars"
+    inputs={
+        "prompt": "An astronaut riding a horse on Mars"
+    }
 )
+# Show the generated image
 image = prediction.results[0]
 image.show()
 ```

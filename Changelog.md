@@ -1,6 +1,9 @@
 ## 0.0.27
++ Added support for streaming when making predictions with Function CLI.
++ Added `PredictionResource.type` field for inspecting the type of a prediction resource.
 + Fixed pydantic forward reference errors when constructing `Signature` and `Predictor` instances.
 + Fixed `model_dump` error when making predictions in Google Colab due to outdated `pydantic` dependency.
++ Refactored `fxn.predictions.create` method to accept an `inputs` dictionary instead of relying on keyword arguments.
 
 ## 0.0.26
 + Added support for serializing `BytesIO` instances in `fxn.predictions.to_value` method.

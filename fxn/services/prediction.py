@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import Image
 from platform import system
 from pydantic import BaseModel
-from requests import get
+from requests import get, post
 from tempfile import NamedTemporaryFile
 from typing import Any, AsyncIterator, Dict, List, Union
 from uuid import uuid4
@@ -32,49 +32,60 @@ class PredictionService:
     def create (
         self,
         tag: str,
+        *,
+        inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]] = {},
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
-        **inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]],
     ) -> Prediction:
         """
         Create a prediction.
 
         Parameters:
             tag (str): Predictor tag.
-            raw_outputs (bool): Skip converting output values into Pythonic types.
+            inputs (dict): Input values. This only applies to `CLOUD` predictions.
+            raw_outputs (bool): Skip converting output values into Pythonic types. This only applies to `CLOUD` predictions.
             return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
-            data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. Only applies to `CLOUD` predictions.
-            inputs (dict): Input values. Only applies to `CLOUD` predictions.
+            data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. This only applies to `CLOUD` predictions.
 
         Returns:
             Prediction: Created prediction.
         """
         # Serialize inputs
         key = uuid4().hex
-        inputs = [{ "name": name, **self.to_value(value, name, key=key).model_dump() } for name, value in inputs.items()]
+        inputs = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() }
         # Query
-        response = self.client.query(f"""
-            mutation ($input: CreatePredictionInput!) {{
-                createPrediction (input: $input) {{
-                    {PREDICTION_FIELDS}
-                }}
-            }}""",
-            { "input": { "tag": tag, "client": self.__get_client_id(), "inputs": inputs, "dataUrlLimit": data_url_limit } }
+        response = post(
+            f"{self.client.api_url}/predict/{tag}?rawOutputs=true&dataUrlLimit={data_url_limit}",
+            json=inputs,
+            headers={
+                "Authorization": f"Bearer {self.client.access_key}",
+                "fxn-client": self.__get_client_id()
+            }
         )
-        # Parse
-        prediction = response["createPrediction"]
-        prediction = self.__parse_cloud_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
+        # Check
+        prediction = response.json()
+        try:
+            response.raise_for_status()
+        except:
+            raise RuntimeError(prediction.get("error"))
+        # Parse prediction
+        prediction = Prediction(**prediction)
+        prediction.results = [Value(**value) for value in prediction.results] if prediction.results is not None else None
+        prediction.results = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction.results] if prediction.results is not None and not raw_outputs else prediction.results
+        # Create edge outputs
+
         # Return
         return prediction
     
     async def stream (
         self,
         tag: str,
+        *,
+        inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]] = {},
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
-        **inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]],
     ) -> AsyncIterator[Prediction]:
         """
         Create a streaming prediction.
@@ -83,17 +94,17 @@ class PredictionService:
 
         Parameters:
             tag (str): Predictor tag.
-            raw_outputs (bool): Skip converting output values into Pythonic types.
+            inputs (dict): Input values. This only applies to `CLOUD` predictions.
+            raw_outputs (bool): Skip converting output values into Pythonic types. This only applies to `CLOUD` predictions.
             return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
-            data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. Only applies to `CLOUD` predictions.
-            inputs (dict): Input values. Only applies to `CLOUD` predictions.
+            data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. This only applies to `CLOUD` predictions.
 
         Returns:
             Prediction: Created prediction.
         """
         # Serialize inputs
         key = uuid4().hex
-        inputs = { name: self.to_value(value, name, key=key).model_dump() for name, value in inputs.items() }
+        inputs = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() }
         # Request
         url = f"{self.client.api_url}/predict/{tag}?stream=true&rawOutputs=true&dataUrlLimit={data_url_limit}"
         headers = {
@@ -104,12 +115,15 @@ class PredictionService:
         async with ClientSession(headers=headers) as session:
             async with session.post(url, data=dumps(inputs)) as response:
                 async for chunk in response.content.iter_any():
-                    payload = loads(chunk)
+                    prediction = loads(chunk)
                     # Check status
                     if response.status >= 400:
-                        raise RuntimeError(payload.get("error"))
+                        raise RuntimeError(prediction.get("error"))
+                    # Parse prediction
+                    prediction = Prediction(**prediction)
+                    prediction.results = [Value(**value) for value in prediction.results] if prediction.results is not None else None
+                    prediction.results = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction.results] if prediction.results is not None and not raw_outputs else prediction.results
                     # Yield
-                    prediction = self.__parse_cloud_prediction(payload, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
                     yield prediction
 
     def to_object (
@@ -239,26 +253,6 @@ class PredictionService:
             return Value(data=data, type=dtype)
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
-    
-    def __parse_cloud_prediction (
-        self,
-        prediction: Dict[str, Any],
-        raw_outputs: bool=False,
-        return_binary_path: bool=True
-    ) -> Prediction:
-        # Check null
-        if not prediction:
-            return None
-        # Check type
-        if prediction["type"] != PredictorType.Cloud:
-            return prediction
-        # Gather results
-        if "results" in prediction and prediction["results"] is not None:
-            prediction["results"] = [Value(**value) for value in prediction["results"]]
-            if not raw_outputs:
-                prediction["results"] = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction["results"]]
-        # Return
-        return Prediction(**prediction)
 
     def __get_data_dtype (self, data: Union[Path, BytesIO]) -> Dtype:
         mime = guess_mime(str(data) if isinstance(data, Path) else data)
@@ -312,11 +306,10 @@ PREDICTION_FIELDS = f"""
 id
 tag
 type
-created
-implementation
 configuration
 resources {{
     id
+    type
     url
 }}
 results {{
@@ -327,4 +320,5 @@ results {{
 latency
 error
 logs
+created
 """

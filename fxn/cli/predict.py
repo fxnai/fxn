@@ -3,6 +3,7 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
+from asyncio import run as run_async
 from io import BytesIO
 from numpy import ndarray
 from pathlib import Path, PurePath
@@ -11,6 +12,7 @@ from rich import print_json
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from tempfile import mkstemp
 from typer import Argument, Context, Option
+from typing import Any, Dict
 
 from ..function import Function
 from .auth import get_access_key
@@ -20,7 +22,10 @@ def predict (
     raw_outputs: bool = Option(False, "--raw-outputs", help="Output raw Function values instead of converting into plain Python values."),
     context: Context = 0
 ):
-    # Predict
+    inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
+    run_async(_predict_async(tag, inputs, raw_outputs=raw_outputs))
+
+async def _predict_async (tag: str, inputs: Dict[str, Any], raw_outputs: bool):
     with Progress(
         SpinnerColumn(spinner_name="dots"),
         TextColumn("[progress.description]{task.description}"),
@@ -28,24 +33,15 @@ def predict (
     ) as progress:
         progress.add_task(description="Running Function...", total=None)
         fxn = Function(get_access_key())
-        inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
-        prediction = fxn.predictions.create(
-            tag=tag,
-            **inputs,
-            raw_outputs=raw_outputs,
-            return_binary_path=True,
-        )
-    # Parse results
-    images = []
-    if hasattr(prediction, "results") and prediction.results is not None:
-        images = [value for value in prediction.results if isinstance(value, Image.Image)]
-        results = [_serialize_value(value) for value in prediction.results]
-        object.__setattr__(prediction, "results", results)
-    # Print
-    print_json(data=prediction.model_dump())
-    # Show images
-    for image in images:
-        image.show()
+        async for prediction in fxn.predictions.stream(tag, inputs=inputs, raw_outputs=raw_outputs, return_binary_path=True):
+            # Parse results
+            images = [value for value in prediction.results or [] if isinstance(value, Image.Image)]
+            prediction.results = [_serialize_value(value) for value in prediction.results] if prediction.results is not None else None
+            # Print
+            print_json(data=prediction.model_dump())
+            # Show images
+            for image in images:
+                image.show()
 
 def _parse_value (value: str):
     """

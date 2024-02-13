@@ -14,9 +14,11 @@ class PredictionResource (BaseModel):
 
     Members:
         id (str): Resource identifier.
+        type (str): Resource type.
         url (str): Resource URL.
     """
     id: str
+    type: str
     url: str
 
 class Prediction (BaseModel):
@@ -27,23 +29,21 @@ class Prediction (BaseModel):
         id (str): Prediction ID.
         tag (str): Predictor tag.
         type (PredictorType): Prediction type.
-        created (str): Date created.
+        configuration (str): Prediction configuration token. This is only populated for `EDGE` predictions.
+        resources (list): Prediction resources. This is only populated for `EDGE` predictions.
         results (list): Prediction results.
         latency (float): Prediction latency in milliseconds.
         error (str): Prediction error. This is `null` if the prediction completed successfully.
         logs (str): Prediction logs.
-        implementation (str): Predictor implementation. This is only populated for `EDGE` predictions.
-        resources (list): Prediction resources. This is only populated for `EDGE` predictions.
-        configuration (str): Prediction configuration token. This is only populated for `EDGE` predictions.
+        created (str): Date created.
     """
     id: str
     tag: str
     type: PredictorType
-    created: str
+    configuration: Optional[str] = None
+    resources: Optional[List[PredictionResource]] = None
     results: Optional[List[Any]] = None
     latency: Optional[float] = None
     error: Optional[str] = None
-    logs: Optional[str] = None
-    implementation: Optional[str] = None
-    resources: Optional[List[PredictionResource]] = None
-    configuration: Optional[str] = None
+    logs: Optional[str] = None    
+    created: str
