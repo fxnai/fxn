@@ -1,3 +1,6 @@
+## 0.0.28
+*INCOMPLETE*
+
 ## 0.0.27
 + Added support for streaming when making predictions with Function CLI.
 + Added `PredictionResource.type` field for inspecting the type of a prediction resource.
