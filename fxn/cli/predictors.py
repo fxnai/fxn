@@ -4,6 +4,7 @@
 #
 
 from rich import print_json
+from rich.progress import Progress, SpinnerColumn, TextColumn
 from pathlib import Path
 from typer import Argument, Option
 from typing import List
@@ -58,28 +59,40 @@ def create_predictor (
     env: List[str]=Option([], help="Specify a predictor environment variable."),
     overwrite: bool=Option(None, "--overwrite", help="Overwrite any existing predictor with the same tag.")
 ):
-    fxn = Function(get_access_key())
-    environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in env }
-    predictor = fxn.predictors.create(
-        tag=tag,
-        notebook=notebook,
-        type=type,
-        access=access,
-        description=description,
-        media=media,
-        acceleration=acceleration,
-        environment=environment,
-        license=license,
-        overwrite=overwrite
-    )
-    print_json(data=predictor.model_dump())
+    with Progress(
+        SpinnerColumn(spinner_name="dots"),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True
+    ) as progress:
+        progress.add_task(description="Analyzing Function...", total=None)
+        fxn = Function(get_access_key())
+        environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in env }
+        predictor = fxn.predictors.create(
+            tag=tag,
+            notebook=notebook,
+            type=type,
+            access=access,
+            description=description,
+            media=media,
+            acceleration=acceleration,
+            environment=environment,
+            license=license,
+            overwrite=overwrite
+        )
+        print_json(data=predictor.model_dump())
 
 def delete_predictor (
     tag: str=Argument(..., help="Predictor tag.")
 ):
-    fxn = Function(get_access_key())
-    result = fxn.predictors.delete(tag)
-    print_json(data=result)
+    with Progress(
+        SpinnerColumn(spinner_name="dots"),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True
+    ) as progress:
+        progress.add_task(description="Deleting Function...", total=None)
+        fxn = Function(get_access_key())
+        result = fxn.predictors.delete(tag)
+        print_json(data=result)
 
 def archive_predictor (
     tag: str=Argument(..., help="Predictor tag.")
