@@ -50,11 +50,13 @@ def search_predictors (
 def create_predictor (
     tag: str=Argument(..., help="Predictor tag."),
     notebook: Path=Argument(..., help="Path to predictor notebook."),
-    type: PredictorType=Option(None, case_sensitive=False, help="Predictor type. This defaults to `CLOUD`."),
-    access: AccessMode=Option(None, case_sensitive=False, help="Predictor access mode. This defaults to `PRIVATE`."),
+    type: PredictorType=Option(None, case_sensitive=False, help="Predictor type. This defaults to `cloud`."),
+    edge: bool=Option(False, "--edge", is_flag=True, help="Shorthand for `--type edge`."),
+    cloud: bool=Option(False, "--cloud", is_flag=True, help="Shorthand for `--type cloud`."),
+    access: AccessMode=Option(None, case_sensitive=False, help="Predictor access mode. This defaults to `private`."),
     description: str=Option(None, help="Predictor description. This must be less than 200 characters long."),
     media: Path=Option(None, help="Predictor image path."),
-    acceleration: Acceleration=Option(None, case_sensitive=False, help="Cloud predictor acceleration. This defaults to `CPU`."),
+    acceleration: Acceleration=Option(None, case_sensitive=False, help="Cloud predictor acceleration. This defaults to `cpu`."),
     license: str=Option(None, help="Predictor license URL."),
     env: List[str]=Option([], help="Specify a predictor environment variable."),
     overwrite: bool=Option(None, "--overwrite", help="Overwrite any existing predictor with the same tag.")
@@ -66,6 +68,7 @@ def create_predictor (
     ) as progress:
         progress.add_task(description="Analyzing Function...", total=None)
         fxn = Function(get_access_key())
+        type = PredictorType.Cloud if cloud else PredictorType.Edge if edge else type
         environment = { e.split("=")[0].strip(): e.split("=")[1].strip() for e in env }
         predictor = fxn.predictors.create(
             tag=tag,

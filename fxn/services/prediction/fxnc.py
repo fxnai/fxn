@@ -185,7 +185,7 @@ def to_fxn_value ( # DEPLOY
     value: Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, bytes, bytearray, memoryview, BytesIO, None],
     *,
     copy: bool=False
-) -> _Pointer[FXNValue]:
+) -> type[FXNValueRef]:
     result = FXNValue()
     if result is None:
         fxnc.FXNValueCreateNull(byref(result))
@@ -233,7 +233,7 @@ def to_fxn_value ( # DEPLOY
 
 def to_py_value ( # DEPLOY
     fxnc: CDLL,
-    value: _Pointer[FXNValue]
+    value: type[FXNValueRef]
 ) -> Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, BytesIO, None]:
     # Type
     dtype = FXNDtype()

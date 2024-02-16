@@ -1,5 +1,6 @@
 ## 0.0.28
-*INCOMPLETE*
++ Added `fxn create --cloud` CLI shorthand flag for setting the predictor type to `PredictorType.Cloud`.
++ Added `fxn create --edge` CLI shorthand flag for setting the predictor type to `PredictorType.Edge`.
 
 ## 0.0.27
 + Added support for streaming when making predictions with Function CLI.
