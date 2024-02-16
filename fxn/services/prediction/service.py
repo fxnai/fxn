@@ -4,11 +4,14 @@
 #
 
 from aiohttp import ClientSession
+from ctypes import byref, c_double, c_int32, create_string_buffer
 from dataclasses import asdict, is_dataclass
+from datetime import datetime, timezone
 from filetype import guess_mime
 from io import BytesIO
 from json import dumps, loads
 from numpy import array, float32, frombuffer, int32, ndarray
+from numpy.typing import NDArray
 from pathlib import Path
 from PIL import Image
 from platform import system
@@ -22,12 +25,15 @@ from urllib.request import urlopen
 from ...graph import GraphClient
 from ...types import Dtype, PredictorType, Prediction, Value, UploadType
 from ..storage import StorageService
+from .fxnc import to_fxn_value, to_py_value, FXNPredictorRef, FXNProfileRef, FXNStatus, FXNValueRef, FXNValueMapRef
 
 class PredictionService:
 
     def __init__ (self, client: GraphClient, storage: StorageService) -> None:
         self.client = client
         self.storage = storage
+        self.__fxnc = None
+        self.__cache = { }
 
     def create (
         self,
@@ -51,6 +57,9 @@ class PredictionService:
         Returns:
             Prediction: Created prediction.
         """
+        # Check if cached
+        if tag in self.__cache:
+            return self.__predict(tag, inputs)
         # Serialize inputs
         key = uuid4().hex
         inputs = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() }
@@ -82,7 +91,7 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]] = {},
+        inputs: Dict[str, Union[float, int, str, bool, NDArray, List[Any], Dict[str, Any], Path, Image.Image, Value]] = {},
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
@@ -130,7 +139,7 @@ class PredictionService:
         self,
         value: Value,
         return_binary_path: bool=True
-    ) -> Union[str, float, int, bool, ndarray, list, dict, Image.Image, BytesIO, Path]:
+    ) -> Union[str, float, int, bool, NDArray, list, dict, Image.Image, BytesIO, Path]:
         """
         Convert a Function value to a plain object.
 
@@ -206,7 +215,7 @@ class PredictionService:
             return Value(data=data, type=object.dtype.name, shape=list(object.shape))
         # String
         if isinstance(object, str):
-            buffer = BytesIO(object.encode("utf-8"))
+            buffer = BytesIO(object.encode())
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.string)
         # Float
@@ -223,12 +232,12 @@ class PredictionService:
             return self.to_value(object, name, min_upload_size=min_upload_size, key=key)
         # List
         if isinstance(object, list):
-            buffer = BytesIO(dumps(object).encode("utf-8"))
+            buffer = BytesIO(dumps(object).encode())
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.list)
         # Dict
         if isinstance(object, dict):
-            buffer = BytesIO(dumps(object).encode("utf-8"))
+            buffer = BytesIO(dumps(object).encode())
             data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.dict)
         # Image
@@ -253,6 +262,65 @@ class PredictionService:
             return Value(data=data, type=dtype)
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
+
+    def __predict (self, tag: str, inputs: Dict[str, Any]) -> Prediction: # DEPLOY
+        fxnc = self.__fxnc
+        predictor = self.__cache[tag]
+        profile = FXNProfileRef()
+        input_map = FXNValueMapRef()
+        output_map = FXNValueMapRef()
+        try:
+            # Create input map
+            status = fxnc.FXNValueMapCreate(byref(input_map))
+            assert status.value == FXNStatus.OK, f"Failed to create prediction for tag {tag} because input values could not be provided to the predictor with status: {status.value}"
+            # Marshal inputs
+            for name, value in inputs.items():
+                fxnc.FXNValueMapSetValue(input_map, name.encode(), to_fxn_value(fxnc, value, copy=False))
+            # Predict
+            status = fxnc.FXNPredictorPredict(predictor, input_map, byref(profile), byref(output_map))
+            assert status.value == FXNStatus.OK, f"Failed to create prediction for tag {tag} with status: {status.value}"
+            # Marshal profile
+            id = create_string_buffer(256)
+            error = create_string_buffer(2048)
+            latency = c_double()
+            log_length = c_int32()
+            fxnc.FXNProfileGetID(profile, id, len(id))
+            fxnc.FXNProfileGetLatency(profile, byref(latency))
+            fxnc.FXNProfileGetError(profile, error, len(error))
+            fxnc.FXNProfileGetLogLength(profile, byref(log_length))
+            id = id.decode("utf-8")
+            latency = latency.value
+            error = error.decode("utf-8")
+            # Marshal logs
+            logs = create_string_buffer(log_length.value + 1)
+            fxnc.FXNProfileGetLogs(profile, logs, len(logs))
+            # Marshal outputs
+            results = { }
+            output_count = c_int32()
+            fxnc.FXNValueMapGetSize(output_map, byref(output_count))
+            for idx in range(output_count.value):
+                name = create_string_buffer(256)
+                value = FXNValueRef()
+                fxnc.FXNValueMapGetKey(output_map, idx, name, len(name))
+                fxnc.FXNValueMapGetValue(output_map, name, byref(value))
+                name = name.decode("utf-8")
+                value = to_py_value(fxnc, value)
+                results[name] = value
+            # Return
+            return Prediction(
+                id=id,
+                tag=tag,
+                type=PredictorType.Edge,
+                results=results,
+                latency=latency,
+                error=error,
+                logs=logs,
+                created=datetime.now(timezone.utc).isoformat()
+            )
+        finally:
+            fxnc.FXNReleaseProfile(profile)
+            fxnc.FXNReleaseValueMap(input_map)
+            fxnc.FXNReleaseValueMap(output_map)
 
     def __get_data_dtype (self, data: Union[Path, BytesIO]) -> Dtype:
         mime = guess_mime(str(data) if isinstance(data, Path) else data)

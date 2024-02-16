@@ -4,7 +4,7 @@
 #
 
 from ctypes import create_string_buffer
-from fxn.services.prediction.edge import load_edgefxn, FXNStatus
+from fxn.services.prediction.fxnc import load_edgefxn, FXNStatus
 from pathlib import Path
 
 def test_load_fxnc ():
