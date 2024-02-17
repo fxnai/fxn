@@ -1,6 +1,7 @@
 ## 0.0.28
 + Added `fxn create --cloud` CLI shorthand flag for setting the predictor type to `PredictorType.Cloud`.
 + Added `fxn create --edge` CLI shorthand flag for setting the predictor type to `PredictorType.Edge`.
++ Removed `AccessMode.Protected` access mode. Use `AccessMode.Public` or `AccessMode.Private` instead.
 
 ## 0.0.27
 + Added support for streaming when making predictions with Function CLI.
