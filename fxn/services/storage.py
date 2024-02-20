@@ -10,6 +10,7 @@ from pathlib import Path
 from requests import put
 from rich.progress import open as open_progress, wrap_file
 from typing import Union
+from urllib.parse import urlparse, urlunparse
 
 from ..graph import GraphClient
 from ..types import UploadType
@@ -97,7 +98,7 @@ class StorageService:
         with open_progress(file, mode="rb", description=name, disable=not verbose) as f:
             put(url, data=f, headers={ "Content-Type": mime }).raise_for_status()
         # Return
-        return url
+        return self.__simplify_url(url)
     
     def __upload_buffer (
         self,
@@ -122,9 +123,17 @@ class StorageService:
         with wrap_file(file, total=size, description=name, disable=not verbose) as f:
             put(url, data=f, headers={ "Content-Type": mime }).raise_for_status()
         # Return
-        return url
+        return self.__simplify_url(url)
     
     def __create_data_url (self, file: BytesIO, *, mime: str) -> str:
         encoded_data = b64encode(file.getvalue()).decode("ascii")
         url = f"data:{mime};base64,{encoded_data}"
+        return url
+    
+    def __simplify_url (self, url: str) -> str:
+        if url.startswith("data:"):
+            return url
+        parsed_url = urlparse(url)
+        parsed_url = parsed_url._replace(netloc="cdn.fxn.ai", query="")
+        url = urlunparse(parsed_url)
         return url

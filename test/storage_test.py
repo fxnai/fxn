@@ -9,8 +9,8 @@ from pathlib import Path
 
 def test_file_upload ():
     fxn = Function()
-    url = fxn.storage.upload("test/media/cat.jpg", UploadType.Value, verbose=True)
-    assert url.startswith("https://")
+    url = fxn.storage.upload("test/media/cat.jpg", type=UploadType.Value, verbose=True)
+    assert url.startswith("https://cdn.fxn.ai")
 
 def test_file_upload_data_url ():
     fxn = Function()
@@ -25,7 +25,7 @@ def test_buffer_upload ():
     with open(path, mode="rb") as f:
         buffer = BytesIO(f.read())
     url = fxn.storage.upload(buffer, type=UploadType.Value, name=path.name, verbose=True)
-    assert url.startswith("https://")
+    assert url.startswith("https://cdn.fxn.ai")
 
 def test_buffer_upload_data_url ():
     fxn = Function()
