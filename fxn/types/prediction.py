@@ -13,11 +13,9 @@ class PredictionResource (BaseModel):
     Prediction resource.
 
     Members:
-        id (str): Resource identifier.
         type (str): Resource type.
         url (str): Resource URL.
     """
-    id: str = Field(description="Resource identifier.")
     type: str = Field(description="Resource type.")
     url: str = Field(description="Resource URL.")
 

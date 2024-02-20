@@ -45,6 +45,7 @@ class StorageService:
     def upload (
         self,
         file: Union[str, Path, BytesIO],
+        *,
         type: UploadType,
         name: str=None,
         data_url_limit: int=None,
@@ -67,13 +68,14 @@ class StorageService:
         """
         file = Path(file) if isinstance(file, str) else file
         if isinstance(file, Path):
-            return self.__upload_file(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
+            return self.__upload_file(file, type=type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
         else:
-            return self.__upload_buffer(file, type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
+            return self.__upload_buffer(file, type=type, name=name, key=key, data_url_limit=data_url_limit, verbose=verbose)
         
     def __upload_file (
         self,
         file: Path,
+        *,
         type: UploadType,
         name: str=None,
         key: str=None,
@@ -88,7 +90,7 @@ class StorageService:
         if file.stat().st_size < (data_url_limit or 0):
             with open(file, mode="rb") as f:
                 buffer = BytesIO(f.read())
-            return self.__create_data_url(buffer, mime)
+            return self.__create_data_url(buffer, mime=mime)
         # Upload
         name = name or file.name
         url = self.create_upload_url(name, type, key=key)
@@ -100,6 +102,7 @@ class StorageService:
     def __upload_buffer (
         self,
         file: BytesIO,
+        *,
         type: UploadType,
         name: str=None,
         key: str=None,
@@ -113,7 +116,7 @@ class StorageService:
         mime = guess_mime(file) or "application/octet-stream"
         size = file.getbuffer().nbytes
         if size < (data_url_limit or 0):
-            return self.__create_data_url(file, mime)
+            return self.__create_data_url(file, mime=mime)
         # Upload
         url = self.create_upload_url(name, type, key=key)
         with wrap_file(file, total=size, description=name, disable=not verbose) as f:
@@ -121,7 +124,7 @@ class StorageService:
         # Return
         return url
     
-    def __create_data_url (self, file: BytesIO, mime: str) -> str:
+    def __create_data_url (self, file: BytesIO, *, mime: str) -> str:
         encoded_data = b64encode(file.getvalue()).decode("ascii")
         url = f"data:{mime};base64,{encoded_data}"
         return url

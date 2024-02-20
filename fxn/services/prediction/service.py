@@ -211,12 +211,12 @@ class PredictionService:
         # Array
         if isinstance(object, ndarray):
             buffer = BytesIO(object.tobytes())
-            data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(buffer, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=object.dtype.name, shape=list(object.shape))
         # String
         if isinstance(object, str):
             buffer = BytesIO(object.encode())
-            data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(buffer, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.string)
         # Float
         if isinstance(object, float):
@@ -233,23 +233,23 @@ class PredictionService:
         # List
         if isinstance(object, list):
             buffer = BytesIO(dumps(object).encode())
-            data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(buffer, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.list)
         # Dict
         if isinstance(object, dict):
             buffer = BytesIO(dumps(object).encode())
-            data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(buffer, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.dict)
         # Image
         if isinstance(object, Image.Image):
             buffer = BytesIO()
             format = "PNG" if object.mode == "RGBA" else "JPEG"
             object.save(buffer, format=format)
-            data = self.storage.upload(buffer, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(buffer, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             return Value(data=data, type=Dtype.image)
         # Binary
         if isinstance(object, BytesIO):
-            data = self.storage.upload(object, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(object, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             dtype = self.__get_data_dtype(object)
             return Value(data=data, type=dtype)
         # Path
@@ -257,7 +257,7 @@ class PredictionService:
             assert object.exists(), "Value does not exist at the given path"
             assert object.is_file(), "Value path must point to a file, not a directory"
             object = object.expanduser().resolve()
-            data = self.storage.upload(object, UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
+            data = self.storage.upload(object, type=UploadType.Value, name=name, data_url_limit=min_upload_size, key=key)
             dtype = self.__get_data_dtype(object)
             return Value(data=data, type=dtype)
         # Unsupported

@@ -153,8 +153,8 @@ class PredictorService:
         """
         # Prepare
         environment = [{ "name": name, "value": value } for name, value in environment.items()] if environment is not None else []
-        notebook = self.storage.upload(notebook, UploadType.Notebook) if isinstance(notebook, Path) else notebook
-        media = self.storage.upload(media, UploadType.Media) if isinstance(media, Path) else media
+        notebook = self.storage.upload(notebook, type=UploadType.Notebook) if isinstance(notebook, Path) else notebook
+        media = self.storage.upload(media, type=UploadType.Media) if isinstance(media, Path) else media
         # Query
         response = self.client.query(f"""
             mutation ($input: CreatePredictorInput!) {{
