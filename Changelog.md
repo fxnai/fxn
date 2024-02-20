@@ -1,3 +1,6 @@
+## 0.0.29
+*INCOMPLETE*
+
 ## 0.0.28
 + Added `fxn create --cloud` CLI shorthand flag for setting the predictor type to `PredictorType.Cloud`.
 + Added `fxn create --edge` CLI shorthand flag for setting the predictor type to `PredictorType.Edge`.
