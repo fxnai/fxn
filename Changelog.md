@@ -2,6 +2,8 @@
 + Added `fxn create --cloud` CLI shorthand flag for setting the predictor type to `PredictorType.Cloud`.
 + Added `fxn create --edge` CLI shorthand flag for setting the predictor type to `PredictorType.Edge`.
 + Removed `AccessMode.Protected` access mode. Use `AccessMode.Public` or `AccessMode.Private` instead.
++ Removed `fxn.types.tag.parse_tag` function. Use `Tag.from_str` class method instead.
++ Removed `fxn.types.tag.serialize_tag` function. Use `str(Tag)` instead.
 
 ## 0.0.27
 + Added support for streaming when making predictions with Function CLI.

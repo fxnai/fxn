@@ -3,7 +3,10 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-class Tag:
+from __future__ import annotations
+from pydantic import BaseModel, Field
+
+class Tag (BaseModel):
     """
     Predictor tag.
 
@@ -11,33 +14,15 @@ class Tag:
         username (str): Predictor owner username.
         name (str): Predictor name.
     """
-    username: str
-    name: str
+    username: str = Field(description="Predictor owner username.")
+    name: str = Field(description="Predictor name.")
 
-def parse_tag (tag: str) -> Tag:
-    """
-    Parse a predictor tag.
+    def from_str (cls, tag: str) -> Tag:
+        """
+        Parse a predictor tag from a string.
+        """
+        username, name = tag.lower()[1:].split("/")
+        return Tag(username=username, name=name)
 
-    Parameters:
-        tag (str): Tag string.
-
-    Returns:
-        Tag: Parsed tag.
-    """
-    username, name = tag.lower()[1:].split("/")
-    result = Tag(username=username, name=name)
-    return result
-
-def serialize_tag (tag: Tag) -> str:
-    """
-    Serialize a predictor tag.
-
-    Parameters:
-        tag (Tag): Tag.
-
-    Returns:
-        str: Serialized tag.
-    """
-    username, name = tag
-    result = f"@{username}/{name}"
-    return result
+    def __str__ (self):
+        return f"@{self.username}/{self.name}"

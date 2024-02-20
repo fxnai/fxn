@@ -4,7 +4,7 @@
 #
 
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 from typing import List, Optional, Tuple, Union
 
 from .dtype import Dtype
@@ -50,31 +50,31 @@ class EnumerationMember (BaseModel):
         name (str): Enumeration member name.
         value (str | int): Enumeration member value.
     """
-    name: str
-    value: Union[str, int]
+    name: str = Field(description="Enumeration member name.")
+    value: Union[str, int] = Field(description="Enumeration member value.")
 
 class Parameter (BaseModel):
     """
     Predictor parameter.
 
     Members:
-        name (str): Parameter name. This is only populated for input parameters.
+        name (str): Parameter name.
         type (Dtype): Parameter type. This is `None` if the type is unknown or unsupported by Function.
         description (str): Parameter description.
-        optional (bool): Parameter is optional.
+        optional (bool): Whether the parameter is optional.
         range (tuple): Parameter value range for numeric parameters.
         enumeration (list): Parameter value choices for enumeration parameters.
         default_value (Value): Parameter default value.
         value_schema (dict): Parameter JSON schema. This is only populated for `list` and `dict` parameters.
     """
-    name: Optional[str] = None
-    type: Optional[Dtype] = None
-    description: Optional[str] = None
-    optional: Optional[bool] = None
-    range: Optional[Tuple[float, float]] = None
-    enumeration: Optional[List[EnumerationMember]] = None
-    default_value: Optional[Value] = None
-    value_schema: Optional[dict] = Field(None, alias="schema")
+    name: str = Field(description="Parameter name.")
+    type: Optional[Dtype] = Field(default=None, description="Parameter type. This is `None` if the type is unknown or unsupported by Function.")
+    description: Optional[str] = Field(default=None, description="Parameter description.")
+    optional: Optional[bool] = Field(default=None, description="Whether the parameter is optional.")
+    range: Optional[Tuple[float, float]] = Field(default=None, description="Parameter value range for numeric parameters.")
+    enumeration: Optional[List[EnumerationMember]] = Field(default=None, description="Parameter value choices for enumeration parameters.")
+    default_value: Optional[Value] = Field(default=None, description="Parameter default value.", serialization_alias="defaultValue", validation_alias=AliasChoices("default_value", "defaultValue"))
+    value_schema: Optional[dict] = Field(default=None, description="Parameter JSON schema. This is only populated for `list` and `dict` parameters.", serialization_alias="schema", validation_alias=AliasChoices("schema", "value_schema"))
 
 class Signature (BaseModel):
     """
@@ -84,8 +84,8 @@ class Signature (BaseModel):
         inputs (list): Input parameters.
         outputs (list): Output parameters.
     """
-    inputs: List[Parameter]
-    outputs: List[Parameter]
+    inputs: List[Parameter] = Field(description="Input parameters.")
+    outputs: List[Parameter] = Field(description="Output parameters.")
 
 class Predictor (BaseModel):
     """
@@ -98,24 +98,24 @@ class Predictor (BaseModel):
         type (PredictorType): Predictor type.
         status (PredictorStatus): Predictor status.
         access (AccessMode): Predictor access.
+        signature (Signature): Predictor signature.
         created (str): Date created.
         description (str): Predictor description.
         card (str): Predictor card.
         media (str): Predictor media URL.
         acceleration (Acceleration): Predictor acceleration. This only applies to cloud predictors.
-        signature (Signature): Predictor signature. This is only populated once predictor has been successfully provisioned.
         license (str): Predictor license URL.
     """
-    tag: str
-    owner: Profile
-    name: str
-    type: PredictorType
-    status: PredictorStatus
-    access: AccessMode
-    created: str
-    description: Optional[str] = None
-    card: Optional[str] = None
-    media: Optional[str] = None
-    acceleration: Optional[Acceleration] = None
-    signature: Optional[Signature] = None
-    license: Optional[str] = None
+    tag: str = Field(description="Predictor tag.")
+    owner: Profile = Field(description="Predictor owner.")
+    name: str = Field(description="Predictor name.")
+    type: PredictorType = Field(description="Predictor type.")
+    status: PredictorStatus = Field(description="Predictor status.")
+    access: AccessMode = Field(description="Predictor access.")
+    signature: Signature = Field(description="Predictor signature.")
+    created: str = Field(description="Date created.")
+    description: Optional[str] = Field(default=None, description="Predictor description.")
+    card: Optional[str] = Field(default=None, description="Predictor card.")
+    media: Optional[str] = Field(default=None, description="Predictor media URL.")
+    acceleration: Optional[Acceleration] = Field(default=None, description="Predictor acceleration. This only applies to cloud predictors.")
+    license: Optional[str] = Field(default=None, description="Predictor license URL.")

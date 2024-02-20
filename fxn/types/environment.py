@@ -3,7 +3,7 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class EnvironmentVariable (BaseModel):
     """
@@ -13,5 +13,5 @@ class EnvironmentVariable (BaseModel):
         name (str): Variable name.
         value (str): Variable value.
     """
-    name: str
-    value: str
+    name: str = Field(description="Variable name.")
+    value: str = Field(description="Variable value.")
