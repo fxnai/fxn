@@ -12,6 +12,7 @@ Function is distributed on PyPi. This distribution contains both the Python clie
 pip install --upgrade fxn
 ```
 
+> [!NOTE]
 > Note that Function requires Python 3.9+
 
 ## Making a Prediction
