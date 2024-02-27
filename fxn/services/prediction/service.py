@@ -14,18 +14,19 @@ from numpy import array, float32, frombuffer, int32, ndarray
 from numpy.typing import NDArray
 from pathlib import Path
 from PIL import Image
-from platform import system
+from platform import machine, system
 from pydantic import BaseModel
 from requests import get, post
 from tempfile import NamedTemporaryFile
 from typing import Any, AsyncIterator, Dict, List, Union
 from uuid import uuid4
+from urllib.parse import urlparse
 from urllib.request import urlopen
 
 from ...graph import GraphClient
-from ...types import Dtype, PredictorType, Prediction, Value, UploadType
+from ...types import Dtype, PredictorType, Prediction, PredictionResource, Value, UploadType
 from ..storage import StorageService
-from .fxnc import to_fxn_value, to_py_value, FXNPredictorRef, FXNProfileRef, FXNStatus, FXNValueRef, FXNValueMapRef
+from .fxnc import load_fxnc, to_fxn_value, to_py_value, FXNConfigurationRef, FXNPredictorRef, FXNProfileRef, FXNStatus, FXNValueRef, FXNValueMapRef
 
 class PredictionService:
 
@@ -39,7 +40,7 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]] = {},
+        inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]] = None,
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
@@ -59,17 +60,18 @@ class PredictionService:
         """
         # Check if cached
         if tag in self.__cache:
-            return self.__predict(tag, inputs)
+            return self.__predict(tag=tag, predictor=self.__cache[tag], inputs=inputs)
         # Serialize inputs
         key = uuid4().hex
-        inputs = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() }
+        values = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() } if inputs is not None else { }
         # Query
-        response = post(
+        response = post( # INCOMPLETE # Configuration token
             f"{self.client.api_url}/predict/{tag}?rawOutputs=true&dataUrlLimit={data_url_limit}",
-            json=inputs,
+            json=values,
             headers={
                 "Authorization": f"Bearer {self.client.access_key}",
-                "fxn-client": self.__get_client_id()
+                "fxn-client": self.__get_client_id(),
+                "fxn-configuration-token": "" # INCOMPLETE
             }
         )
         # Check
@@ -79,11 +81,12 @@ class PredictionService:
         except:
             raise RuntimeError(prediction.get("error"))
         # Parse prediction
-        prediction = Prediction(**prediction)
-        prediction.results = [Value(**value) for value in prediction.results] if prediction.results is not None else None
-        prediction.results = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction.results] if prediction.results is not None and not raw_outputs else prediction.results
-        # Create edge outputs
-
+        prediction = self.__parse_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
+        # Create edge prediction
+        if prediction.type == PredictorType.Edge:
+            predictor = self.__load(prediction)
+            self.__cache[tag] = predictor
+            prediction = self.__predict(tag=tag, predictor=predictor, inputs=inputs) if inputs is not None else prediction
         # Return
         return prediction
     
@@ -263,7 +266,39 @@ class PredictionService:
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
 
-    def __predict (self, tag: str, inputs: Dict[str, Any]) -> Prediction: # DEPLOY
+    def __load (self, prediction: Prediction):
+        # Load fxnc
+        if self.__fxnc is None:
+            fxnc_resource = next(x for x in prediction.resources if x.type == "fxn")
+            fxnc_path = self.__get_resource_path(fxnc_resource)
+            self.__fxnc = load_fxnc(fxnc_path)
+        # Load predictor
+        fxnc = self.__fxnc
+        configuration = FXNConfigurationRef()
+        try:
+            # Create configuration
+            status = fxnc.FXNConfigurationCreate(byref(configuration))
+            assert status.value == FXNStatus.OK, f"Failed to create prediction configuration for tag {prediction.tag} with status: {status.value}"
+            # Populate
+            status = fxnc.FXNConfigurationSetToken(configuration, prediction.configuration.encode())
+            assert status.value == FXNStatus.OK, f"Failed to set prediction configuration token for tag {prediction.tag} with status: {status.value}"
+            # Add resources
+            for resource in prediction.resources:
+                if resource.type == "fxn":
+                    continue
+                path = self.__get_resource_path(resource)
+                status = fxnc.FXNConfigurationAddResource(configuration, resource.type.encode(), str(path).encode())
+                assert status.value == FXNStatus.OK, f"Failed to set prediction configuration resource with type {resource.type} for tag {prediction.tag} with status: {status.value}"
+            # Create predictor
+            predictor = FXNPredictorRef()
+            status = fxnc.FXNPredictorCreate(prediction.tag.encode(), configuration, byref(predictor))
+            assert status.value == FXNStatus.OK, f"Failed to create prediction for tag {prediction.tag} with status: {status.value}"
+            # Return
+            return predictor
+        finally:
+            fxnc.FXNConfigurationRelease(configuration)
+
+    def __predict (self, *, tag: str, predictor, inputs: Dict[str, Any]) -> Prediction: # DEPLOY
         fxnc = self.__fxnc
         predictor = self.__cache[tag]
         profile = FXNProfileRef()
@@ -288,14 +323,15 @@ class PredictionService:
             fxnc.FXNProfileGetLatency(profile, byref(latency))
             fxnc.FXNProfileGetError(profile, error, len(error))
             fxnc.FXNProfileGetLogLength(profile, byref(log_length))
-            id = id.decode("utf-8")
+            id = id.value.decode("utf-8")
             latency = latency.value
-            error = error.decode("utf-8")
+            error = error.value.decode("utf-8")
             # Marshal logs
             logs = create_string_buffer(log_length.value + 1)
             fxnc.FXNProfileGetLogs(profile, logs, len(logs))
+            logs = logs.value.decode("utf-8")
             # Marshal outputs
-            results = { }
+            results = []
             output_count = c_int32()
             fxnc.FXNValueMapGetSize(output_map, byref(output_count))
             for idx in range(output_count.value):
@@ -303,24 +339,30 @@ class PredictionService:
                 value = FXNValueRef()
                 fxnc.FXNValueMapGetKey(output_map, idx, name, len(name))
                 fxnc.FXNValueMapGetValue(output_map, name, byref(value))
-                name = name.decode("utf-8")
+                name = name.value.decode("utf-8")
                 value = to_py_value(fxnc, value)
-                results[name] = value
+                results.append(value)
             # Return
             return Prediction(
                 id=id,
                 tag=tag,
                 type=PredictorType.Edge,
-                results=results,
+                results=results if not error else None,
                 latency=latency,
                 error=error,
                 logs=logs,
                 created=datetime.now(timezone.utc).isoformat()
             )
         finally:
-            fxnc.FXNReleaseProfile(profile)
-            fxnc.FXNReleaseValueMap(input_map)
-            fxnc.FXNReleaseValueMap(output_map)
+            fxnc.FXNProfileRelease(profile)
+            #fxnc.FXNValueMapRelease(input_map)
+            fxnc.FXNValueMapRelease(output_map)
+
+    def __parse_prediction (self, data: Dict[str, Any], *, raw_outputs: bool, return_binary_path: bool) -> Prediction:
+        prediction = Prediction(**data)
+        prediction.results = [Value(**value) for value in prediction.results] if prediction.results is not None else None
+        prediction.results = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction.results] if prediction.results is not None and not raw_outputs else prediction.results
+        return prediction
 
     def __get_data_dtype (self, data: Union[Path, BytesIO]) -> Dtype:
         mime = guess_mime(str(data) if isinstance(data, Path) else data)
@@ -344,6 +386,19 @@ class PredictionService:
         result = BytesIO(response.content)
         return result
     
+    def __get_resource_path (self, resource: PredictionResource) -> Path: # INCOMPLETE
+        cache_dir = Path.home() / ".fxn" / "cache"
+        cache_dir.mkdir(exist_ok=True)
+        res_name = Path(urlparse(resource.url).path).name
+        res_path = cache_dir / res_name
+        if res_path.exists():
+            return res_path
+        req = get(resource.url)
+        req.raise_for_status()
+        with open(res_path, "wb") as f:
+            f.write(req.content)
+        return res_path
+    
     @classmethod
     def __try_ensure_serializable (cls, object: Any) -> Any:
         if object is None:
@@ -362,11 +417,11 @@ class PredictionService:
     def __get_client_id (self) -> str:
         id = system()
         if id == "Darwin":
-            return "macos"
+            return f"macos:{machine()}"
         if id == "Linux":
-            return "linux"
+            return f"linux:{machine()}"
         if id == "Windows":
-            return "windows"
+            return f"windows:{machine()}"
         raise RuntimeError(f"Function cannot make predictions on the {id} platform")
     
 

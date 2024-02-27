@@ -129,12 +129,9 @@ def load_fxnc (path: Path) -> CDLL:
     # FXNConfigurationSetToken
     fxnc.FXNConfigurationSetToken.argtypes = [FXNConfigurationRef, c_char_p]
     fxnc.FXNConfigurationSetToken.restype = FXNStatus
-    # FXNConfigurationGetResource
-    fxnc.FXNConfigurationGetResource.argtypes = [FXNConfigurationRef, c_char_p, c_char_p, c_int32]
-    fxnc.FXNConfigurationGetResource.restype = FXNStatus
-    # FXNConfigurationSetResource
-    fxnc.FXNConfigurationSetResource.argtypes = [FXNConfigurationRef, c_char_p, c_char_p, c_char_p]
-    fxnc.FXNConfigurationSetResource.restype = FXNStatus
+    # FXNConfigurationAddResource
+    fxnc.FXNConfigurationAddResource.argtypes = [FXNConfigurationRef, c_char_p, c_char_p]
+    fxnc.FXNConfigurationAddResource.restype = FXNStatus
     # FXNConfigurationGetAcceleration
     fxnc.FXNConfigurationGetAcceleration.argtypes = [FXNConfigurationRef, POINTER(FXNAcceleration)]
     fxnc.FXNConfigurationGetAcceleration.restype = FXNStatus
@@ -186,11 +183,15 @@ def to_fxn_value ( # DEPLOY
     *,
     copy: bool=False
 ) -> type[FXNValueRef]:
-    result = FXNValue()
+    result = FXNValueRef()
     if result is None:
         fxnc.FXNValueCreateNull(byref(result))
-    elif isinstance(input, (int, float)):
-        return to_fxn_value(fxnc, array(value))
+    elif isinstance(value, bool):
+        return to_fxn_value(fxnc, array(value, dtype="bool"))
+    elif isinstance(value, int):
+        return to_fxn_value(fxnc, array(value, dtype="int32"))
+    elif isinstance(value, float):
+        return to_fxn_value(fxnc, array(value, dtype="float32"))
     elif isinstance(value, ndarray):
         dtype = _NP_TO_FXN_DTYPE.get(value.dtype)
         assert dtype is not None, f"Failed to convert numpy array to Function value because array data type is not supported: {value.dtype}"

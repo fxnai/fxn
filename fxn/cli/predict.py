@@ -22,16 +22,18 @@ def predict (
     raw_outputs: bool = Option(False, "--raw-outputs", help="Output raw Function values instead of converting into plain Python values."),
     context: Context = 0
 ):
-    inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
-    run_async(_predict_async(tag, inputs, raw_outputs=raw_outputs))
+    run_async(_predict_async(tag, context=context, raw_outputs=raw_outputs))
 
-async def _predict_async (tag: str, inputs: Dict[str, Any], raw_outputs: bool):
+async def _predict_async (tag: str, context: Context, raw_outputs: bool):
     with Progress(
         SpinnerColumn(spinner_name="dots"),
         TextColumn("[progress.description]{task.description}"),
         transient=True
     ) as progress:
         progress.add_task(description="Running Function...", total=None)
+        # Parse inputs
+        inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
+        # Stream
         fxn = Function(get_access_key())
         async for prediction in fxn.predictions.stream(tag, inputs=inputs, raw_outputs=raw_outputs, return_binary_path=True):
             # Parse results
