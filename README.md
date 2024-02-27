@@ -12,7 +12,8 @@ Function is distributed on PyPi. This distribution contains both the Python clie
 pip install --upgrade fxn
 ```
 
-> Note that Function requires Python 3.9+
+> [!NOTE]
+> Function requires Python 3.9+
 
 ## Making a Prediction
 Let's run the [`@samplefxn/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image.
