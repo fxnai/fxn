@@ -35,7 +35,7 @@ async def _predict_async (tag: str, context: Context, raw_outputs: bool):
         inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
         # Stream
         fxn = Function(get_access_key())
-        async for prediction in fxn.predictions.stream(tag, inputs=inputs, raw_outputs=raw_outputs, return_binary_path=True):
+        async for prediction in fxn.predictions.stream(tag, inputs=inputs, raw_outputs=raw_outputs, return_binary_path=True, verbose=True):
             # Parse results
             images = [value for value in prediction.results or [] if isinstance(value, Image.Image)]
             prediction.results = [_serialize_value(value) for value in prediction.results] if prediction.results is not None else None

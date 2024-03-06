@@ -28,7 +28,7 @@ setup(
 	python_requires=">=3.7",
     install_requires=[
         "aiohttp",
-        "filetype",
+        "magika",
         "numpy",
         "pillow",
         "pydantic>=2.0",

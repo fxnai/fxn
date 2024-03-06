@@ -4,8 +4,8 @@
 #
 
 from base64 import b64encode
-from filetype import guess_mime
 from io import BytesIO
+from magika import Magika
 from pathlib import Path
 from requests import put
 from rich.progress import open as open_progress, wrap_file
@@ -87,7 +87,7 @@ class StorageService:
         assert file.exists(), f"Cannot upload {file.name} because the file does not exist"
         assert file.is_file(), f"Cannot upload {file.name} becaause it does not point to a file"   
         # Create data URL
-        mime = guess_mime(file) or "application/octet-stream"
+        mime = self.__infer_mime(file)
         if file.stat().st_size < (data_url_limit or 0):
             with open(file, mode="rb") as f:
                 buffer = BytesIO(f.read())
@@ -114,7 +114,7 @@ class StorageService:
         assert name, "You must specify the file `name` if the `file` is not a path"
         # Create data URL
         file.seek(0)
-        mime = guess_mime(file) or "application/octet-stream"
+        mime = self.__infer_mime(file)
         size = file.getbuffer().nbytes
         if size < (data_url_limit or 0):
             return self.__create_data_url(file, mime=mime)
@@ -137,3 +137,24 @@ class StorageService:
         parsed_url = parsed_url._replace(netloc="cdn.fxn.ai", query="")
         url = urlunparse(parsed_url)
         return url
+    
+    def __infer_mime (self, file: Union[str, Path, BytesIO]) -> str:
+        MAGIC_TO_MIME = {
+            b"\x00\x61\x73\x6d": "application/wasm"
+        }
+        # Read magic
+        file = Path(file) if isinstance(file, str) else file
+        if isinstance(file, Path):
+            with open(file, "rb") as f:
+                magic = f.read(4)
+        elif isinstance(file, BytesIO):
+            magic = file.getvalue()[:4]
+        # Check known mime
+        mime = MAGIC_TO_MIME.get(magic)
+        # Infer
+        if mime is None:
+            magika = Magika()
+            result = magika.identify_bytes(file.getvalue()) if isinstance(file, BytesIO) else magika.identify_path(file)
+            mime = result.output.mime_type
+        # Return
+        return mime

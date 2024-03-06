@@ -1,5 +1,5 @@
 ## 0.0.29
-*INCOMPLETE*
++ Minor fixes and improvements.
 
 ## 0.0.28
 + Added `fxn create --cloud` CLI shorthand flag for setting the predictor type to `PredictorType.Cloud`.

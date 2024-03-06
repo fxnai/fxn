@@ -44,6 +44,7 @@ class PredictionService:
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
+        verbose: bool=False
     ) -> Prediction:
         """
         Create a prediction.
@@ -54,6 +55,7 @@ class PredictionService:
             raw_outputs (bool): Skip converting output values into Pythonic types. This only applies to `CLOUD` predictions.
             return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
             data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. This only applies to `CLOUD` predictions.
+            verbose (bool): Use verbose logging.
 
         Returns:
             Prediction: Created prediction.
@@ -71,26 +73,27 @@ class PredictionService:
             headers={
                 "Authorization": f"Bearer {self.client.access_key}",
                 "fxn-client": self.__get_client_id(),
-                "fxn-configuration-token": "" # INCOMPLETE
+                "fxn-configuration-token": ""
             }
         )
         # Check
         prediction = response.json()
         try:
             response.raise_for_status()
-        except:
-            raise RuntimeError(prediction.get("error"))
+        except Exception as ex:
+            error = prediction["errors"][0]["message"] if "errors" in prediction else str(ex)
+            raise RuntimeError(error)
         # Parse prediction
         prediction = self.__parse_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
         # Create edge prediction
         if prediction.type == PredictorType.Edge:
-            predictor = self.__load(prediction)
+            predictor = self.__load(prediction, verbose=verbose)
             self.__cache[tag] = predictor
             prediction = self.__predict(tag=tag, predictor=predictor, inputs=inputs) if inputs is not None else prediction
         # Return
         return prediction
     
-    async def stream (
+    async def stream ( # INCOMPLETE # Add edge prediction support
         self,
         tag: str,
         *,
@@ -98,6 +101,7 @@ class PredictionService:
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
+        verbose: bool=False
     ) -> AsyncIterator[Prediction]:
         """
         Create a streaming prediction.
@@ -110,6 +114,7 @@ class PredictionService:
             raw_outputs (bool): Skip converting output values into Pythonic types. This only applies to `CLOUD` predictions.
             return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
             data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. This only applies to `CLOUD` predictions.
+            verbose (bool): Use verbose logging.
 
         Returns:
             Prediction: Created prediction.
@@ -122,19 +127,26 @@ class PredictionService:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.client.access_key}",
-            "fxn-client": self.__get_client_id()
+            "fxn-client": self.__get_client_id(),
+            "fxn-configuration-token": ""
         }
         async with ClientSession(headers=headers) as session:
             async with session.post(url, data=dumps(inputs)) as response:
                 async for chunk in response.content.iter_any():
                     prediction = loads(chunk)
                     # Check status
-                    if response.status >= 400:
-                        raise RuntimeError(prediction.get("error"))
+                    try:
+                        response.raise_for_status()
+                    except Exception as ex:
+                        error = prediction["errors"][0]["message"] if "errors" in prediction else str(ex)
+                        raise RuntimeError(error)
                     # Parse prediction
-                    prediction = Prediction(**prediction)
-                    prediction.results = [Value(**value) for value in prediction.results] if prediction.results is not None else None
-                    prediction.results = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction.results] if prediction.results is not None and not raw_outputs else prediction.results
+                    prediction = self.__parse_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
+                    # Create edge prediction
+                    if prediction.type == PredictorType.Edge:
+                        predictor = self.__load(prediction, verbose=verbose)
+                        self.__cache[tag] = predictor
+                        prediction = self.__predict(tag=tag, predictor=predictor, inputs=inputs) if inputs is not None else prediction
                     # Yield
                     yield prediction
 
@@ -266,7 +278,7 @@ class PredictionService:
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
 
-    def __load (self, prediction: Prediction):
+    def __load (self, prediction: Prediction, *, verbose: bool=False):
         # Load fxnc
         if self.__fxnc is None:
             fxnc_resource = next(x for x in prediction.resources if x.type == "fxn")
@@ -286,7 +298,7 @@ class PredictionService:
             for resource in prediction.resources:
                 if resource.type == "fxn":
                     continue
-                path = self.__get_resource_path(resource)
+                path = self.__get_resource_path(resource, verbose=verbose)
                 status = fxnc.FXNConfigurationAddResource(configuration, resource.type.encode(), str(path).encode())
                 assert status.value == FXNStatus.OK, f"Failed to set prediction configuration resource with type {resource.type} for tag {prediction.tag} with status: {status.value}"
             # Create predictor
@@ -386,7 +398,7 @@ class PredictionService:
         result = BytesIO(response.content)
         return result
     
-    def __get_resource_path (self, resource: PredictionResource) -> Path: # INCOMPLETE
+    def __get_resource_path (self, resource: PredictionResource, *, verbose: bool=False) -> Path: # INCOMPLETE # Verbose
         cache_dir = Path.home() / ".fxn" / "cache"
         cache_dir.mkdir(exist_ok=True)
         res_name = Path(urlparse(resource.url).path).name

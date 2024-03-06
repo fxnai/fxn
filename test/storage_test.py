@@ -6,6 +6,7 @@
 from fxn import Function, UploadType
 from io import BytesIO
 from pathlib import Path
+from requests import get
 
 def test_file_upload ():
     fxn = Function()
@@ -35,3 +36,24 @@ def test_buffer_upload_data_url ():
     buffer_size = buffer.getbuffer().nbytes
     url = fxn.storage.upload(buffer, type=UploadType.Value, name=path.name, data_url_limit=buffer_size + 1, verbose=True)
     assert url.startswith("data:")
+
+def test_wasm_upload ():
+    fxn = Function()
+    path = Path("../edgefxn/build/WebAssembly/Debug/Predictor.wasm").resolve()
+    url = fxn.storage.upload(path, type=UploadType.Value, name="predictor.wasm")
+    response = get(url)
+    content_type = response.headers.get("Content-Type")
+    assert content_type == "application/wasm"
+
+def test_js_upload ():
+    fxn = Function()
+    path = Path("../edgefxn/build/WebAssembly/Debug/Predictor.js").resolve()
+    url = fxn.storage.upload(path, type=UploadType.Value, name="predictor.js")
+    response = get(url)
+    content_type = response.headers.get("Content-Type")
+    assert content_type == "application/javascript"
+
+def test_fxn_upload ():
+    response = get("https://cdn.fxn.ai/edgefxn/0.0.10/libFunction-wasm.so")
+    content_type = response.headers.get("Content-Type")
+    assert content_type == "application/wasm"
