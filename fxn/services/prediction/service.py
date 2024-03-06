@@ -7,9 +7,9 @@ from aiohttp import ClientSession
 from ctypes import byref, c_double, c_int32, create_string_buffer
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
-from filetype import guess_mime
 from io import BytesIO
 from json import dumps, loads
+from magika import Magika
 from numpy import array, float32, frombuffer, int32, ndarray
 from numpy.typing import NDArray
 from pathlib import Path
@@ -367,28 +367,35 @@ class PredictionService:
             )
         finally:
             fxnc.FXNProfileRelease(profile)
-            #fxnc.FXNValueMapRelease(input_map)
+            fxnc.FXNValueMapRelease(input_map)
             fxnc.FXNValueMapRelease(output_map)
 
-    def __parse_prediction (self, data: Dict[str, Any], *, raw_outputs: bool, return_binary_path: bool) -> Prediction:
+    def __parse_prediction (
+            self,
+            data: Dict[str, Any],
+            *,
+            raw_outputs: bool,
+            return_binary_path: bool
+        ) -> Prediction:
         prediction = Prediction(**data)
         prediction.results = [Value(**value) for value in prediction.results] if prediction.results is not None else None
         prediction.results = [self.to_object(value, return_binary_path=return_binary_path) for value in prediction.results] if prediction.results is not None and not raw_outputs else prediction.results
         return prediction
 
     def __get_data_dtype (self, data: Union[Path, BytesIO]) -> Dtype:
-        mime = guess_mime(str(data) if isinstance(data, Path) else data)
-        if not mime:
-            return Dtype.binary
-        if mime.startswith("image"):
+        magika = Magika()
+        result = magika.identify_bytes(data.getvalue()) if isinstance(data, BytesIO) else magika.identify_path(data)
+        group = result.output.group
+        if group == "image":
             return Dtype.image
-        if mime.startswith("video"):
-            return Dtype.video
-        if mime.startswith("audio"):
+        elif group == "audio":
             return Dtype.audio
-        if isinstance(data, Path) and data.suffix in [".obj", ".gltf", ".glb", ".fbx", ".usd", ".usdz", ".blend"]:
+        elif group == "video":
+            return Dtype.video
+        elif isinstance(data, Path) and data.suffix in [".obj", ".gltf", ".glb", ".fbx", ".usd", ".usdz", ".blend"]:
             return Dtype._3d
-        return Dtype.binary
+        else:
+            return Dtype.binary
 
     def __download_value_data (self, url: str) -> BytesIO:
         if url.startswith("data:"):

@@ -25,7 +25,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache License 2.0",
-	python_requires=">=3.7",
+	python_requires=">=3.9",
     install_requires=[
         "aiohttp",
         "magika",
