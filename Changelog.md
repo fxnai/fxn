@@ -1,5 +1,5 @@
 ## 0.0.30
-+ Fix data type inference when making predictions.
++ Fixed data type inference when making predictions.
 
 ## 0.0.29
 + Minor fixes and improvements.
