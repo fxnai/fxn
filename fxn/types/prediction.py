@@ -15,9 +15,11 @@ class PredictionResource (BaseModel):
     Members:
         type (str): Resource type.
         url (str): Resource URL.
+        name (str): Resource name.
     """
     type: str = Field(description="Resource type.")
     url: str = Field(description="Resource URL.")
+    name: Optional[str] = Field(default=None, description="Resource name.")
 
 class Prediction (BaseModel):
     """

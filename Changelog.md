@@ -1,5 +1,5 @@
 ## 0.0.31
-*INCOMPLETE*
++ Added `PredictionResource.name` field for handling prediction resources with required file names.
 
 ## 0.0.30
 + Fixed data type inference when making predictions.
