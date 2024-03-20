@@ -1,4 +1,4 @@
-name: Publish to TestPyPi
+name: Pull EdgeFunction
 
 on: workflow_dispatch
 
