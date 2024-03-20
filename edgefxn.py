@@ -8,7 +8,7 @@ from pathlib import Path
 from requests import get
 
 parser = ArgumentParser()
-parser.add_argument("--version", type=str, default="0.0.13")
+parser.add_argument("--version", type=str, default=None)
 
 def _download_fxnc (name: str, version: str, path: Path):
     url = f"https://cdn.fxn.ai/edgefxn/{version}/{name}"
@@ -17,17 +17,24 @@ def _download_fxnc (name: str, version: str, path: Path):
     with open(path, "wb") as f:
         f.write(response.content)
 
+def _get_latest_version () -> str:
+    response = get(f"https://api.github.com/repos/fxnai/fxnc/releases/latest")
+    response.raise_for_status()
+    release = response.json()
+    return release["tag_name"]
+
 def main (): # CHECK # Linux
     args = parser.parse_args()
+    version = args.version if args.version else _get_latest_version()
     LIB_PATH_BASE = Path("fxn") / "libs"
     _download_fxnc(
         "Function-macos.dylib",
-        args.version,
+        version,
         LIB_PATH_BASE / "macos" / "Function.dylib"
     )
     _download_fxnc(
         "Function-win64.dll",
-        args.version,
+        version,
         LIB_PATH_BASE / "windows" / "Function.dll"
     )
 

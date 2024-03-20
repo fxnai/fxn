@@ -1,5 +1,5 @@
 ## 0.0.32
-*INCOMPLETE*
++ Added missing native libraries.
 
 ## 0.0.31
 + Added experimental support for making on-device predictions.
