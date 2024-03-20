@@ -6,6 +6,11 @@ dist/
 *.egg
 *.egg-info/
 
+# Libs
+fxn/**/*.dll
+fxn/**/*.dylib
+fxn/**/*.so
+
 # IDE
 .vscode
 .vs

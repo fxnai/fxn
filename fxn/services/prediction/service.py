@@ -4,9 +4,10 @@
 #
 
 from aiohttp import ClientSession
-from ctypes import byref, c_double, c_int32, create_string_buffer
+from ctypes import byref, c_double, c_int32, create_string_buffer, CDLL
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
+from importlib import resources
 from io import BytesIO
 from json import dumps, loads
 from magika import Magika
@@ -18,7 +19,7 @@ from platform import machine, system
 from pydantic import BaseModel
 from requests import get, post
 from tempfile import NamedTemporaryFile
-from typing import Any, AsyncIterator, Dict, List, Union
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 from uuid import uuid4
 from urllib.parse import urlparse
 from urllib.request import urlopen
@@ -26,14 +27,14 @@ from urllib.request import urlopen
 from ...graph import GraphClient
 from ...types import Dtype, PredictorType, Prediction, PredictionResource, Value, UploadType
 from ..storage import StorageService
-from .fxnc import load_fxnc, to_fxn_value, to_py_value, FXNConfigurationRef, FXNPredictorRef, FXNProfileRef, FXNStatus, FXNValueRef, FXNValueMapRef
+from .fxnc import load_fxnc, to_fxn_value, to_py_value, FXNConfigurationRef, FXNPredictorRef, FXNPredictionRef, FXNStatus, FXNValueRef, FXNValueMapRef
 
 class PredictionService:
 
-    def __init__ (self, client: GraphClient, storage: StorageService) -> None:
+    def __init__ (self, client: GraphClient, storage: StorageService):
         self.client = client
         self.storage = storage
-        self.__fxnc = None
+        self.__fxnc = PredictionService.__load_fxnc()
         self.__cache = { }
 
     def create (
@@ -43,8 +44,7 @@ class PredictionService:
         inputs: Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image, Value]] = None,
         raw_outputs: bool=False,
         return_binary_path: bool=True,
-        data_url_limit: int=None,
-        verbose: bool=False
+        data_url_limit: int=None
     ) -> Prediction:
         """
         Create a prediction.
@@ -55,7 +55,6 @@ class PredictionService:
             raw_outputs (bool): Skip converting output values into Pythonic types. This only applies to `CLOUD` predictions.
             return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
             data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. This only applies to `CLOUD` predictions.
-            verbose (bool): Use verbose logging.
 
         Returns:
             Prediction: Created prediction.
@@ -73,7 +72,7 @@ class PredictionService:
             headers={
                 "Authorization": f"Bearer {self.client.access_key}",
                 "fxn-client": self.__get_client_id(),
-                "fxn-configuration-token": ""
+                "fxn-configuration-token": self.__get_configuration_token()
             }
         )
         # Check
@@ -87,13 +86,13 @@ class PredictionService:
         prediction = self.__parse_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
         # Create edge prediction
         if prediction.type == PredictorType.Edge:
-            predictor = self.__load(prediction, verbose=verbose)
+            predictor = self.__load(prediction)
             self.__cache[tag] = predictor
             prediction = self.__predict(tag=tag, predictor=predictor, inputs=inputs) if inputs is not None else prediction
         # Return
         return prediction
     
-    async def stream ( # INCOMPLETE # Add edge prediction support
+    async def stream (
         self,
         tag: str,
         *,
@@ -101,7 +100,6 @@ class PredictionService:
         raw_outputs: bool=False,
         return_binary_path: bool=True,
         data_url_limit: int=None,
-        verbose: bool=False
     ) -> AsyncIterator[Prediction]:
         """
         Create a streaming prediction.
@@ -114,24 +112,27 @@ class PredictionService:
             raw_outputs (bool): Skip converting output values into Pythonic types. This only applies to `CLOUD` predictions.
             return_binary_path (bool): Write binary values to file and return a `Path` instead of returning `BytesIO` instance.
             data_url_limit (int): Return a data URL if a given output value is smaller than this size in bytes. This only applies to `CLOUD` predictions.
-            verbose (bool): Use verbose logging.
 
         Returns:
             Prediction: Created prediction.
         """
+        # Check if cached
+        if tag in self.__cache:
+            yield self.__predict(tag=tag, predictor=self.__cache[tag], inputs=inputs)
+            return
         # Serialize inputs
         key = uuid4().hex
-        inputs = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() }
+        values = { name: self.to_value(value, name, key=key).model_dump(mode="json") for name, value in inputs.items() } # INCOMPLETE # values
         # Request
         url = f"{self.client.api_url}/predict/{tag}?stream=true&rawOutputs=true&dataUrlLimit={data_url_limit}"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.client.access_key}",
             "fxn-client": self.__get_client_id(),
-            "fxn-configuration-token": ""
+            "fxn-configuration-token": self.__get_configuration_token()
         }
         async with ClientSession(headers=headers) as session:
-            async with session.post(url, data=dumps(inputs)) as response:
+            async with session.post(url, data=dumps(values)) as response:
                 async for chunk in response.content.iter_any():
                     prediction = loads(chunk)
                     # Check status
@@ -144,7 +145,7 @@ class PredictionService:
                     prediction = self.__parse_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
                     # Create edge prediction
                     if prediction.type == PredictorType.Edge:
-                        predictor = self.__load(prediction, verbose=verbose)
+                        predictor = self.__load(prediction)
                         self.__cache[tag] = predictor
                         prediction = self.__predict(tag=tag, predictor=predictor, inputs=inputs) if inputs is not None else prediction
                     # Yield
@@ -277,80 +278,124 @@ class PredictionService:
             return Value(data=data, type=dtype)
         # Unsupported
         raise RuntimeError(f"Cannot create Function value '{name}' for object {object} of type {type(object)}")
+    
+    @classmethod
+    def __load_fxnc (self) -> Optional[CDLL]:    
+        RESOURCE_MAP = {
+            "Darwin": ("fxn.libs.macos", "Function.dylib"),
+            "Windows": ("fxn.libs.windows", "Function.dll"),
+        }
+        # Get resource
+        package, resource = RESOURCE_MAP.get(system(), (None, None))
+        if package is None or resource is None:
+            return None
+        # Load
+        with resources.path(package, resource) as fxnc_path:
+            return load_fxnc(fxnc_path)
 
-    def __load (self, prediction: Prediction, *, verbose: bool=False):
-        # Load fxnc
-        if self.__fxnc is None:
-            fxnc_resource = next(x for x in prediction.resources if x.type == "fxn")
-            fxnc_path = self.__get_resource_path(fxnc_resource)
-            self.__fxnc = load_fxnc(fxnc_path)
+    def __get_client_id (self) -> str:
+        id = system()
+        if id == "Darwin":
+            return f"macos:{machine()}"
+        if id == "Linux":
+            return f"linux:{machine()}"
+        if id == "Windows":
+            return f"windows:{machine()}"
+        raise RuntimeError(f"Function cannot make predictions on the {id} platform")
+
+    def __get_configuration_token (self) -> Optional[str]:
+        # Check
+        if not self.__fxnc:
+            return None
+        # Get
+        buffer = create_string_buffer(2048)
+        status = self.__fxnc.FXNConfigurationGetUniqueID(buffer, len(buffer))
+        assert status.value == FXNStatus.OK, f"Failed to create prediction configuration token with status: {status.value}"
+        uid = buffer.value.decode("utf-8")
+        # Return
+        return uid
+
+    def __load (self, prediction: Prediction):
         # Load predictor
         fxnc = self.__fxnc
         configuration = FXNConfigurationRef()
         try:
             # Create configuration
             status = fxnc.FXNConfigurationCreate(byref(configuration))
-            assert status.value == FXNStatus.OK, f"Failed to create prediction configuration for tag {prediction.tag} with status: {status.value}"
-            # Populate
+            assert status.value == FXNStatus.OK, f"Failed to create {prediction.tag} prediction configuration with status: {status.value}"
+            # Set tag
+            status = fxnc.FXNConfigurationSetTag(configuration, prediction.tag.encode())
+            assert status.value == FXNStatus.OK, f"Failed to set {prediction.tag} prediction configuration tag with status: {status.value}"
+            # Set token
             status = fxnc.FXNConfigurationSetToken(configuration, prediction.configuration.encode())
-            assert status.value == FXNStatus.OK, f"Failed to set prediction configuration token for tag {prediction.tag} with status: {status.value}"
+            assert status.value == FXNStatus.OK, f"Failed to set {prediction.tag} prediction configuration token with status: {status.value}"
             # Add resources
             for resource in prediction.resources:
                 if resource.type == "fxn":
                     continue
-                path = self.__get_resource_path(resource, verbose=verbose)
+                path = self.__get_resource_path(resource)
                 status = fxnc.FXNConfigurationAddResource(configuration, resource.type.encode(), str(path).encode())
                 assert status.value == FXNStatus.OK, f"Failed to set prediction configuration resource with type {resource.type} for tag {prediction.tag} with status: {status.value}"
             # Create predictor
             predictor = FXNPredictorRef()
-            status = fxnc.FXNPredictorCreate(prediction.tag.encode(), configuration, byref(predictor))
+            status = fxnc.FXNPredictorCreate(configuration, byref(predictor))
             assert status.value == FXNStatus.OK, f"Failed to create prediction for tag {prediction.tag} with status: {status.value}"
             # Return
             return predictor
         finally:
             fxnc.FXNConfigurationRelease(configuration)
 
-    def __predict (self, *, tag: str, predictor, inputs: Dict[str, Any]) -> Prediction: # DEPLOY
+    def __predict (self, *, tag: str, predictor, inputs: Dict[str, Any]) -> Prediction:
         fxnc = self.__fxnc
-        predictor = self.__cache[tag]
-        profile = FXNProfileRef()
         input_map = FXNValueMapRef()
-        output_map = FXNValueMapRef()
+        prediction = FXNPredictionRef()
         try:
             # Create input map
             status = fxnc.FXNValueMapCreate(byref(input_map))
-            assert status.value == FXNStatus.OK, f"Failed to create prediction for tag {tag} because input values could not be provided to the predictor with status: {status.value}"
+            assert status.value == FXNStatus.OK, f"Failed to create {tag} prediction because input values could not be provided to the predictor with status: {status.value}"
             # Marshal inputs
             for name, value in inputs.items():
-                fxnc.FXNValueMapSetValue(input_map, name.encode(), to_fxn_value(fxnc, value, copy=False))
+                value = to_fxn_value(fxnc, value, copy=False)
+                fxnc.FXNValueMapSetValue(input_map, name.encode(), value)
             # Predict
-            status = fxnc.FXNPredictorPredict(predictor, input_map, byref(profile), byref(output_map))
-            assert status.value == FXNStatus.OK, f"Failed to create prediction for tag {tag} with status: {status.value}"
-            # Marshal profile
+            status = fxnc.FXNPredictorPredict(predictor, input_map, byref(prediction))
+            assert status.value == FXNStatus.OK, f"Failed to create {tag} prediction with status: {status.value}"
+            # Marshal prediction
             id = create_string_buffer(256)
             error = create_string_buffer(2048)
             latency = c_double()
-            log_length = c_int32()
-            fxnc.FXNProfileGetID(profile, id, len(id))
-            fxnc.FXNProfileGetLatency(profile, byref(latency))
-            fxnc.FXNProfileGetError(profile, error, len(error))
-            fxnc.FXNProfileGetLogLength(profile, byref(log_length))
+            status = fxnc.FXNPredictionGetID(prediction, id, len(id))
+            assert status.value == FXNStatus.OK, f"Failed to get {tag} prediction identifier with status: {status.value}"
+            status = fxnc.FXNPredictionGetLatency(prediction, byref(latency))
+            assert status.value == FXNStatus.OK, f"Failed to get {tag} prediction latency with status: {status.value}"
+            fxnc.FXNPredictionGetError(prediction, error, len(error))
             id = id.value.decode("utf-8")
             latency = latency.value
             error = error.value.decode("utf-8")
             # Marshal logs
+            log_length = c_int32()
+            fxnc.FXNPredictionGetLogLength(prediction, byref(log_length))
             logs = create_string_buffer(log_length.value + 1)
-            fxnc.FXNProfileGetLogs(profile, logs, len(logs))
+            fxnc.FXNPredictionGetLogs(prediction, logs, len(logs))
             logs = logs.value.decode("utf-8")
             # Marshal outputs
             results = []
             output_count = c_int32()
-            fxnc.FXNValueMapGetSize(output_map, byref(output_count))
+            output_map = FXNValueMapRef()
+            status = fxnc.FXNPredictionGetResults(prediction, byref(output_map))
+            assert status.value == FXNStatus.OK, f"Failed to get {tag} prediction results with status: {status.value}"
+            status = fxnc.FXNValueMapGetSize(output_map, byref(output_count))
+            assert status.value == FXNStatus.OK, f"Failed to get {tag} prediction result count with status: {status.value}"
             for idx in range(output_count.value):
+                # Get name
                 name = create_string_buffer(256)
+                status = fxnc.FXNValueMapGetKey(output_map, idx, name, len(name))
+                assert status.value == FXNStatus.OK, f"Failed to get {tag} prediction output name at index {idx} with status: {status.value}"
+                # Get value
                 value = FXNValueRef()
-                fxnc.FXNValueMapGetKey(output_map, idx, name, len(name))
-                fxnc.FXNValueMapGetValue(output_map, name, byref(value))
+                status = fxnc.FXNValueMapGetValue(output_map, name, byref(value))
+                assert status.value == FXNStatus.OK, f"Failed to get {tag} prediction output value at index {idx} with status: {status.value}"
+                # Parse
                 name = name.value.decode("utf-8")
                 value = to_py_value(fxnc, value)
                 results.append(value)
@@ -361,14 +406,13 @@ class PredictionService:
                 type=PredictorType.Edge,
                 results=results if not error else None,
                 latency=latency,
-                error=error,
+                error=error if error else None,
                 logs=logs,
                 created=datetime.now(timezone.utc).isoformat()
             )
         finally:
-            fxnc.FXNProfileRelease(profile)
+            fxnc.FXNPredictionRelease(prediction)
             fxnc.FXNValueMapRelease(input_map)
-            fxnc.FXNValueMapRelease(output_map)
 
     def __parse_prediction (
             self,
@@ -404,8 +448,8 @@ class PredictionService:
         response = get(url)
         result = BytesIO(response.content)
         return result
-    
-    def __get_resource_path (self, resource: PredictionResource, *, verbose: bool=False) -> Path: # INCOMPLETE # Verbose
+
+    def __get_resource_path (self, resource: PredictionResource) -> Path:
         cache_dir = Path.home() / ".fxn" / "cache"
         cache_dir.mkdir(exist_ok=True)
         res_name = Path(urlparse(resource.url).path).name
@@ -432,17 +476,6 @@ class PredictionService:
             return object.model_dump(mode="json", by_alias=True)
         return object
     
-    @classmethod
-    def __get_client_id (self) -> str:
-        id = system()
-        if id == "Darwin":
-            return f"macos:{machine()}"
-        if id == "Linux":
-            return f"linux:{machine()}"
-        if id == "Windows":
-            return f"windows:{machine()}"
-        raise RuntimeError(f"Function cannot make predictions on the {id} platform")
-    
 
 PREDICTION_FIELDS = f"""
 id
@@ -450,9 +483,9 @@ tag
 type
 configuration
 resources {{
-    id
     type
     url
+    name
 }}
 results {{
     data

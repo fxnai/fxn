@@ -54,13 +54,13 @@ class FXNAcceleration(c_int):
 class FXNValue(Structure): pass
 class FXNValueMap(Structure): pass
 class FXNConfiguration(Structure): pass
-class FXNProfile(Structure): pass
+class FXNPrediction(Structure): pass
 class FXNPredictor(Structure): pass
 
 FXNValueRef = POINTER(FXNValue)
 FXNValueMapRef = POINTER(FXNValueMap)
 FXNConfigurationRef = POINTER(FXNConfiguration)
-FXNProfileRef = POINTER(FXNProfile)
+FXNPredictionRef = POINTER(FXNPrediction)
 FXNPredictorRef = POINTER(FXNPredictor)
 
 def load_fxnc (path: Path) -> CDLL:
@@ -94,7 +94,7 @@ def load_fxnc (path: Path) -> CDLL:
     fxnc.FXNValueCreateDict.argtypes = [c_char_p, POINTER(FXNValueRef)]
     fxnc.FXNValueCreateDict.restype = FXNStatus
     # FXNValueCreateImage
-    fxnc.FXNValueCreateImage.argtypes = [POINTER(c_uint8), c_int32, c_int32, c_int32, FXNValueFlags, POINTER(FXNValueRef)]
+    fxnc.FXNValueCreateImage.argtypes = [c_void_p, c_int32, c_int32, c_int32, FXNValueFlags, POINTER(FXNValueRef)]
     fxnc.FXNValueCreateImage.restype = FXNStatus
     # FXNValueMapCreate
     fxnc.FXNValueMapCreate.argtypes = [POINTER(FXNValueMapRef)]
@@ -123,15 +123,18 @@ def load_fxnc (path: Path) -> CDLL:
     # FXNConfigurationRelease
     fxnc.FXNConfigurationRelease.argtypes = [FXNConfigurationRef]
     fxnc.FXNConfigurationRelease.restype = FXNStatus
+    # FXNConfigurationGetTag
+    fxnc.FXNConfigurationGetTag.argtypes = [FXNConfigurationRef, c_char_p, c_int32]
+    fxnc.FXNConfigurationRelease.restype = FXNStatus
+    # FXNConfigurationSetTag
+    fxnc.FXNConfigurationSetTag.argtypes = [FXNConfigurationRef, c_char_p]
+    fxnc.FXNConfigurationSetTag.restype = FXNStatus
     # FXNConfigurationGetToken
     fxnc.FXNConfigurationGetToken.argtypes = [FXNConfigurationRef, c_char_p, c_int32]
     fxnc.FXNConfigurationGetToken.restype = FXNStatus
     # FXNConfigurationSetToken
     fxnc.FXNConfigurationSetToken.argtypes = [FXNConfigurationRef, c_char_p]
     fxnc.FXNConfigurationSetToken.restype = FXNStatus
-    # FXNConfigurationAddResource
-    fxnc.FXNConfigurationAddResource.argtypes = [FXNConfigurationRef, c_char_p, c_char_p]
-    fxnc.FXNConfigurationAddResource.restype = FXNStatus
     # FXNConfigurationGetAcceleration
     fxnc.FXNConfigurationGetAcceleration.argtypes = [FXNConfigurationRef, POINTER(FXNAcceleration)]
     fxnc.FXNConfigurationGetAcceleration.restype = FXNStatus
@@ -144,32 +147,38 @@ def load_fxnc (path: Path) -> CDLL:
     # FXNConfigurationSetDevice
     fxnc.FXNConfigurationSetDevice.argtypes = [FXNConfigurationRef, c_void_p]
     fxnc.FXNConfigurationSetDevice.restype = FXNStatus
-    # FXNProfileRelease
-    fxnc.FXNProfileRelease.argtypes = [FXNProfileRef]
-    fxnc.FXNProfileRelease.restype = FXNStatus
-    # FXNProfileGetID
-    fxnc.FXNProfileGetID.argtypes = [FXNProfileRef, c_char_p, c_int32]
-    fxnc.FXNProfileGetID.restype = FXNStatus
-    # FXNProfileGetLatency
-    fxnc.FXNProfileGetLatency.argtypes = [FXNProfileRef, POINTER(c_double)]
-    fxnc.FXNProfileGetLatency.restype = FXNStatus
-    # FXNProfileGetError
-    fxnc.FXNProfileGetError.argtypes = [FXNProfileRef, c_char_p, c_int32]
-    fxnc.FXNProfileGetError.restype = FXNStatus
-    # FXNProfileGetLogs
-    fxnc.FXNProfileGetLogs.argtypes = [FXNProfileRef, c_char_p, c_int32]
-    fxnc.FXNProfileGetLogs.restype = FXNStatus
-    # FXNProfileGetLogLength
-    fxnc.FXNProfileGetLogLength.argtypes = [FXNProfileRef, POINTER(c_int32)]
-    fxnc.FXNProfileGetLogLength.restype = FXNStatus
+    # FXNConfigurationAddResource
+    fxnc.FXNConfigurationAddResource.argtypes = [FXNConfigurationRef, c_char_p, c_char_p]
+    fxnc.FXNConfigurationAddResource.restype = FXNStatus
+    # FXNPredictionRelease
+    fxnc.FXNPredictionRelease.argtypes = [FXNPredictionRef]
+    fxnc.FXNPredictionRelease.restype = FXNStatus
+    # FXNPredictionGetID
+    fxnc.FXNPredictionGetID.argtypes = [FXNPredictionRef, c_char_p, c_int32]
+    fxnc.FXNPredictionGetID.restype = FXNStatus
+    # FXNPredictionGetLatency
+    fxnc.FXNPredictionGetLatency.argtypes = [FXNPredictionRef, POINTER(c_double)]
+    fxnc.FXNPredictionGetLatency.restype = FXNStatus
+    # FXNPredictionGetResults
+    fxnc.FXNPredictionGetResults.argtypes = [FXNPredictionRef, POINTER(FXNValueMapRef)]
+    fxnc.FXNPredictionGetResults.restype = FXNStatus
+    # FXNPredictionGetError
+    fxnc.FXNPredictionGetError.argtypes = [FXNPredictionRef, c_char_p, c_int32]
+    fxnc.FXNPredictionGetError.restype = FXNStatus
+    # FXNPredictionGetLogs
+    fxnc.FXNPredictionGetLogs.argtypes = [FXNPredictionRef, c_char_p, c_int32]
+    fxnc.FXNPredictionGetLogs.restype = FXNStatus
+    # FXNPredictionGetLogLength
+    fxnc.FXNPredictionGetLogLength.argtypes = [FXNPredictionRef, POINTER(c_int32)]
+    fxnc.FXNPredictionGetLogLength.restype = FXNStatus
     # FXNPredictorCreate
-    fxnc.FXNPredictorCreate.argtypes = [c_char_p, FXNConfigurationRef, POINTER(FXNPredictorRef)]
+    fxnc.FXNPredictorCreate.argtypes = [FXNConfigurationRef, POINTER(FXNPredictorRef)]
     fxnc.FXNPredictorCreate.restype = FXNStatus
     # FXNPredictorRelease
     fxnc.FXNPredictorRelease.argtypes = [FXNPredictorRef]
     fxnc.FXNPredictorRelease.restype = FXNStatus
     # FXNPredictorPredict
-    fxnc.FXNPredictorPredict.argtypes = [FXNPredictorRef, FXNValueMapRef, POINTER(FXNProfileRef), POINTER(FXNValueMapRef)]
+    fxnc.FXNPredictorPredict.argtypes = [FXNPredictorRef, FXNValueMapRef, POINTER(FXNPredictionRef)]
     fxnc.FXNPredictorPredict.restype = FXNStatus
     # FXNGetVersion
     fxnc.FXNGetVersion.argtypes = []
@@ -177,7 +186,7 @@ def load_fxnc (path: Path) -> CDLL:
     # Return
     return fxnc
 
-def to_fxn_value ( # DEPLOY
+def to_fxn_value (
     fxnc: CDLL,
     value: Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, bytes, bytearray, memoryview, BytesIO, None],
     *,
@@ -208,10 +217,10 @@ def to_fxn_value ( # DEPLOY
     elif isinstance(value, list):
         fxnc.FXNValueCreateList(dumps(value).encode(), byref(result))
     elif isinstance(value, dict):
-        fxnc.FXNValueCreateList(dumps(value).encode(), byref(result))
+        fxnc.FXNValueCreateDict(dumps(value).encode(), byref(result))
     elif isinstance(value, Image.Image):
         value = array(value)
-        fxnc.FXNValueCreateImage(
+        status = fxnc.FXNValueCreateImage(
             value.ctypes.data_as(c_void_p),
             value.shape[1],
             value.shape[0],
@@ -219,6 +228,7 @@ def to_fxn_value ( # DEPLOY
             FXNValueFlags.COPY_DATA,
             byref(result)
         )
+        assert status.value == FXNStatus.OK, f"Failed to create image value with status: {status.value}"
     elif isinstance(value, (bytes, bytearray, memoryview, BytesIO)):
         view = memoryview(value.getvalue() if isinstance(value, BytesIO) else value) if not isinstance(value, memoryview) else value
         buffer = (c_uint8 * len(view)).from_buffer(view)
@@ -232,22 +242,26 @@ def to_fxn_value ( # DEPLOY
         raise RuntimeError(f"Failed to convert Python value to Function value because Python value has an unsupported type: {type(value)}")
     return result
 
-def to_py_value ( # DEPLOY
+def to_py_value (
     fxnc: CDLL,
     value: type[FXNValueRef]
 ) -> Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, BytesIO, None]:
     # Type
     dtype = FXNDtype()
-    fxnc.FXNValueGetType(value, byref(dtype))
+    status = fxnc.FXNValueGetType(value, byref(dtype))
+    assert status.value == FXNStatus.OK, f"Failed to get value data type with status: {status.value}"
     dtype = dtype.value
     # Get data
     data = c_void_p()
-    fxnc.FXNValueGetData(value, byref(data))
+    status = fxnc.FXNValueGetData(value, byref(data))
+    assert status.value == FXNStatus.OK, f"Failed to get value data with status: {status.value}"
     # Get shape
     dims = c_int32()
-    fxnc.FXNValueGetDimensions(value, byref(dims))
+    status = fxnc.FXNValueGetDimensions(value, byref(dims))
+    assert status.value == FXNStatus.OK, f"Failed to get value dimensions with status: {status.value}"
     shape = zeros(dims.value, dtype=int32)
-    fxnc.FXNValueGetShape(value, shape.ctypes.data_as(POINTER(c_int32)), dims)
+    status = fxnc.FXNValueGetShape(value, shape.ctypes.data_as(POINTER(c_int32)), dims)
+    assert status.value == FXNStatus.OK, f"Failed to get value shape with status: {status.value}"
     # Switch
     if dtype == FXNDtype.NULL:
         return None

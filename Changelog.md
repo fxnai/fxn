@@ -1,4 +1,5 @@
 ## 0.0.31
++ Added experimental support for making on-device predictions.
 + Added `PredictionResource.name` field for handling prediction resources with required file names.
 
 ## 0.0.30

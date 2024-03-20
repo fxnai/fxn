@@ -41,6 +41,12 @@ setup(
         include=["fxn", "fxn.*"],
         exclude=["test", "examples"]
     ),
+    include_package_data=True,
+    package_data={
+        "fxn.libs.macos": ["*.dylib"],
+        "fxn.libs.windows": ["*.dll"],
+        "fxn.libs.linux": ["*.so"]
+    },
     entry_points={
         "console_scripts": [
             "fxn=fxn.cli.__init__:app"
