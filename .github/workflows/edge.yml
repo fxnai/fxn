@@ -21,8 +21,17 @@ jobs:
     - name: Pull EdgeFunction
       run: python3 edgefxn.py
 
-    - name: Build
+    - name: Show Packages
       run: |
-        ls fxn/libs/macos
-        ls fxn/libs/windows
-        python3 setup.py sdist bdist_wheel
+        ls -a
+        ls -a fxn
+        ls -a fxn/libs
+        ls -a fxn/libs/macos
+
+    - name: Build
+      run: python3 setup.py sdist bdist_wheel
+
+    - uses: actions/upload-artifact@v4
+      with:
+          name: Package
+          path: dist/fxn-0.0.32.tar.gz
