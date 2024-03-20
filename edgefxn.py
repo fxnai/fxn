@@ -16,6 +16,7 @@ def _download_fxnc (name: str, version: str, path: Path):
     response.raise_for_status()
     with open(path, "wb") as f:
         f.write(response.content)
+    print(f"Wrote {name} {version} to path: {path}")
 
 def _get_latest_version () -> str:
     response = get(f"https://api.github.com/repos/fxnai/fxnc/releases/latest")

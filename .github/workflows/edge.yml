@@ -1,0 +1,28 @@
+name: Publish to TestPyPi
+
+on: workflow_dispatch
+
+jobs:
+  pypi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install setuptools wheel twine
+        python3 -m pip install -r requirements.txt
+
+    - name: Pull EdgeFunction
+      run: python3 edgefxn.py
+
+    - name: Build
+      run: |
+        ls fxn/libs/macos
+        ls fxn/libs/windows
+        python3 setup.py sdist bdist_wheel
