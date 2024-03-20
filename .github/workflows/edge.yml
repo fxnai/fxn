@@ -15,14 +15,14 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install setuptools wheel twine
+        python3 -m pip install build twine
         python3 -m pip install -r requirements.txt
 
     - name: Pull EdgeFunction
       run: python3 edgefxn.py
 
-    - name: Build
-      run: python3 setup.py sdist bdist_wheel
+    - name: Build Function
+      run: python3 -m build
 
     - uses: actions/upload-artifact@v4
       with:

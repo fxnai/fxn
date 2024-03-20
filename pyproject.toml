@@ -1,0 +1,61 @@
+# 
+#   Function
+#   Copyright © 2024 NatML Inc. All Rights Reserved.
+#
+
+[project]
+name = "fxn"
+dynamic = ["version"]
+description = "Run on-device and cloud AI prediction functions in Python. Register at https://fxn.ai."
+readme = "README.md"
+dependencies = [
+    "aiohttp",
+    "magika",
+    "numpy",
+    "pillow",
+    "pydantic>=2.0",
+    "requests",
+    "rich",
+    "typer"
+]
+requires-python = ">=3.9"
+authors = [ { name = "NatML Inc.", email = "hi@fxn.ai" } ]
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://fxn.ai"
+Documentation = "https://docs.fxn.ai"
+Source = "https://github.com/fxnai/fxn"
+Changelog = "https://github.com/fxnai/fxn/blob/main/Changelog.md"
+
+[project.optional-dependencies]
+# None
+
+[project.scripts]
+fxn = "fxn.cli.__init__:app"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["fxn", "fxn*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"fxn.libs.macos" = ["*.dylib"]
+"fxn.libs.windows" = ["*.dll"]
+"fxn.libs.linux" = ["*.so"]
+
+[tool.setuptools.dynamic]
+version = { attr = "fxn.version.__version__" }
