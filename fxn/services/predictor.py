@@ -28,7 +28,7 @@ class PredictorService:
             Predictor: Predictor.
         """
         # Query
-        response = self.client.queryfxn(f"""
+        response = self.client.query(f"""
             query ($input: PredictorInput!) {{
                 predictor (input: $input) {{
                     {PREDICTOR_FIELDS}

@@ -1,3 +1,6 @@
+## 0.0.33
++ Fixed error in `fxn.predictors.retrieve` function.
+
 ## 0.0.32
 + Added missing native libraries.
 
