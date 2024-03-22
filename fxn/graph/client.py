@@ -32,14 +32,12 @@ class GraphClient:
             json={ "query": query, "variables": variables },
             headers={ "Authorization": f"Bearer {self.access_key}" } if self.access_key else { }
         )
-        # Check
         payload = response.json()
+        # Check error
         try:
             response.raise_for_status()
-        except:
-            raise RuntimeError(payload.get("error"))
-        # Check error
-        if "errors" in payload:
-            raise RuntimeError(payload["errors"][0]["message"])
+        except Exception as ex:
+            error = payload["errors"][0]["message"] if "errors" in payload else str(ex)
+            raise RuntimeError(error)
         # Return
         return payload["data"]
