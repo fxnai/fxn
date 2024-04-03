@@ -1,3 +1,6 @@
+## 0.0.34
+*INCOMPLETE*
+
 ## 0.0.33
 + Fixed error in `fxn.predictors.retrieve` function.
 
