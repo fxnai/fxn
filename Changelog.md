@@ -1,5 +1,5 @@
 ## 0.0.34
-*INCOMPLETE*
++ Fixed `fxn` import error caused by `fxn.predictions.stream` function.
 
 ## 0.0.33
 + Fixed error in `fxn.predictors.retrieve` function.

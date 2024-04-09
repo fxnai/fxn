@@ -155,7 +155,8 @@ class PredictionService:
                     prediction = self.__parse_prediction(prediction, raw_outputs=raw_outputs, return_binary_path=return_binary_path)
                     # Check edge prediction
                     if prediction.type != PredictorType.Edge or raw_outputs:
-                        return prediction
+                        yield prediction
+                        continue
                     # Load edge predictor
                     predictor = self.__load(prediction)
                     self.__cache[tag] = predictor
