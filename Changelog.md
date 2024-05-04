@@ -1,5 +1,5 @@
 ## 0.0.35
-*INCOMPLETE*
++ Updated to Function C 0.0.18.
 
 ## 0.0.34
 + Fixed `fxn` import error caused by `fxn.predictions.stream` function.

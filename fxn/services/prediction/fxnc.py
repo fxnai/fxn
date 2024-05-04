@@ -55,12 +55,14 @@ class FXNValue(Structure): pass
 class FXNValueMap(Structure): pass
 class FXNConfiguration(Structure): pass
 class FXNPrediction(Structure): pass
+class FXNPredictionStream(Structure): pass
 class FXNPredictor(Structure): pass
 
 FXNValueRef = POINTER(FXNValue)
 FXNValueMapRef = POINTER(FXNValueMap)
 FXNConfigurationRef = POINTER(FXNConfiguration)
 FXNPredictionRef = POINTER(FXNPrediction)
+FXNPredictionStreamRef = POINTER(FXNPredictionStream)
 FXNPredictorRef = POINTER(FXNPredictor)
 
 def load_fxnc (path: Path) -> CDLL:
@@ -171,15 +173,24 @@ def load_fxnc (path: Path) -> CDLL:
     # FXNPredictionGetLogLength
     fxnc.FXNPredictionGetLogLength.argtypes = [FXNPredictionRef, POINTER(c_int32)]
     fxnc.FXNPredictionGetLogLength.restype = FXNStatus
+    # FXNPredictionStreamRelease
+    fxnc.FXNPredictionStreamRelease.argtypes = [FXNPredictionStreamRef]
+    fxnc.FXNPredictionStreamRelease.restype = FXNStatus
+    # FXNPredictionStreamReadNext
+    fxnc.FXNPredictionStreamReadNext.argtypes = [FXNPredictionStreamRef, POINTER(FXNPredictionRef)]
+    fxnc.FXNPredictionStreamReadNext.restype = FXNStatus
     # FXNPredictorCreate
     fxnc.FXNPredictorCreate.argtypes = [FXNConfigurationRef, POINTER(FXNPredictorRef)]
     fxnc.FXNPredictorCreate.restype = FXNStatus
     # FXNPredictorRelease
     fxnc.FXNPredictorRelease.argtypes = [FXNPredictorRef]
     fxnc.FXNPredictorRelease.restype = FXNStatus
-    # FXNPredictorPredict
-    fxnc.FXNPredictorPredict.argtypes = [FXNPredictorRef, FXNValueMapRef, POINTER(FXNPredictionRef)]
-    fxnc.FXNPredictorPredict.restype = FXNStatus
+    # FXNPredictorCreatePrediction
+    fxnc.FXNPredictorCreatePrediction.argtypes = [FXNPredictorRef, FXNValueMapRef, POINTER(FXNPredictionRef)]
+    fxnc.FXNPredictorCreatePrediction.restype = FXNStatus
+    # FXNPredictorStreamPrediction
+    fxnc.FXNPredictorStreamPrediction.argtypes = [FXNPredictionRef, FXNValueMapRef, POINTER(FXNPredictionStreamRef)]
+    fxnc.FXNPredictorStreamPrediction.restype = FXNStatus
     # FXNGetVersion
     fxnc.FXNGetVersion.argtypes = []
     fxnc.FXNGetVersion.restype = c_char_p

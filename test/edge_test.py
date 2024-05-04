@@ -16,7 +16,7 @@ def test_load_fxnc ():
 
 def test_edge_math_prediction ():
     fxn = Function()
-    prediction = fxn.predictions.create(tag="@fxn/math", inputs={ "radius": 4 })
+    prediction = fxn.predictions.create(tag="@yusuf/math", inputs={ "radius": 4 })
     assert prediction is not None
 
 def test_edge_ml_prediction ():

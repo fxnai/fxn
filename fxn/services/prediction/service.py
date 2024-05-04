@@ -371,7 +371,7 @@ class PredictionService:
                 value = to_fxn_value(fxnc, value, copy=False)
                 fxnc.FXNValueMapSetValue(input_map, name.encode(), value)
             # Predict
-            status = fxnc.FXNPredictorPredict(predictor, input_map, byref(prediction))
+            status = fxnc.FXNPredictorCreatePrediction(predictor, input_map, byref(prediction))
             assert status.value == FXNStatus.OK, f"Failed to create {tag} prediction with status: {status.value}"
             # Marshal prediction
             id = create_string_buffer(256)
