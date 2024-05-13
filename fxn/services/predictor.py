@@ -6,7 +6,7 @@
 from pathlib import Path
 from typing import Dict, List, Union
 
-from ..graph import GraphClient
+from ..api import GraphClient
 from ..types import Acceleration, AccessMode, Predictor, PredictorStatus, PredictorType, UploadType
 from .storage import StorageService
 from .user import PROFILE_FIELDS

@@ -5,7 +5,7 @@
 
 from os import environ
 
-from .graph import GraphClient
+from .api import GraphClient
 from .services import EnvironmentVariableService, PredictionService, PredictorService, StorageService, UserService
 
 class Function:

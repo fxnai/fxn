@@ -24,7 +24,7 @@ from uuid import uuid4
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
-from ...graph import GraphClient
+from ...api import GraphClient
 from ...types import Dtype, PredictorType, Prediction, PredictionResource, Value, UploadType
 from ..storage import StorageService
 from .fxnc import load_fxnc, to_fxn_value, to_py_value, FXNConfigurationRef, FXNPredictorRef, FXNPredictionRef, FXNStatus, FXNValueRef, FXNValueMapRef

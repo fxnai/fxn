@@ -5,7 +5,7 @@
 
 from typing import List
 
-from ..graph import GraphClient
+from ..api import GraphClient
 from ..types import EnvironmentVariable
 
 class EnvironmentVariableService:

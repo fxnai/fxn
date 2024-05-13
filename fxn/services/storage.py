@@ -12,7 +12,7 @@ from rich.progress import open as open_progress, wrap_file
 from typing import Union
 from urllib.parse import urlparse, urlunparse
 
-from ..graph import GraphClient
+from ..api import GraphClient
 from ..types import UploadType
 
 class StorageService:

@@ -3,7 +3,7 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from ..graph import GraphClient
+from ..api import GraphClient
 from ..types import Profile
 
 class UserService:
