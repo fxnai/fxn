@@ -4,15 +4,9 @@
 #
 
 from fxn import Function
-from fxn.services.prediction.fxnc import load_fxnc, FXNStatus
+from fxn.c import load_fxnc, FXNStatus
 from pathlib import Path
 from PIL import Image
-
-def test_load_fxnc ():
-    fxnc_path = Path("../edgefxn/build/macOS/Release/Release/Function.dylib")
-    fxnc = load_fxnc(fxnc_path)
-    version = fxnc.FXNGetVersion().decode("utf-8")
-    assert version is not None
 
 def test_edge_math_prediction ():
     fxn = Function()

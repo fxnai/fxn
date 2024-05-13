@@ -6,9 +6,9 @@
 from ctypes import CDLL, POINTER, Structure
 from .configuration import FXNConfigurationRef
 from .prediction import FXNPredictionRef
-from .prediction_stream import FXNPredictionStreamRef
+from .stream import FXNPredictionStreamRef
 from .status import FXNStatus
-from .value_map import FXNValueMapRef
+from .map import FXNValueMapRef
 
 class FXNPredictor(Structure): pass
 

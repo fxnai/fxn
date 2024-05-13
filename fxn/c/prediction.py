@@ -5,7 +5,7 @@
 
 from ctypes import c_char_p, c_double, c_int32, CDLL, POINTER, Structure
 from .status import FXNStatus
-from .value_map import FXNValueMapRef
+from .map import FXNValueMapRef
 
 class FXNPrediction(Structure): pass
 
