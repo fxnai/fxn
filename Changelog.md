@@ -1,5 +1,6 @@
 ## 0.0.36
-*INCOMPLETE*
++ Fixed crash when using `PIL.Image` values returned by edge predictors.
++ Updated to Function C 0.0.19.
 
 ## 0.0.35
 + Updated to Function C 0.0.18.

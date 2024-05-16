@@ -496,7 +496,10 @@ class PredictionService:
             raise RuntimeError(f"Failed to convert Python value to Function value because Python value has an unsupported type: {type(value)}")
         return result
     
-    def __to_object (self, value: type[FXNValueRef]) -> Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, BytesIO, None]:
+    def __to_object (
+        self,
+        value: type[FXNValueRef]
+    ) -> Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, BytesIO, None]:
         # Type
         fxnc = self.__fxnc
         dtype = FXNDtype()
@@ -529,7 +532,7 @@ class PredictionService:
             return loads(cast(data, c_char_p).value.decode())
         elif dtype == FXNDtype.IMAGE:
             pixel_buffer = as_array(cast(data, POINTER(c_uint8)), shape)
-            return Image.fromarray(pixel_buffer)
+            return Image.fromarray(pixel_buffer.copy())
         elif dtype == FXNDtype.BINARY:
             return BytesIO(string_at(data, shape[0]))
         else:
