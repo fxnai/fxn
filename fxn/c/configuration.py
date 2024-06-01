@@ -20,6 +20,9 @@ def _register_fxn_configuration (fxnc: CDLL) -> CDLL:
     # FXNConfigurationGetUniqueID
     fxnc.FXNConfigurationGetUniqueID.argtypes = [c_char_p, c_int32]
     fxnc.FXNConfigurationGetUniqueID.restype = FXNStatus
+    # FXNConfigurationGetClientID
+    fxnc.FXNConfigurationGetClientID.argtypes = [c_char_p, c_int32]
+    fxnc.FXNConfigurationGetClientID.restype = FXNStatus
     # FXNConfigurationCreate
     fxnc.FXNConfigurationCreate.argtypes = [POINTER(FXNConfigurationRef)]
     fxnc.FXNConfigurationCreate.restype = FXNStatus

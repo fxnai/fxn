@@ -308,14 +308,20 @@ class PredictionService:
             return load_fxnc(fxnc_path)
 
     def __get_client_id (self) -> str:
-        id = system()
-        if id == "Darwin":
-            return f"macos:{machine()}"
-        if id == "Linux":
-            return f"linux:{machine()}"
-        if id == "Windows":
-            return f"windows:{machine()}"
-        raise RuntimeError(f"Function cannot make predictions on the {id} platform")
+        # Check
+        if not self.__fxnc: # CHECK # Remove this block once `fxnc` ships Linux binaries
+            return {
+                "Darwin":  f"macos-{machine()}",
+                "Linux": f"linux-{machine()}",
+                "Windows": f"windows-{machine()}"
+            }[system()]
+        # Get
+        buffer = create_string_buffer(64)
+        status = self.__fxnc.FXNConfigurationGetClientID(buffer, len(buffer))
+        assert status.value == FXNStatus.OK, f"Failed to retrieve prediction client identifier with status: {status.value}"
+        client_id = buffer.value.decode("utf-8")
+        # Return
+        return client_id
 
     def __get_configuration_id (self) -> Optional[str]:
         # Check
@@ -324,7 +330,7 @@ class PredictionService:
         # Get
         buffer = create_string_buffer(2048)
         status = self.__fxnc.FXNConfigurationGetUniqueID(buffer, len(buffer))
-        assert status.value == FXNStatus.OK, f"Failed to create prediction configuration identifier with status: {status.value}"
+        assert status.value == FXNStatus.OK, f"Failed to retrieve prediction configuration identifier with status: {status.value}"
         uid = buffer.value.decode("utf-8")
         # Return
         return uid

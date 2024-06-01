@@ -11,7 +11,7 @@ parser = ArgumentParser()
 parser.add_argument("--version", type=str, default=None)
 
 def _download_fxnc (name: str, version: str, path: Path):
-    url = f"https://cdn.fxn.ai/edgefxn/{version}/{name}"
+    url = f"https://cdn.fxn.ai/fxnc/{version}/{name}"
     response = get(url)
     response.raise_for_status()
     with open(path, "wb") as f:
