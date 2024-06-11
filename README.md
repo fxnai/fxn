@@ -9,14 +9,15 @@ Run AI prediction functions (a.k.a "predictors") in your Python apps. With Funct
 ## Installing Function
 Function is distributed on PyPi. This distribution contains both the Python client and the command line interface (CLI). To install, open a terminal and run the following command:
 ```sh
-pip install --upgrade fxn
+# Install Function
+$ pip install --upgrade fxn
 ```
 
 > [!NOTE]
 > Function requires Python 3.9+
 
 ## Making a Prediction
-Let's run the [`@samplefxn/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image.
+Let's run the [`@samples/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image.
 
 ### In Python
 Run the following Python script:
@@ -27,7 +28,7 @@ from fxn import Function
 fxn = Function()
 # Create a prediction
 prediction = fxn.predictions.create(
-    tag="@samplefxn/stable-diffusion",
+    tag="@samples/stable-diffusion",
     inputs={
         "prompt": "An astronaut riding a horse on Mars"
     }
@@ -36,6 +37,9 @@ prediction = fxn.predictions.create(
 image = prediction.results[0]
 image.show()
 ```
+
+> [!TIP]
+> Explore public predictors [on Function](https://fxn.ai/explore) or [create your own](https://fxn.ai/waitlist).
 
 ### In the CLI
 Open up a terminal and run the following command:
