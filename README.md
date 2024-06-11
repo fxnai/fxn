@@ -16,13 +16,18 @@ $ pip install --upgrade fxn
 > [!NOTE]
 > Function requires Python 3.9+
 
+## Retrieving your Access Key
+Head over to [fxn.ai](https://fxn.ai) to create an account by logging in. Once you do, generate an access key:
+
+![generate access key](https://raw.githubusercontent.com/fxnai/.github/main/access_key.gif)
+
 ## Making a Prediction
 Let's run the [`@samples/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image. Run the following Python script:
 ```py
 from fxn import Function
 
 # Create the Function client
-fxn = Function()
+fxn = Function(access_key="<ACCESS KEY>")
 # Create a prediction
 prediction = fxn.predictions.create(
     tag="@samples/stable-diffusion",
@@ -42,6 +47,9 @@ image.show()
 Open up a terminal and run the following command:
 
 ```sh
+# Login to Function
+fxn auth login <ACCESS KEY>
+
 # Make a prediction using the Function CLI
 fxn predict @samplefxn/stable-diffusion \
   --prompt "An astronaut riding a horse on the moon"
