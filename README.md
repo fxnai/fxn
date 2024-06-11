@@ -17,10 +17,7 @@ $ pip install --upgrade fxn
 > Function requires Python 3.9+
 
 ## Making a Prediction
-Let's run the [`@samples/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image.
-
-### In Python
-Run the following Python script:
+Let's run the [`@samples/stable-diffusion`](https://fxn.ai/@samplefxn/stable-diffusion) predictor which accepts a text `prompt` and generates a corresponding image. Run the following Python script:
 ```py
 from fxn import Function
 
@@ -41,19 +38,18 @@ image.show()
 > [!TIP]
 > Explore public predictors [on Function](https://fxn.ai/explore) or [create your own](https://fxn.ai/waitlist).
 
-### In the CLI
+## Using the Function CLI
 Open up a terminal and run the following command:
 
 ```sh
-fxn predict @samplefxn/stable-diffusion --prompt "An astronaut riding a horse on the moon"
+# Make a prediction using the Function CLI
+fxn predict @samplefxn/stable-diffusion \
+  --prompt "An astronaut riding a horse on the moon"
 ```
 
 Within a few seconds, you should see a creepy-looking image pop up 😅:
 
 ![prediction](https://raw.githubusercontent.com/fxnai/.github/main/predict.gif)
-
-## Creating a Predictor
-At some point, you might want to create your own predictor. With Function, you don't have to deal with GitHub repos, Dockerfiles, or weird YAMLs. All you need is a Jupyter Notebook with a `predict` function. See our [samples project](https://github.com/fxnai/samples) for more.
 
 ___
 
