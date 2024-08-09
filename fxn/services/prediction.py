@@ -31,6 +31,8 @@ class PredictionService:
         self.client = client
         self.__fxnc = PredictionService.__load_fxnc()
         self.__cache = { }
+        self.__cache_dir = self.__class__.__get_resource_dir() / ".fxn" / "cache"
+        self.__cache_dir.mkdir(exist_ok=True)
 
     def create (
         self,
@@ -89,7 +91,7 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Dict[str, Union[float, int, str, bool, NDArray, List[Any], Dict[str, Any], Path, Image.Image]] = {},
+        inputs: Dict[str, float | int | str | bool | NDArray | List[Any] | Dict[str, Any] | Path | Image.Image] = {},
         acceleration: Acceleration=Acceleration.Default,
         client_id: str=None,
         configuration_id: str=None
@@ -127,12 +129,12 @@ class PredictionService:
         yield prediction
 
     @classmethod
-    def __load_fxnc (self) -> Optional[CDLL]:
+    def __load_fxnc (cls) -> Optional[CDLL]:
         os = system().lower()
         os = "macos" if os == "darwin" else os
-        arch = machine()
+        arch = machine().lower()
         arch = "arm64" if arch == "aarch64" else arch
-        arch = "x86_64" if arch == "x64" else arch
+        arch = "x86_64" if arch in ["x64", "amd64"] else arch
         package = f"fxn.lib.{os}.{arch}"
         resource = "libFunction.so"
         resource = "Function.dylib" if os == "macos" else resource
@@ -141,11 +143,6 @@ class PredictionService:
             return load_fxnc(fxnc_path)
 
     def __get_client_id (self) -> str:
-        # Fallback if fxnc failed to load
-        if not self.__fxnc:
-            os = system().lower()
-            os = "macos" if os == "darwin" else os
-            return f"{os}-{machine()}"
         # Get
         buffer = create_string_buffer(64)
         status = self.__fxnc.FXNConfigurationGetClientID(buffer, len(buffer))
@@ -278,7 +275,7 @@ class PredictionService:
     
     def __to_value (
         self,
-        value: Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, bytes, bytearray, memoryview, BytesIO, None]
+        value: float | int | bool | str | NDArray | List[Any] | Dict[str, Any] | Image.Image | bytes | bytearray | memoryview | BytesIO | None
     ) -> type[FXNValueRef]:
         value = PredictionService.__try_ensure_serializable(value)
         fxnc = self.__fxnc
@@ -336,7 +333,7 @@ class PredictionService:
     def __to_object (
         self,
         value: type[FXNValueRef]
-    ) -> Union[float, int, bool, str, NDArray, List[Any], Dict[str, Any], Image.Image, BytesIO, None]:
+    ) -> float | int | bool | str | NDArray | List[Any] | Dict[str, Any] | Image.Image | BytesIO | None:
         # Type
         fxnc = self.__fxnc
         dtype = FXNDtype()
@@ -376,10 +373,8 @@ class PredictionService:
             raise RuntimeError(f"Failed to convert Function value to Python value because Function value has unsupported type: {dtype}")
 
     def __get_resource_path (self, resource: PredictionResource) -> Path:
-        cache_dir = self.__class__.__get_resource_dir() / ".fxn" / "cache"
-        cache_dir.mkdir(exist_ok=True)
         res_name = Path(urlparse(resource.url).path).name
-        res_path = cache_dir / res_name
+        res_path = self.__cache_dir / res_name
         if res_path.exists():
             return res_path
         req = get(resource.url)

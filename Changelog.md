@@ -1,5 +1,5 @@
 ## 0.0.39
-*INCOMPLETE*
++ Fixed errors when `Function` client is created on Windows.
 
 ## 0.0.38
 + Function now supports Linux, across `x86_64` and `arm64` architectures.
