@@ -28,11 +28,13 @@ from fxn import Function
 
 # Create the Function client
 fxn = Function(access_key="<Function access key>")
+
 # Create a prediction
 prediction = fxn.predictions.create(
     tag="@fxn/greeting",
     inputs={ "name": "Peter" }
 )
+
 # Print the returned greeting
 print(prediction.results[0])
 ```
