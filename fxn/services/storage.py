@@ -9,7 +9,6 @@ from magika import Magika
 from pathlib import Path
 from requests import put
 from rich.progress import open as open_progress, wrap_file
-from typing import Union
 from urllib.parse import urlparse, urlunparse
 
 from ..api import GraphClient
@@ -45,7 +44,7 @@ class StorageService:
     
     def upload (
         self,
-        file: Union[str, Path, BytesIO],
+        file: str | Path | BytesIO,
         *,
         type: UploadType,
         name: str=None,
@@ -138,7 +137,7 @@ class StorageService:
         url = urlunparse(parsed_url)
         return url
     
-    def __infer_mime (self, file: Union[str, Path, BytesIO]) -> str:
+    def __infer_mime (self, file: str | Path | BytesIO) -> str:
         MAGIC_TO_MIME = {
             b"\x00\x61\x73\x6d": "application/wasm"
         }

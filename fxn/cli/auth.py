@@ -15,7 +15,7 @@ app = Typer(no_args_is_help=True)
 def login (
     access_key: str=Argument(..., help="Function access key.", envvar="FXN_ACCESS_KEY")
 ):
-    fxn = Function(access_key)
+    fxn = Function(access_key=access_key)
     user = fxn.users.retrieve()
     user = user.model_dump() if user else None
     _set_access_key(access_key if user is not None else None)

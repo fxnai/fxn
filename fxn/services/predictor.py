@@ -3,11 +3,10 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from pathlib import Path
-from typing import Dict, List, Union
+from typing import List
 
 from ..api import GraphClient
-from ..types import Acceleration, AccessMode, Predictor, PredictorStatus, PredictorType, UploadType
+from ..types import Predictor, PredictorStatus
 from .storage import StorageService
 from .user import PROFILE_FIELDS
 
@@ -120,70 +119,6 @@ class PredictorService:
         # Return
         return predictors
     
-    def create (
-        self,
-        tag: str,
-        notebook: Union[str, Path],
-        type: PredictorType=None,
-        access: AccessMode=None,
-        description: str=None,
-        media: Union[str, Path]=None,
-        acceleration: Acceleration=None,
-        environment: Dict[str, str]=None,
-        license: str=None,
-        overwrite: bool=None
-    ) -> Predictor:
-        """
-        Create a predictor.
-
-        Parameters:
-            tag (str): Predictor tag.
-            notebook (str | Path): Predictor notebook path or URL.
-            type (PredictorType): Predictor type. This defaults to `CLOUD`.
-            access (AccessMode): Predictor access mode. This defaults to `PRIVATE`.
-            description (str): Predictor description. This must be under 200 characters long.
-            media (str | Path): Predictor media path or URL.
-            acceleration (Acceleration): Predictor acceleration. This only applies for cloud predictors and defaults to `CPU`. 
-            environment (dict): Predictor environment variables.
-            license (str): Predictor license URL.
-            overwrite (bool): Overwrite any existing predictor with the same tag. Existing predictor will be deleted.
-
-        Returns:
-            Predictor: Created predictor.
-        """
-        # Prepare
-        environment = [{ "name": name, "value": value } for name, value in environment.items()] if environment is not None else []
-        notebook = self.storage.upload(notebook, type=UploadType.Notebook) if isinstance(notebook, Path) else notebook
-        media = self.storage.upload(media, type=UploadType.Media) if isinstance(media, Path) else media
-        # Query
-        response = self.client.query(f"""
-            mutation ($input: CreatePredictorInput!) {{
-                createPredictor (input: $input) {{
-                    {PREDICTOR_FIELDS}
-                }}
-            }}
-            """,
-            {
-                "input": {
-                    "tag": tag,
-                    "type": type,
-                    "notebook": notebook,
-                    "access": access,
-                    "description": description,
-                    "media": media,
-                    "acceleration": acceleration,
-                    "environment": environment,
-                    "overwrite": overwrite,
-                    "license": license
-                }
-            }
-        )
-        # Create predictor
-        predictor = response["createPredictor"]
-        predictor = Predictor(**predictor) if predictor else None
-        # Return
-        return predictor
-    
     def delete (self, tag: str) -> bool:
         """
         Delete a predictor.
@@ -239,14 +174,12 @@ owner {{
     {PROFILE_FIELDS}
 }}
 name
-type
 status
 access
 created
 description
 card
 media
-acceleration
 signature {{
     inputs {{
         name

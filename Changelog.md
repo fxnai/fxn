@@ -1,6 +1,28 @@
 ## 0.0.36
++ Added `Acceleration.Default` enumeration constant.
++ Added `Acceleration.GPU` enumeration constant for running predictions on the GPU.
++ Added `Acceleration.NPU` enumeration constant forn running predictions on the neural processor.
 + Fixed crash when using `PIL.Image` values returned by edge predictors.
-+ Updated to Function C 0.0.23.
++ Updated to Function C 0.0.26.
++ Removed `Value` type.
++ Removed `PredictorType` enumeration.
++ Removed `fxn.predictors.create` method for creating predictors. [Apply](https://fxn.ai/waitlist) for early access to the new experience.
++ Removed `fxn.predictions.to_object` method.
++ Removed `fxn.predictions.to_value` method.
++ Removed `Predictor.type` field.
++ Removed `Predictor.acceleration` field.
++ Removed `Prediction.type` field.
++ Removed `Acceleration.A40` enumeration constant.
++ Removed `Acceleration.A100` enumeration constant.
++ Removed `fxn create` CLI function.
++ Removed `fxn delete` CLI function.
++ Removed `fxn list` CLI function.
++ Removed `fxn search` CLI function.
++ Removed `fxn retrieve` CLI function.
++ Removed `fxn archive` CLI function.
++ Removed `fxn env` CLI function group.
++ Removed `--raw-outputs` option from `fxn predict` CLI function.
++ Function now requires Python 3.10+.
 
 ## 0.0.35
 + Updated to Function C 0.0.18.

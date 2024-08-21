@@ -17,8 +17,6 @@ class Function:
         users (UserService): Manage users.
         predictors (PredictorService): Manage predictors.
         predictions (PredictionService): Manage predictions.
-        environment_variables (EnvironmentVariableService): Manage predictor environment variables.
-        storage (StorageService): Upload and download files.
 
     Constructor:
         access_key (str): Function access key.
@@ -28,15 +26,16 @@ class Function:
     users: UserService
     predictors: PredictorService
     predictions: PredictionService
-    environment_variables: EnvironmentVariableService
-    storage: StorageService
+    #environment_variables: EnvironmentVariableService
+    #storage: StorageService
 
     def __init__ (self, access_key: str=None, api_url: str=None):
         access_key = access_key or environ.get("FXN_ACCESS_KEY", None)
         api_url = api_url or environ.get("FXN_API_URL", "https://api.fxn.ai")
-        self.client = GraphClient(access_key, api_url)
-        self.users = UserService(self.client)
-        self.storage = StorageService(self.client)
-        self.predictors = PredictorService(self.client, self.storage)
-        self.predictions = PredictionService(self.client, self.storage)
-        self.environment_variables = EnvironmentVariableService(self.client)
+        client = GraphClient(access_key, api_url)
+        storage = StorageService(client)
+        self.client = client
+        self.users = UserService(client)
+        self.predictors = PredictorService(client, storage)
+        self.predictions = PredictionService(client)
+        #self.environment_variables = EnvironmentVariableService(self.client)

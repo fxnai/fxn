@@ -21,8 +21,8 @@ jobs:
         python3 -m pip install build twine
         python3 -m pip install -r requirements.txt
 
-    - name: Pull EdgeFunction
-      run: python3 edgefxn.py
+    - name: Pull Function C
+      run: python3 fxnc.py
 
     - name: Build Function
       run: python3 -m build

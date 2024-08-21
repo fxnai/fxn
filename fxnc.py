@@ -14,6 +14,7 @@ def _download_fxnc (name: str, version: str, path: Path):
     url = f"https://cdn.fxn.ai/fxnc/{version}/{name}"
     response = get(url)
     response.raise_for_status()
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "wb") as f:
         f.write(response.content)
     print(f"Wrote {name} {version} to path: {path}")
@@ -24,20 +25,18 @@ def _get_latest_version () -> str:
     release = response.json()
     return release["tag_name"]
 
-def main (): # CHECK # Linux
+def main (): # INCOMPLETE # Linux
     args = parser.parse_args()
     version = args.version if args.version else _get_latest_version()
-    LIB_PATH_BASE = Path("fxn") / "libs"
-    _download_fxnc(
-        "Function-macos.dylib",
-        version,
-        LIB_PATH_BASE / "macos" / "Function.dylib"
-    )
-    _download_fxnc(
-        "Function-win64.dll",
-        version,
-        LIB_PATH_BASE / "windows" / "Function.dll"
-    )
+    LIB_PATH_BASE = Path("fxn") / "lib"
+    DOWNLOADS = [
+        ("Function-macos-x86_64.dylib", LIB_PATH_BASE / "macos" / "x86_64" / "Function.dylib"),
+        ("Function-macos-arm64.dylib", LIB_PATH_BASE / "macos" / "arm64" / "Function.dylib"),
+        ("Function-win-x86_64.dll", LIB_PATH_BASE / "windows" / "x86_64" / "Function.dll"),
+        ("Function-win-arm64.dll", LIB_PATH_BASE / "windows" / "arm64" / "Function.dll"),
+    ]
+    for name, path in DOWNLOADS:
+        _download_fxnc(name, version, path)
 
 if __name__ == "__main__":
     main()

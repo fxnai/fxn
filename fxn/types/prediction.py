@@ -6,8 +6,6 @@
 from pydantic import BaseModel, Field
 from typing import Any, List, Optional
 
-from .predictor import PredictorType
-
 class PredictionResource (BaseModel):
     """
     Prediction resource.
@@ -28,7 +26,6 @@ class Prediction (BaseModel):
     Members:
         id (str): Prediction identifier.
         tag (str): Predictor tag.
-        type (PredictorType): Prediction type.
         configuration (str): Prediction configuration token. This is only populated for `EDGE` predictions.
         resources (list): Prediction resources. This is only populated for `EDGE` predictions.
         results (list): Prediction results.
@@ -39,7 +36,6 @@ class Prediction (BaseModel):
     """
     id: str = Field(description="Prediction identifier.")
     tag: str = Field(description="Predictor tag.")
-    type: PredictorType = Field(description="Prediction type.")
     configuration: Optional[str] = Field(default=None, description="Prediction configuration token. This is only populated for `EDGE` predictions.")
     resources: Optional[List[PredictionResource]] = Field(default=None, description="Prediction resources. This is only populated for `EDGE` predictions.")
     results: Optional[List[Any]] = Field(default=None, description="Prediction results.")

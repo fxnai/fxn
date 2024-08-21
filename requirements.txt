@@ -1,5 +1,3 @@
-aiohttp
-magika
 numpy
 pillow
 requests

@@ -10,7 +10,7 @@ jobs:
 
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: "3.11"
     
     - name: Install dependencies
       run: |
@@ -18,8 +18,8 @@ jobs:
         python3 -m pip install build twine
         python3 -m pip install -r requirements.txt
 
-    - name: Pull EdgeFunction
-      run: python3 edgefxn.py
+    - name: Pull Function C
+      run: python3 fxnc.py
 
     - name: Build Function
       run: python3 -m build

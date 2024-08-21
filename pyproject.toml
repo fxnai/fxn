@@ -6,11 +6,9 @@
 [project]
 name = "fxn"
 dynamic = ["version"]
-description = "Run on-device and cloud AI prediction functions in Python. Register at https://fxn.ai."
+description = "Run prediction functions locally in Python. Register at https://fxn.ai."
 readme = "README.md"
 dependencies = [
-    "aiohttp",
-    "magika",
     "numpy",
     "pillow",
     "pydantic>=2.0",
@@ -18,7 +16,7 @@ dependencies = [
     "rich",
     "typer"
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [ { name = "NatML Inc.", email = "hi@fxn.ai" } ]
 license = { file = "LICENSE" }
 classifiers = [
@@ -53,9 +51,7 @@ include = ["fxn", "fxn*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"fxn.libs.macos" = ["*.dylib"]
-"fxn.libs.windows" = ["*.dll"]
-"fxn.libs.linux" = ["*.so"]
+"fxn.lib" = ["macos/*/*.dylib", "windows/*/*.dll", "linux/*/*.so"]
 
 [tool.setuptools.dynamic]
 version = { attr = "fxn.version.__version__" }
