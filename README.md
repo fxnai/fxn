@@ -39,7 +39,7 @@ print(prediction.results[0])
 
 > [!TIP]
 > Explore public predictors [on Function](https://fxn.ai/explore) or [create your own](https://fxn.ai/waitlist).
-r
+
 ## Using the Function CLI
 Open up a terminal and run the following command:
 
