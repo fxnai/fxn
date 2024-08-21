@@ -6,7 +6,7 @@
 from os import environ
 
 from .api import GraphClient
-from .services import EnvironmentVariableService, PredictionService, PredictorService, StorageService, UserService
+from .services import PredictionService, PredictorService, UserService
 
 class Function:
     """
@@ -26,16 +26,11 @@ class Function:
     users: UserService
     predictors: PredictorService
     predictions: PredictionService
-    #environment_variables: EnvironmentVariableService
-    #storage: StorageService
 
     def __init__ (self, access_key: str=None, api_url: str=None):
         access_key = access_key or environ.get("FXN_ACCESS_KEY", None)
         api_url = api_url or environ.get("FXN_API_URL", "https://api.fxn.ai")
-        client = GraphClient(access_key, api_url)
-        storage = StorageService(client)
-        self.client = client
-        self.users = UserService(client)
-        self.predictors = PredictorService(client, storage)
-        self.predictions = PredictionService(client)
-        #self.environment_variables = EnvironmentVariableService(self.client)
+        self.client = GraphClient(access_key, api_url)
+        self.users = UserService(self.client)
+        self.predictors = PredictorService(self.client)
+        self.predictions = PredictionService(self.client)

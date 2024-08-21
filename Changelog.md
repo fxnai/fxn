@@ -1,3 +1,6 @@
+## 0.0.37
++ Added `fxn --explore` CLI action to explore predictions on [fxn.ai](https://fxn.ai/explore).
+
 ## 0.0.36
 + Added `Acceleration.Default` enumeration constant.
 + Added `Acceleration.GPU` enumeration constant for running predictions on the GPU.

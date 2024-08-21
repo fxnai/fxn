@@ -7,14 +7,12 @@ from typing import List
 
 from ..api import GraphClient
 from ..types import Predictor, PredictorStatus
-from .storage import StorageService
 from .user import PROFILE_FIELDS
 
 class PredictorService:
 
-    def __init__ (self, client: GraphClient, storage: StorageService) -> None:
+    def __init__ (self, client: GraphClient) -> None:
         self.client = client
-        self.storage = storage
 
     def retrieve (self, tag: str) -> Predictor:
         """
