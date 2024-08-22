@@ -11,16 +11,16 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from typing import Any, Dict, List, Optional, Tuple
 
 from .dtype import Dtype
-from .profile import Profile
+from .user import Profile
 
 class Acceleration (IntFlag):
     """
     Predictor acceleration.
     """
     Default = 0,
-    CPU = 1 << 0,
-    GPU = 1 << 1,
-    NPU = 1 << 2
+    CPU     = 1 << 0,
+    GPU     = 1 << 1,
+    NPU     = 1 << 2
 
 class AccessMode (str, Enum):
     """

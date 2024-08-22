@@ -427,11 +427,6 @@ resources {{
     url
     name
 }}
-results {{
-    data
-    type
-    shape
-}}
 latency
 error
 logs
