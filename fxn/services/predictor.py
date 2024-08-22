@@ -83,7 +83,7 @@ class PredictorService:
         predictors = [Predictor(**predictor) for predictor in predictors]
         # Return
         return predictors
-    
+
     def search (
         self,
         query: str,

@@ -35,7 +35,7 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Optional[Dict[str, Union[ndarray, str, float, int, bool, List, Dict[str, Any], Path, Image.Image]]] = None,
+        inputs: Optional[Dict[str, ndarray | str | float | int | bool | List[Any] | Dict[str, Any] | Path | Image.Image]] = None,
         acceleration: Acceleration=Acceleration.Default,
         client_id: str=None,
         configuration_id: str=None
@@ -58,7 +58,7 @@ class PredictionService:
             return self.__predict(tag=tag, predictor=self.__cache[tag], inputs=inputs)
         # Query
         response = post(
-            f"{self.client.api_url}/predict/{tag}?rawOutputs=true",
+            f"{self.client.api_url}/predict/{tag}",
             json={ },
             headers={
                 "Authorization": f"Bearer {self.client.access_key}",
@@ -124,7 +124,7 @@ class PredictionService:
         prediction = self.__predict(tag=tag, predictor=predictor, inputs=inputs)
         # Yield
         yield prediction
-    
+
     @classmethod
     def __load_fxnc (self) -> Optional[CDLL]:
         # Get resource
