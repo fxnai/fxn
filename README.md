@@ -48,13 +48,13 @@ print(prediction.results[0])
 Open up a terminal and login to the Function CLI:
 ```sh
 # Login to Function
-fxn auth login <ACCESS KEY>
+$ fxn auth login <ACCESS KEY>
 ```
 
 Then make a prediction:
 ```sh
 # Make a prediction using the Function CLI
-fxn predict @fxn/greeting --name Peter
+$ fxn predict @fxn/greeting --name Peter
 ```
 
 ___
