@@ -17,7 +17,7 @@ $ pip install --upgrade fxn
 > Function requires Python 3.10+
 
 ## Retrieving your Access Key
-Head over to [fxn.ai](https://fxn.ai) to create an account by logging in. Once you do, generate an access key:
+Head over to [fxn.ai](https://www.fxn.ai/account/developer) to create an account by logging in. Once you do, generate an access key:
 
 ![generate access key](https://raw.githubusercontent.com/fxnai/.github/main/access_key.gif)
 
