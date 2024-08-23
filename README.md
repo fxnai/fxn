@@ -22,19 +22,21 @@ Head over to [fxn.ai](https://fxn.ai) to create an account by logging in. Once y
 ![generate access key](https://raw.githubusercontent.com/fxnai/.github/main/access_key.gif)
 
 ## Making a Prediction
-Let's run the [`@fxn/greeting`](https://fxn.ai/@fxn/greeting) predictor which accepts a `name` and returns a congenial greeting. Run the following Python script:
+First, create a Function client, specifying your access key:
 ```py
 from fxn import Function
 
 # Create the Function client
 fxn = Function(access_key="<Function access key>")
+```
 
+Then make a prediction:
+```py
 # Create a prediction
 prediction = fxn.predictions.create(
     tag="@fxn/greeting",
     inputs={ "name": "Peter" }
 )
-
 # Print the returned greeting
 print(prediction.results[0])
 ```
@@ -43,12 +45,14 @@ print(prediction.results[0])
 > Explore public predictors [on Function](https://fxn.ai/explore) or [create your own](https://fxn.ai/waitlist).
 
 ## Using the Function CLI
-Open up a terminal and run the following command:
-
+Open up a terminal and login to the Function CLI:
 ```sh
 # Login to Function
 fxn auth login <ACCESS KEY>
+```
 
+Then make a prediction:
+```sh
 # Make a prediction using the Function CLI
 fxn predict @fxn/greeting --name Peter
 ```
