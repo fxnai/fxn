@@ -1,3 +1,6 @@
+## 0.0.39
+*INCOMPLETE*
+
 ## 0.0.38
 + Function now supports Linux, across `x86_64` and `arm64` architectures.
 
