@@ -25,7 +25,7 @@ def _get_latest_version () -> str:
     release = response.json()
     return release["tag_name"]
 
-def main (): # INCOMPLETE # Linux
+def main ():
     args = parser.parse_args()
     version = args.version if args.version else _get_latest_version()
     LIB_PATH_BASE = Path("fxn") / "lib"
@@ -34,6 +34,8 @@ def main (): # INCOMPLETE # Linux
         ("Function-macos-arm64.dylib", LIB_PATH_BASE / "macos" / "arm64" / "Function.dylib"),
         ("Function-win-x86_64.dll", LIB_PATH_BASE / "windows" / "x86_64" / "Function.dll"),
         ("Function-win-arm64.dll", LIB_PATH_BASE / "windows" / "arm64" / "Function.dll"),
+        ("libFunction-linux-x86_64.so", LIB_PATH_BASE / "linux" / "x86_64" / "libFunction.so"),
+        ("libFunction-linux-arm64.so", LIB_PATH_BASE / "linux" / "arm64" / "libFunction.so"),
     ]
     for name, path in DOWNLOADS:
         _download_fxnc(name, version, path)

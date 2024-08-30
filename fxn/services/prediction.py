@@ -17,6 +17,7 @@ from PIL import Image
 from platform import machine, system
 from pydantic import BaseModel
 from requests import get, post
+from tempfile import gettempdir
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 from urllib.parse import urlparse
 
@@ -127,32 +128,24 @@ class PredictionService:
 
     @classmethod
     def __load_fxnc (self) -> Optional[CDLL]:
-        # Get resource
-        package, resource = None, None
-        os = system()
-        if os == "Darwin":
-            package = f"fxn.lib.macos.{machine()}"
-            resource = f"Function.dylib"
-        elif os == "Linux" and False: # INCOMPLETE # Linux
-            package = f"fxn.lib.linux.{machine()}"
-            resource = f"libFunction.so"
-        elif os == "Windows":
-            package = f"fxn.lib.windows.{machine()}"
-            resource = f"Function.dll"
-        else:
-            return None
-        # Load
+        os = system().lower()
+        os = "macos" if os == "darwin" else os
+        arch = machine()
+        arch = "arm64" if arch == "aarch64" else arch
+        arch = "x86_64" if arch == "x64" else arch
+        package = f"fxn.lib.{os}.{arch}"
+        resource = "libFunction.so"
+        resource = "Function.dylib" if os == "macos" else resource
+        resource = "Function.dll" if os == "windows" else resource
         with resources.path(package, resource) as fxnc_path:
             return load_fxnc(fxnc_path)
 
     def __get_client_id (self) -> str:
         # Fallback if fxnc failed to load
         if not self.__fxnc:
-            return {
-                "Darwin":  f"macos-{machine()}",
-                "Linux": f"linux-{machine()}",
-                "Windows": f"windows-{machine()}"
-            }[system()]
+            os = system().lower()
+            os = "macos" if os == "darwin" else os
+            return f"{os}-{machine()}"
         # Get
         buffer = create_string_buffer(64)
         status = self.__fxnc.FXNConfigurationGetClientID(buffer, len(buffer))
@@ -383,7 +376,7 @@ class PredictionService:
             raise RuntimeError(f"Failed to convert Function value to Python value because Function value has unsupported type: {dtype}")
 
     def __get_resource_path (self, resource: PredictionResource) -> Path:
-        cache_dir = Path.home() / ".fxn" / "cache"
+        cache_dir = self.__class__.__get_resource_dir() / ".fxn" / "cache"
         cache_dir.mkdir(exist_ok=True)
         res_name = Path(urlparse(resource.url).path).name
         res_path = cache_dir / res_name
@@ -394,7 +387,18 @@ class PredictionService:
         with open(res_path, "wb") as f:
             f.write(req.content)
         return res_path
-    
+
+    @classmethod
+    def __get_resource_dir (cls) -> Path:
+        try:
+            check = Path.home() / ".fxntest"
+            with open(check, "w") as f:
+                f.write("fxn")
+            check.unlink()
+            return Path.home()
+        except:
+            return Path(gettempdir())
+
     @classmethod
     def __try_ensure_serializable (cls, object: Any) -> Any:
         if object is None:

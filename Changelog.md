@@ -1,3 +1,6 @@
+## 0.0.38
++ Function now supports Linux, across `x86_64` and `arm64` architectures.
+
 ## 0.0.37
 + Added `fxn --explore` CLI action to explore predictions on [fxn.ai](https://fxn.ai/explore).
 
