@@ -1,3 +1,6 @@
+## 0.0.40
++ Fixed errors when `Function` client is created for the first time on a new device.
+
 ## 0.0.39
 + Fixed errors when `Function` client is created on Windows.
 

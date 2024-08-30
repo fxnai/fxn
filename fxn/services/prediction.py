@@ -32,7 +32,7 @@ class PredictionService:
         self.__fxnc = PredictionService.__load_fxnc()
         self.__cache = { }
         self.__cache_dir = self.__class__.__get_resource_dir() / ".fxn" / "cache"
-        self.__cache_dir.mkdir(exist_ok=True)
+        self.__cache_dir.mkdir(parents=True, exist_ok=True)
 
     def create (
         self,
