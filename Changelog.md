@@ -1,3 +1,6 @@
+## 0.0.41
+*INCOMPLETE*
+
 ## 0.0.40
 + Fixed errors when `Function` client is created for the first time on a new device.
 + Updated to Function C 0.0.29.
