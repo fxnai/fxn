@@ -1,5 +1,5 @@
 ## 0.0.41
-*INCOMPLETE*
++ Fixed invalid data type error when prediction returns a greyscale image.
 
 ## 0.0.40
 + Fixed errors when `Function` client is created for the first time on a new device.

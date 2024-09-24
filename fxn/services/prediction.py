@@ -366,7 +366,7 @@ class PredictionService:
             return loads(cast(data, c_char_p).value.decode())
         elif dtype == FXNDtype.IMAGE:
             pixel_buffer = as_array(cast(data, POINTER(c_uint8)), shape)
-            return Image.fromarray(pixel_buffer.copy())
+            return Image.fromarray(pixel_buffer.copy().squeeze())
         elif dtype == FXNDtype.BINARY:
             return BytesIO(string_at(data, shape[0]))
         else:
