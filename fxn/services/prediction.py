@@ -18,7 +18,7 @@ from platform import machine, system
 from pydantic import BaseModel
 from requests import get, post
 from tempfile import gettempdir
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, List, Optional
 from urllib.parse import urlparse
 
 from ..api import GraphClient
@@ -38,7 +38,7 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Optional[Dict[str, ndarray | str | float | int | bool | List[Any] | Dict[str, Any] | Path | Image.Image]] = None,
+        inputs: Optional[Dict[str, ndarray | str | float | int | bool | List[Any] | Dict[str, Any] | Image.Image]]=None,
         acceleration: Acceleration=Acceleration.Default,
         client_id: str=None,
         configuration_id: str=None
@@ -91,7 +91,7 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Dict[str, float | int | str | bool | NDArray | List[Any] | Dict[str, Any] | Path | Image.Image] = {},
+        inputs: Dict[str, float | int | str | bool | NDArray | List[Any] | Dict[str, Any] | Path | Image.Image],
         acceleration: Acceleration=Acceleration.Default,
         client_id: str=None,
         configuration_id: str=None

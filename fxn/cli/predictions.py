@@ -16,7 +16,7 @@ from typer import Argument, Context, Option
 from ..function import Function
 from .auth import get_access_key
 
-def predict (
+def create_prediction (
     tag: str = Argument(..., help="Predictor tag."),
     context: Context = 0
 ):
@@ -70,7 +70,10 @@ def _parse_value (value: str):
         pass
     # File
     if value.startswith("@"):
-        return Path(value[1:])
+        path = Path(value[1:])
+        if path.suffix in [".jpg", ".png"]:
+            return Image.open(path)
+        return path
     # String
     return value
     
