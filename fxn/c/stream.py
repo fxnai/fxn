@@ -3,20 +3,34 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from ctypes import CDLL, POINTER, Structure
-from .prediction import FXNPredictionRef
-from .status import FXNStatus
+from ctypes import byref, c_int, c_int32, c_void_p, create_string_buffer
+from pathlib import Path
+from typing import final
 
-class FXNPredictionStream(Structure): pass
+from .fxnc import get_fxnc, status_to_error, FXNStatus
+from .prediction import Prediction
 
-FXNPredictionStreamRef = POINTER(FXNPredictionStream)
+@final
+class PredictionStream:
 
-def _register_fxn_prediction_stream (fxnc: CDLL) -> CDLL:
-    # FXNPredictionStreamRelease
-    fxnc.FXNPredictionStreamRelease.argtypes = [FXNPredictionStreamRef]
-    fxnc.FXNPredictionStreamRelease.restype = FXNStatus
-    # FXNPredictionStreamReadNext
-    fxnc.FXNPredictionStreamReadNext.argtypes = [FXNPredictionStreamRef, POINTER(FXNPredictionRef)]
-    fxnc.FXNPredictionStreamReadNext.restype = FXNStatus
-    # Return
-    return fxnc
+    def __init__ (self, stream):
+        self.__stream = stream
+
+    def __iter__ (self):
+        return self
+    
+    def __next__ (self) -> Prediction: # INCOMPLETE # Raise `StopIteration` on end
+        pass
+
+    def __enter__ (self):
+        return self
+
+    def __exit__ (self):
+        self.__release()
+
+    def __del__ (self):
+        self.__release()
+
+    def __release (self):
+        fxnc = get_fxnc()
+        status = fxnc.FXNPredictionStreamRelease(self.__stream)

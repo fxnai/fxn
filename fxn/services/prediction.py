@@ -405,16 +405,6 @@ class PredictionService:
         if isinstance(object, BaseModel):
             return object.model_dump(mode="json", by_alias=True)
         return object
-    
-    @classmethod
-    def __status_to_error (cls, status: int) -> str:
-        if status == FXNStatus.ERROR_INVALID_ARGUMENT:
-            return "FXN_ERROR_INVALID_ARGUMENT"
-        elif status == FXNStatus.ERROR_INVALID_OPERATION:
-            return "FXN_ERROR_INVALID_OPERATION"
-        elif status == FXNStatus.ERROR_NOT_IMPLEMENTED:
-            return "FXN_ERROR_NOT_IMPLEMENTED"
-        return ""
 
 PREDICTION_FIELDS = f"""
 id
