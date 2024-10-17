@@ -29,7 +29,7 @@ class PredictionService:
         self.__cache_dir = self.__class__.__get_resource_dir() / ".fxn" / "cache"
         self.__cache_dir.mkdir(parents=True, exist_ok=True)
 
-    def create ( # DEPLOY
+    def create (
         self,
         tag: str,
         *,
@@ -69,7 +69,7 @@ class PredictionService:
             self.__to_value_map(inputs) as input_map,
             predictor.create_prediction(input_map) as prediction
         ):
-            return self.__to_prediction(prediction)
+            return self.__to_prediction(tag, prediction)
 
     async def stream ( # DEPLOY
         self,
@@ -122,7 +122,7 @@ class PredictionService:
         )
         return Prediction(**prediction)
 
-    def __get_predictor ( # DEPLOY
+    def __get_predictor (
         self,
         tag: str,
         acceleration: Acceleration=Acceleration.Auto,
@@ -158,7 +158,7 @@ class PredictionService:
             map[name] = self.__to_value(value)
         return map
 
-    def __to_value ( # DEPLOY
+    def __to_value (
         self,
         value: Value,
         *,
@@ -191,7 +191,7 @@ class PredictionService:
         else:
             raise RuntimeError(f"Failed to convert object to Function value because object has an unsupported type: {type(value)}")
 
-    def __to_prediction (self, tag: str, raw_prediction: CPrediction) -> Prediction: # DEPLOY
+    def __to_prediction (self, tag: str, raw_prediction: CPrediction) -> Prediction:
         output_map = raw_prediction.results
         results = [output_map[output_map.key(idx)].to_object() for idx in range(len(output_map))] if output_map else None
         prediction = Prediction(

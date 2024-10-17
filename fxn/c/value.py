@@ -6,11 +6,11 @@
 from __future__ import annotations
 from collections.abc import Iterable
 from enum import IntFlag
-from ctypes import byref, c_int, c_int32, c_void_p, create_string_buffer
+from ctypes import byref, cast, c_char_p, c_int, c_int32, c_uint8, c_void_p, string_at, POINTER
+from io import BytesIO
 from json import dumps, loads
-from numpy import ndarray
+from numpy import array, dtype, int32, ndarray, zeros
 from numpy.ctypeslib import as_array, as_ctypes_type
-from pathlib import Path
 from PIL import Image
 from typing import final, Any
 
@@ -24,145 +24,167 @@ class ValueFlags (IntFlag):
 @final
 class Value:
 
-    def __init__ (self, *, value, owner: bool=True):
+    def __init__ (self, value, *, owner: bool=True):
         self.__value = value
         self.__owner = owner
 
     @property
-    def data (self): # INCOMPLETE
-        pass
+    def data (self):
+        data = c_void_p()
+        status = get_fxnc().FXNValueGetData(self.__value, byref(data))
+        if status == FXNStatus.OK:
+            return data
+        else:
+            raise RuntimeError(f"Failed to get value data with error: {status_to_error(status)}")
 
     @property
-    def type (self) -> Dtype: # INCOMPLETE
-        pass
+    def type (self) -> Dtype:
+        dtype = c_int()
+        status = get_fxnc().FXNValueGetType(self.__value, byref(dtype))
+        if status == FXNStatus.OK:
+            return _DTYPE_TO_STR.get(dtype.value)
+        else:
+            raise RuntimeError(f"Failed to get value data type with error: {status_to_error(status)}")
 
     @property
-    def shape (self) -> list[int]: # INCOMPLETE
-        pass
+    def shape (self) -> list[int] | None:
+        if self.type not in _TENSOR_DTYPES:
+            return None
+        fxnc = get_fxnc()
+        dims = c_int32()
+        status = fxnc.FXNValueGetDimensions(self.__value, byref(dims))
+        if status != FXNStatus.OK:
+            raise RuntimeError(f"Failed to get value dimensions with error: {status_to_error(status)}")
+        shape = zeros(dims.value, dtype=int32)
+        status = fxnc.FXNValueGetShape(self.__value, shape.ctypes.data_as(POINTER(c_int32)), dims)
+        if status == FXNStatus.OK:
+            return shape.tolist()
+        else:
+            raise RuntimeError(f"Failed to get value shape with error: {status_to_error(status)}")
 
-    def to_object (self) -> Any: # INCOMPLETE
-        pass
-
-        # Type
-        # fxnc = self.__fxnc
-        # dtype = FXNDtype()
-        # status = fxnc.FXNValueGetType(value, byref(dtype))
-        # assert status.value == FXNStatus.OK, f"Failed to get value data type with error: {self.__class__.__status_to_error(status.value)}"
-        # dtype = dtype.value
-        # # Get data
-        # data = c_void_p()
-        # status = fxnc.FXNValueGetData(value, byref(data))
-        # assert status.value == FXNStatus.OK, f"Failed to get value data with error: {self.__class__.__status_to_error(status.value)}"
-        # # Get shape
-        # dims = c_int32()
-        # status = fxnc.FXNValueGetDimensions(value, byref(dims))
-        # assert status.value == FXNStatus.OK, f"Failed to get value dimensions with error: {self.__class__.__status_to_error(status.value)}"
-        # shape = zeros(dims.value, dtype=int32)
-        # status = fxnc.FXNValueGetShape(value, shape.ctypes.data_as(POINTER(c_int32)), dims)
-        # assert status.value == FXNStatus.OK, f"Failed to get value shape with error: {self.__class__.__status_to_error(status.value)}"
-        # # Switch
-        # if dtype == FXNDtype.NULL:
-        #     return None
-        # elif dtype in _FXN_TO_NP_DTYPE:
-        #     dtype_c = as_ctypes_type(_FXN_TO_NP_DTYPE[dtype])
-        #     tensor = as_array(cast(data, POINTER(dtype_c)), shape)
-        #     return tensor.item() if len(tensor.shape) == 0 else tensor.copy()
-        # elif dtype == FXNDtype.STRING:
-        #     return cast(data, c_char_p).value.decode()
-        # elif dtype == FXNDtype.LIST:
-        #     return loads(cast(data, c_char_p).value.decode())
-        # elif dtype == FXNDtype.DICT:
-        #     return loads(cast(data, c_char_p).value.decode())
-        # elif dtype == FXNDtype.IMAGE:
-        #     pixel_buffer = as_array(cast(data, POINTER(c_uint8)), shape)
-        #     return Image.fromarray(pixel_buffer.copy().squeeze())
-        # elif dtype == FXNDtype.BINARY:
-        #     return BytesIO(string_at(data, shape[0]))
-        # else:
-        #     raise RuntimeError(f"Failed to convert Function value to Python value because Function value has unsupported type: {dtype}")
+    def to_object (self) -> Any:
+        type = self.type
+        if type == Dtype.null:
+            return None
+        elif type in _TENSOR_DTYPES:
+            ctype = as_ctypes_type(dtype(type))
+            tensor = as_array(cast(self.data, POINTER(ctype)), self.shape)
+            return tensor.item() if len(tensor.shape) == 0 else tensor.copy()
+        elif type == Dtype.string:
+            return cast(self.data, c_char_p).value.decode()
+        elif type in [Dtype.list, Dtype.dict]:
+            return loads(cast(self.data, c_char_p).value.decode())
+        elif type == Dtype.image:
+            pixel_buffer = as_array(cast(self.data, POINTER(c_uint8)), self.shape)
+            return Image.fromarray(pixel_buffer.squeeze()).copy()
+        elif type == Dtype.binary:
+            return BytesIO(string_at(self.data, self.shape[0]))
+        else:
+            raise RuntimeError(f"Failed to convert Function value to object because value has unsupported type: {type}")
 
     def __enter__ (self):
         return self
 
-    def __exit__ (self):
-        self.__release()
-
-    def __del__ (self):
+    def __exit__ (self, exc_type, exc_value, traceback):
         self.__release()
 
     def __release (self):
-        if not self.__owner:
-            return
-        fxnc = get_fxnc()
-        status = fxnc.FXNValueRelease(self.__value)
+        if self.__value and self.__owner:
+            get_fxnc().FXNValueRelease(self.__value)
+        self.__value = None
 
     @classmethod
-    def create_array ( # INCOMPLETE
+    def create_array (
         cls,
         data: ndarray,
         *,
-        flags: ValueFlags=None
+        flags: ValueFlags=ValueFlags.NONE
     ) -> Value:
-        pass
-        # dtype = _NP_TO_FXN_DTYPE.get(value.dtype)
-        # assert dtype is not None, f"Failed to convert numpy array to Function value because array data type is not supported: {value.dtype}"
-        # fxnc.FXNValueCreateArray(
-        #     value.ctypes.data_as(c_void_p),
-        #     value.ctypes.shape_as(c_int32),
-        #     len(value.shape),
-        #     dtype,
-        #     FXNValueFlags.NONE,
-        #     byref(result)
-        # )
+        dtype = _STR_TO_DTYPE.get(data.dtype.name)
+        if dtype is None:
+            raise RuntimeError(f"Failed to create array value because data type is not supported: {data.dtype}")
+        value = c_void_p()
+        status = get_fxnc().FXNValueCreateArray(
+            data.ctypes.data_as(c_void_p),
+            data.ctypes.shape_as(c_int32),
+            len(data.shape),
+            dtype,
+            flags,
+            byref(value)
+        )
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create array value with error: {status_to_error(status)}")
 
     @classmethod
-    def create_string (cls, data: str) -> Value: # INCOMPLETE
-        pass
-        #fxnc.FXNValueCreateString(value.encode(), byref(result))
+    def create_string (cls, data: str) -> Value:
+        value = c_void_p()
+        status = get_fxnc().FXNValueCreateString(value.encode(), byref(value))
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create string value with error: {status_to_error(status)}")
 
     @classmethod
-    def create_list (cls, data: Iterable[Any]) -> Value: # INCOMPLETE
-        pass
-        #fxnc.FXNValueCreateList(dumps(value).encode(), byref(result))
+    def create_list (cls, data: Iterable[Any]) -> Value:
+        value = c_void_p()
+        status = get_fxnc().FXNValueCreateList(dumps(value).encode(), byref(value))
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create list value with error: {status_to_error(status)}")
     
     @classmethod
-    def create_dict (cls, data: dict[str, Any]) -> Value: # INCOMPLETE
-        pass
-        #fxnc.FXNValueCreateDict(dumps(value).encode(), byref(result))
+    def create_dict (cls, data: dict[str, Any]) -> Value:
+        value = c_void_p()
+        status = get_fxnc().FXNValueCreateDict(dumps(value).encode(), byref(value))
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create dict value with error: {status_to_error(status)}")
 
     @classmethod
-    def create_image (cls, image: Image.Image) -> Value: # INCOMPLETE
-        pass
-        # value = array(value)
-        # status = fxnc.FXNValueCreateImage(
-        #     value.ctypes.data_as(c_void_p),
-        #     value.shape[1],
-        #     value.shape[0],
-        #     value.shape[2],
-        #     FXNValueFlags.COPY_DATA,
-        #     byref(result)
-        # )
-        # assert status.value == FXNStatus.OK, f"Failed to create image value with error: {self.__class__.__status_to_error(status.value)}"
+    def create_image (cls, image: Image.Image) -> Value:
+        value = c_void_p()
+        pixel_buffer = array(image)
+        status = get_fxnc().FXNValueCreateImage(
+            pixel_buffer.ctypes.data_as(c_void_p),
+            image.width,
+            image.height,
+            pixel_buffer.shape[2],
+            ValueFlags.COPY_DATA,
+            byref(value)
+        )
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create image value with error: {status_to_error(status)}")        
 
     @classmethod
-    def create_binary ( # INCOMPLETE
+    def create_binary (
         cls,
         data: memoryview,
         *,
-        flags: ValueFlags=None
+        flags: ValueFlags=ValueFlags.NONE
     ) -> Value:
-        pass
-        # buffer = (c_uint8 * len(view)).from_buffer(view)
-        # fxnc.FXNValueCreateBinary(
-        #     buffer,
-        #     len(view),
-        #     FXNValueFlags.COPY_DATA if copy else FXNValueFlags.NONE,
-        #     byref(result)
-        # )
+        buffer = (c_uint8 * len(data)).from_buffer(data)
+        value = c_void_p()
+        status = get_fxnc().FXNValueCreateBinary(buffer, len(data), flags, byref(value))
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create binary value with error: {status_to_error(status)}")
 
     @classmethod
-    def create_null (cls) -> Value: # INCOMPLETE
-        pass
+    def create_null (cls) -> Value:
+        value = c_void_p()
+        status = get_fxnc().FXNValueCreateNull(byref(value))
+        if status == FXNStatus.OK:
+            return Value(value)
+        else:
+            raise RuntimeError(f"Failed to create null value with error: {status_to_error(status)}")
+
 
 _STR_TO_DTYPE = {
     Dtype.null: 0,
@@ -185,3 +207,17 @@ _STR_TO_DTYPE = {
     Dtype.binary: 17,
 }
 _DTYPE_TO_STR = { value: key for key, value in _STR_TO_DTYPE.items() }
+_TENSOR_DTYPES = {
+    Dtype.float16,
+    Dtype.float32,
+    Dtype.float64,
+    Dtype.int8,
+    Dtype.int16,
+    Dtype.int32,
+    Dtype.int64,
+    Dtype.uint8,
+    Dtype.uint16,
+    Dtype.uint32,
+    Dtype.uint64,
+    Dtype.bool,
+}
