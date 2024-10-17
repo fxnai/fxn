@@ -23,7 +23,7 @@ class ValueMap:
         self.__map = map
         self.__owner = owner
 
-    def key (self, str, index: int) -> str:
+    def key (self, index: int) -> str:
         fxnc = get_fxnc()
         buffer = create_string_buffer(256)
         status = fxnc.FXNValueMapGetKey(self.__map, index, buffer, len(buffer))

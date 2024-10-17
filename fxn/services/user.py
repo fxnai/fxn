@@ -3,54 +3,25 @@
 #   Copyright © 2024 NatML Inc. All Rights Reserved.
 #
 
-from ..api import GraphClient
-from ..types import Profile
+from ..client import FunctionClient, FunctionAPIError
+from ..types import User
 
 class UserService:
 
-    def __init__ (self, client: GraphClient) -> None:
+    def __init__ (self, client: FunctionClient) -> None:
         self.client = client
 
-    def retrieve (self, username: str=None) -> Profile:
+    def retrieve (self) -> User:
         """
-        Retrieve a user.
-
-        Parameters:
-            username (str): Username. If `None`, this will retrieve the currently authenticated user.
-            access_key (str): Function access key.
+        Retrieve the current user.
 
         Returns:
             User: User.
         """
-        # Query
-        response = self.client.query(f"""
-            query {"($input: UserInput)" if username else ""} {{
-                user {"(input: $input)" if username else ""} {{
-                    {PROFILE_FIELDS}
-                    {USER_FIELDS if not username else ""}
-                }}
-            }}
-            """,
-            { "input": { "username": username } },
-        )
-        # Create user
-        user = response["user"]
-        user = Profile(**user) if user else None
-        # Return
-        return user
-
-PROFILE_FIELDS = f"""
-username
-created
-name
-avatar
-bio
-website
-github
-"""
-
-USER_FIELDS = f"""
-... on User {{
-    email
-}}
-"""
+        try:
+            user = self.client.request(method="GET", path="/users")
+            return User(**user)
+        except FunctionAPIError as error:
+            if error.status_code == 401:
+                return None
+            raise

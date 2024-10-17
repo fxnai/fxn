@@ -6,4 +6,4 @@
 from .dtype import Dtype
 from .prediction import Prediction, PredictionResource
 from .predictor import Acceleration, AccessMode, EnumerationMember, Parameter, Predictor, PredictorStatus, Signature
-from .user import Profile, User
+from .user import User

@@ -10,4 +10,4 @@ from .map import ValueMap
 from .prediction import Prediction
 from .predictor import Predictor
 from .stream import PredictionStream
-from .value import Value
+from .value import Value, ValueFlags
