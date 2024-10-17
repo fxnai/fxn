@@ -38,8 +38,8 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Optional[Dict[str, ndarray | str | float | int | bool | List[Any] | Dict[str, Any] | Image.Image]]=None,
-        acceleration: Acceleration=Acceleration.Default,
+        inputs: dict[str, ndarray | str | float | int | bool | list[Any] | dict[str, Any] | Image.Image] | None=None,
+        acceleration: Acceleration=Acceleration.Auto,
         client_id: str=None,
         configuration_id: str=None
     ) -> Prediction:
@@ -91,8 +91,8 @@ class PredictionService:
         self,
         tag: str,
         *,
-        inputs: Dict[str, float | int | str | bool | NDArray | List[Any] | Dict[str, Any] | Path | Image.Image],
-        acceleration: Acceleration=Acceleration.Default,
+        inputs: dict[str, float | int | str | bool | NDArray | list[Any] | dict[str, Any] | Path | Image.Image],
+        acceleration: Acceleration=Acceleration.Auto,
         client_id: str=None,
         configuration_id: str=None
     ) -> AsyncIterator[Prediction]:
@@ -169,7 +169,7 @@ class PredictionService:
         self,
         prediction: Prediction,
         *,
-        acceleration: Acceleration=Acceleration.Default
+        acceleration: Acceleration=Acceleration.Auto
     ) -> type[FXNPredictorRef]:
         fxnc = self.__fxnc
         configuration = FXNConfigurationRef()

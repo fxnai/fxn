@@ -17,7 +17,7 @@ class Acceleration (IntFlag):
     """
     Predictor acceleration.
     """
-    Default = 0,
+    Auto    = 0,
     CPU     = 1 << 0,
     GPU     = 1 << 1,
     NPU     = 1 << 2
