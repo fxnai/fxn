@@ -184,7 +184,7 @@ class PredictionService:
         elif isinstance(value, Image.Image):
             return CValue.create_image(value)
         elif isinstance(value, (bytes, bytearray, memoryview, BytesIO)):
-            flags |= ValueFlags.COPY_DATA if isinstance(value, memoryview) else 0
+            flags |= ValueFlags.COPY_DATA if not isinstance(value, memoryview) else 0
             view_or_bytes = value.getvalue() if isinstance(value, BytesIO) else value
             view = memoryview(view_or_bytes) if not isinstance(view_or_bytes, memoryview) else view_or_bytes
             return CValue.create_binary(view, flags=flags)            
