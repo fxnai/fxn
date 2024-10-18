@@ -4,14 +4,11 @@
 #
 
 from enum import Enum, IntFlag
-from io import BytesIO
-from numpy.typing import NDArray
-from PIL import Image
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .dtype import Dtype
-from .user import Profile
+from .user import User
 
 class Acceleration (IntFlag):
     """
@@ -64,13 +61,13 @@ class Parameter (BaseModel):
         value_schema (dict): Parameter JSON schema. This is only populated for `list` and `dict` parameters.
     """
     name: str = Field(description="Parameter name.")
-    type: Optional[Dtype] = Field(default=None, description="Parameter type. This is `None` if the type is unknown or unsupported by Function.")
-    description: Optional[str] = Field(default=None, description="Parameter description.")
-    optional: Optional[bool] = Field(default=None, description="Whether the parameter is optional.")
-    range: Optional[Tuple[float, float]] = Field(default=None, description="Parameter value range for numeric parameters.")
-    enumeration: Optional[List[EnumerationMember]] = Field(default=None, description="Parameter value choices for enumeration parameters.")
-    default_value: Optional[str | float | int | bool | NDArray | List[Any] | Dict[str, Any] | Image.Image | BytesIO] = Field(default=None, description="Parameter default value.", serialization_alias="defaultValue", validation_alias=AliasChoices("default_value", "defaultValue"))
-    value_schema: Optional[dict] = Field(default=None, description="Parameter JSON schema. This is only populated for `list` and `dict` parameters.", serialization_alias="schema", validation_alias=AliasChoices("schema", "value_schema"))
+    type: Dtype | None = Field(default=None, description="Parameter type. This is `None` if the type is unknown or unsupported by Function.")
+    description: str | None = Field(default=None, description="Parameter description.")
+    optional: bool | None = Field(default=None, description="Whether the parameter is optional.")
+    range: tuple[float, float] | None = Field(default=None, description="Parameter value range for numeric parameters.")
+    enumeration: list[EnumerationMember] | None = Field(default=None, description="Parameter value choices for enumeration parameters.")
+    default_value: str | float | int | bool | list[Any] | dict[str, Any] | None = Field(default=None, description="Parameter default value.", serialization_alias="defaultValue", validation_alias=AliasChoices("default_value", "defaultValue"))
+    value_schema: dict[str, Any] | None = Field(default=None, description="Parameter JSON schema. This is only populated for `list` and `dict` parameters.", serialization_alias="schema", validation_alias=AliasChoices("schema", "value_schema"))
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 class Signature (BaseModel):
@@ -81,8 +78,8 @@ class Signature (BaseModel):
         inputs (list): Input parameters.
         outputs (list): Output parameters.
     """
-    inputs: List[Parameter] = Field(description="Input parameters.")
-    outputs: List[Parameter] = Field(description="Output parameters.")
+    inputs: list[Parameter] = Field(description="Input parameters.")
+    outputs: list[Parameter] = Field(description="Output parameters.")
 
 class Predictor (BaseModel):
     """
@@ -90,7 +87,7 @@ class Predictor (BaseModel):
 
     Members:
         tag (str): Predictor tag.
-        owner (Profile): Predictor owner.
+        owner (User): Predictor owner.
         name (str): Predictor name.
         status (PredictorStatus): Predictor status.
         access (AccessMode): Predictor access.
@@ -102,13 +99,13 @@ class Predictor (BaseModel):
         license (str): Predictor license URL.
     """
     tag: str = Field(description="Predictor tag.")
-    owner: Profile = Field(description="Predictor owner.")
+    owner: User = Field(description="Predictor owner.")
     name: str = Field(description="Predictor name.")
     status: PredictorStatus = Field(description="Predictor status.")
     access: AccessMode = Field(description="Predictor access.")
     signature: Signature = Field(description="Predictor signature.")
     created: str = Field(description="Date created.")
-    description: Optional[str] = Field(default=None, description="Predictor description.")
-    card: Optional[str] = Field(default=None, description="Predictor card.")
-    media: Optional[str] = Field(default=None, description="Predictor media URL.")
-    license: Optional[str] = Field(default=None, description="Predictor license URL.")
+    description: str | None = Field(default=None, description="Predictor description.")
+    card: str | None = Field(default=None, description="Predictor card.")
+    media: str | None = Field(default=None, description="Predictor media URL.")
+    license: str | None = Field(default=None, description="Predictor license URL.")

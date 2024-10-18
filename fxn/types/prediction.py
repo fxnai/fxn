@@ -4,7 +4,7 @@
 #
 
 from pydantic import BaseModel, Field
-from typing import Any, List, Optional
+from typing import Any
 
 class PredictionResource (BaseModel):
     """
@@ -17,7 +17,7 @@ class PredictionResource (BaseModel):
     """
     type: str = Field(description="Resource type.")
     url: str = Field(description="Resource URL.")
-    name: Optional[str] = Field(default=None, description="Resource name.")
+    name: str | None = Field(default=None, description="Resource name.")
 
 class Prediction (BaseModel):
     """
@@ -36,10 +36,10 @@ class Prediction (BaseModel):
     """
     id: str = Field(description="Prediction identifier.")
     tag: str = Field(description="Predictor tag.")
-    configuration: Optional[str] = Field(default=None, description="Prediction configuration token. This is only populated for `EDGE` predictions.")
-    resources: Optional[List[PredictionResource]] = Field(default=None, description="Prediction resources. This is only populated for `EDGE` predictions.")
-    results: Optional[List[Any]] = Field(default=None, description="Prediction results.")
-    latency: Optional[float] = Field(default=None, description="Prediction latency in milliseconds.")
-    error: Optional[str] = Field(default=None, description="Prediction error. This is `None` if the prediction completed successfully.")
-    logs: Optional[str] = Field(default=None, description="Prediction logs.")
+    configuration: str | None = Field(default=None, description="Prediction configuration token. This is only populated for `EDGE` predictions.")
+    resources: list[PredictionResource] | None = Field(default=None, description="Prediction resources. This is only populated for `EDGE` predictions.")
+    results: list[Any] | None = Field(default=None, description="Prediction results.")
+    latency: float | None = Field(default=None, description="Prediction latency in milliseconds.")
+    error: str | None = Field(default=None, description="Prediction error. This is `None` if the prediction completed successfully.")
+    logs: str | None = Field(default=None, description="Prediction logs.")
     created: str = Field(description="Date created.")

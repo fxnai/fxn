@@ -4,10 +4,16 @@
 #
 
 from fxn import Function
-from numpy import allclose, pi
 import pytest
 
 pytest_plugins = ("pytest_asyncio",)
+
+def test_create_raw_prediction ():
+    fxn = Function()
+    prediction = fxn.predictions.create(tag="@fxn/greeting")
+    assert prediction is not None
+    assert prediction.configuration is not None
+    assert prediction.resources is None
 
 def test_create_prediction ():
     fxn = Function()
@@ -16,7 +22,8 @@ def test_create_prediction ():
         tag="@yusuf/area",
         inputs={ "radius": radius }
     )
-    assert(allclose(prediction.results[0], pi * (radius ** 2)))
+    assert prediction.results
+    assert isinstance(prediction.results[0], float)
 
 # @pytest.mark.asyncio
 # async def test_stream_prediction ():

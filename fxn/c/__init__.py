@@ -5,12 +5,9 @@
 
 # https://github.com/fxnai/fxnc
 
-from .status import FXNStatus
-from .value import FXNDtype, FXNValueRef, FXNValueFlags
-from .map import FXNValueMapRef
-from .configuration import FXNConfigurationRef, FXNAcceleration
-from .prediction import FXNPredictionRef
-from .stream import FXNPredictionStreamRef
-from .predictor import FXNPredictorRef
-
-from .fxnc import load_fxnc
+from .configuration import Configuration
+from .map import ValueMap
+from .prediction import Prediction
+from .predictor import Predictor
+from .stream import PredictionStream
+from .value import Value, ValueFlags

@@ -1,6 +1,8 @@
 ## 0.0.41
++ Added support for streaming predictions.
 + Fixed invalid data type error when prediction returns a greyscale image.
 + Refactored `Acceleration.Default` enumeration member to `Acceleration.Auto`.
++ Removed `Profile` type. Use `User` type instead.
 
 ## 0.0.40
 + Fixed errors when `Function` client is created for the first time on a new device.
