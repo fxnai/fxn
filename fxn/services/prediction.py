@@ -71,7 +71,7 @@ class PredictionService:
         ):
             return self.__to_prediction(tag, prediction)
 
-    async def stream ( # DEPLOY
+    async def stream (
         self,
         tag: str,
         *,
@@ -101,7 +101,7 @@ class PredictionService:
         ):
             for prediction in stream:
                 with prediction:
-                    yield self.__to_prediction(prediction)
+                    yield self.__to_prediction(tag, prediction)
 
     def __create_raw_prediction (
         self,
@@ -152,7 +152,7 @@ class PredictionService:
         self.__cache[tag] = predictor
         return predictor
     
-    def __to_value_map (self, inputs: dict[str, Value]) -> ValueMap: # DEPLOY
+    def __to_value_map (self, inputs: dict[str, Value]) -> ValueMap:
         map = ValueMap()
         for name, value in inputs.items():
             map[name] = self.__to_value(value)
