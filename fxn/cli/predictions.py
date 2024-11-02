@@ -5,7 +5,7 @@
 
 from asyncio import run as run_async
 from io import BytesIO
-from numpy import ndarray
+from numpy import array_repr, ndarray
 from pathlib import Path, PurePath
 from PIL import Image
 from rich import print_json
@@ -71,16 +71,21 @@ def _parse_value (value: str):
     # File
     if value.startswith("@"):
         path = Path(value[1:])
-        if path.suffix in [".jpg", ".png"]:
+        if path.suffix in [".txt", ".md"]:
+            with open(path) as f:
+                return f.read()
+        elif path.suffix in [".jpg", ".png"]:
             return Image.open(path)
-        return path
+        else:
+            with open(path, "rb") as f:
+                return BytesIO(f.read())
     # String
     return value
-    
+
 def _serialize_value (value):
     # Convert ndarray to list
     if isinstance(value, ndarray):
-        return value.tolist()
+        return array_repr(value)
     # Write image
     if isinstance(value, Image.Image):
         _, path = mkstemp(suffix=".png" if value.mode == "RGBA" else ".jpg")
@@ -94,12 +99,3 @@ def _serialize_value (value):
         return str(value)
     # Return    
     return value
-
-def _prediction_dict_factory (kv_pairs):
-    # Check if value
-    VALUE_KEYS = ["data", "type", "shape"]
-    keys = [k for k, _ in kv_pairs]
-    is_value = all(k in keys for k in VALUE_KEYS)
-    kv_pairs = [(k, v) for k, v in kv_pairs if v is not None] if is_value else kv_pairs
-    # Construct
-    return dict(kv_pairs)

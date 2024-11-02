@@ -1,5 +1,6 @@
 ## 0.0.41
 + Added support for streaming predictions.
++ Fixed prediction error in CLI when passing file path as prediction input value.
 + Fixed invalid data type error when prediction returns a greyscale image.
 + Refactored `Acceleration.Default` enumeration member to `Acceleration.Auto`.
 + Removed `Profile` type. Use `User` type instead.
