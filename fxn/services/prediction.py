@@ -26,7 +26,7 @@ class PredictionService:
     def __init__ (self, client: FunctionClient):
         self.client = client
         self.__cache = { }
-        self.__cache_dir = self.__class__.__get_resource_dir() / ".fxn" / "cache"
+        self.__cache_dir = self.__class__.__get_home_dir() / ".fxn" / "cache"
         self.__cache_dir.mkdir(parents=True, exist_ok=True)
 
     def create (
@@ -145,7 +145,7 @@ class PredictionService:
             configuration.acceleration = acceleration
             configuration.device = device
             for resource in prediction.resources:
-                path = self.__get_resource_path(resource)
+                path = self.__download_resource(resource)
                 configuration.add_resource(resource.type, path)
             predictor = Predictor(configuration)
         # Return
@@ -204,20 +204,26 @@ class PredictionService:
             created=datetime.now(timezone.utc).isoformat()
         )
         return prediction
+    
+    def __download_resource (self, resource: PredictionResource) -> Path:
+        path = self.__get_resource_path(resource)
+        if path.exists():
+            return path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        request = get(resource.url)
+        request.raise_for_status()
+        with open(path, "wb") as f:
+            f.write(request.content)
+        return path
 
     def __get_resource_path (self, resource: PredictionResource) -> Path:
-        res_name = Path(urlparse(resource.url).path).name
-        res_path = self.__cache_dir / res_name
-        if res_path.exists():
-            return res_path
-        req = get(resource.url)
-        req.raise_for_status()
-        with open(res_path, "wb") as f:
-            f.write(req.content)
-        return res_path
+        stem = Path(urlparse(resource.url).path).name
+        path = self.__cache_dir / stem
+        path = path / resource.name if resource.name else path
+        return path
 
     @classmethod
-    def __get_resource_dir (cls) -> Path:
+    def __get_home_dir (cls) -> Path:
         try:
             check = Path.home() / ".fxntest"
             with open(check, "w") as f:
