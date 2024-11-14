@@ -1,9 +1,13 @@
 ## 0.0.41
 + Added support for streaming predictions.
-+ Fixed prediction error in CLI when passing file path as prediction input value.
++ Added `verbose` parameter in `fxn.predictions.create` method to print prediction progress.
++ Added `--quiet` option in `fxn predict` CLI action to suppress verbose logging.
++ Fixed prediction errors when making passing in `str`, `list`, or `dict` arguments.
 + Fixed invalid data type error when prediction returns a greyscale image.
++ Fixed prediction error in CLI when passing file path as prediction input value.
 + Refactored `Acceleration.Default` enumeration member to `Acceleration.Auto`.
 + Removed `Profile` type. Use `User` type instead.
++ Updated to Function C 0.0.31.
 
 ## 0.0.40
 + Fixed errors when `Function` client is created for the first time on a new device.

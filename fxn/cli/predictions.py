@@ -11,18 +11,24 @@ from PIL import Image
 from rich import print_json
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from tempfile import mkstemp
-from typer import Argument, Context
+from typer import Argument, Context, Option
 
 from ..function import Function
+from ..types import Prediction
 from .auth import get_access_key
 
 def create_prediction (
-    tag: str = Argument(..., help="Predictor tag."),
+    tag: str=Argument(..., help="Predictor tag."),
+    quiet: bool=Option(False, "--quiet", help="Suppress verbose logging when creating the prediction."),
     context: Context = 0
 ):
-    run_async(_predict_async(tag, context=context))
+    run_async(_predict_async(tag, quiet=quiet, context=context))
 
-async def _predict_async (tag: str, context: Context):
+async def _predict_async (tag: str, quiet: bool, context: Context):
+    # Preload
+    fxn = Function(get_access_key())
+    fxn.predictions.create(tag, inputs={ }, verbose=not quiet)
+    # Predict
     with Progress(
         SpinnerColumn(spinner_name="dots"),
         TextColumn("[progress.description]{task.description}"),
@@ -30,13 +36,8 @@ async def _predict_async (tag: str, context: Context):
     ) as progress:
         progress.add_task(description="Running Function...", total=None)
         inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
-        fxn = Function(get_access_key())
-        async for prediction in fxn.predictions.stream(tag, inputs=inputs):
-            images = [value for value in prediction.results or [] if isinstance(value, Image.Image)]
-            prediction.results = [_serialize_value(value) for value in prediction.results] if prediction.results is not None else None
-            print_json(data=prediction.model_dump())
-            for image in images:
-                image.show()
+        prediction = fxn.predictions.create(tag, inputs=inputs)
+        _log_prediction(prediction)
 
 def _parse_value (value: str):
     """
@@ -65,7 +66,7 @@ def _parse_value (value: str):
         pass
     # File
     if value.startswith("@"):
-        path = Path(value[1:])
+        path = Path(value[1:]).expanduser().resolve()
         if path.suffix in [".txt", ".md"]:
             with open(path) as f:
                 return f.read()
@@ -76,6 +77,13 @@ def _parse_value (value: str):
                 return BytesIO(f.read())
     # String
     return value
+
+def _log_prediction (prediction: Prediction):
+    images = [value for value in prediction.results or [] if isinstance(value, Image.Image)]
+    prediction.results = [_serialize_value(value) for value in prediction.results] if prediction.results is not None else None
+    print_json(data=prediction.model_dump())
+    for image in images:
+        image.show()
 
 def _serialize_value (value):
     if isinstance(value, ndarray):

@@ -120,7 +120,7 @@ class Value:
     @classmethod
     def create_string (cls, data: str) -> Value:
         value = c_void_p()
-        status = get_fxnc().FXNValueCreateString(value.encode(), byref(value))
+        status = get_fxnc().FXNValueCreateString(data.encode(), byref(value))
         if status == FXNStatus.OK:
             return Value(value)
         else:
@@ -129,7 +129,7 @@ class Value:
     @classmethod
     def create_list (cls, data: Iterable[Any]) -> Value:
         value = c_void_p()
-        status = get_fxnc().FXNValueCreateList(dumps(value).encode(), byref(value))
+        status = get_fxnc().FXNValueCreateList(dumps(data).encode(), byref(value))
         if status == FXNStatus.OK:
             return Value(value)
         else:
@@ -138,7 +138,7 @@ class Value:
     @classmethod
     def create_dict (cls, data: dict[str, Any]) -> Value:
         value = c_void_p()
-        status = get_fxnc().FXNValueCreateDict(dumps(value).encode(), byref(value))
+        status = get_fxnc().FXNValueCreateDict(dumps(data).encode(), byref(value))
         if status == FXNStatus.OK:
             return Value(value)
         else:

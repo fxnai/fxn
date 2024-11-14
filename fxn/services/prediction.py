@@ -11,6 +11,7 @@ from pathlib import Path
 from PIL import Image
 from pydantic import BaseModel
 from requests import get
+from rich.progress import Progress, TextColumn, BarColumn, DownloadColumn, TransferSpeedColumn, TimeRemainingColumn
 from tempfile import gettempdir
 from typing import Any, AsyncIterator
 from urllib.parse import urlparse
@@ -37,7 +38,8 @@ class PredictionService:
         acceleration: Acceleration=Acceleration.Auto,
         device=None,
         client_id: str=None,
-        configuration_id: str=None
+        configuration_id: str=None,
+        verbose: bool=False
     ) -> Prediction:
         """
         Create a prediction.
@@ -48,6 +50,7 @@ class PredictionService:
             acceleration (Acceleration): Prediction acceleration.
             client_id (str): Function client identifier. Specify this to override the current client identifier.
             configuration_id (str): Configuration identifier. Specify this to override the current client configuration identifier.
+            verbose (bool): Enable verbose logging.
 
         Returns:
             Prediction: Created prediction.
@@ -63,7 +66,8 @@ class PredictionService:
             acceleration=acceleration,
             device=device,
             client_id=client_id,
-            configuration_id=configuration_id
+            configuration_id=configuration_id,
+            verbose=verbose
         )
         with (
             self.__to_value_map(inputs) as input_map,
@@ -128,27 +132,32 @@ class PredictionService:
         acceleration: Acceleration=Acceleration.Auto,
         device=None,
         client_id: str=None,
-        configuration_id: str=None
+        configuration_id: str=None,
+        verbose: bool=False
     ) -> Predictor:
-        # Check cache
         if tag in self.__cache:
             return self.__cache[tag]
-        # Create predictor
         prediction = self.__create_raw_prediction(
             tag=tag,
             client_id=client_id,
             configuration_id=configuration_id
         )
-        with Configuration() as configuration:
+        with Configuration() as configuration, Progress(
+            TextColumn("[bold blue]{task.fields[filename]}"),
+            BarColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+            disable=not verbose
+        ) as progress:
             configuration.tag = prediction.tag
             configuration.token = prediction.configuration
             configuration.acceleration = acceleration
             configuration.device = device
             for resource in prediction.resources:
-                path = self.__download_resource(resource)
+                path = self.__download_resource(resource, progress=progress)
                 configuration.add_resource(resource.type, path)
             predictor = Predictor(configuration)
-        # Return
         self.__cache[tag] = predictor
         return predictor
     
@@ -205,15 +214,26 @@ class PredictionService:
         )
         return prediction
     
-    def __download_resource (self, resource: PredictionResource) -> Path:
+    def __download_resource (
+        self,
+        resource: PredictionResource,
+        *,
+        progress: Progress
+    ) -> Path:
         path = self.__get_resource_path(resource)
         if path.exists():
             return path
         path.parent.mkdir(parents=True, exist_ok=True)
-        request = get(resource.url)
-        request.raise_for_status()
-        with open(path, "wb") as f:
-            f.write(request.content)
+        response = get(resource.url, stream=True)
+        response.raise_for_status()
+        size = int(response.headers.get("content-length", 0))
+        stem = Path(urlparse(resource.url).path).name
+        task = progress.add_task(f"Downloading", filename=stem, total=size)
+        with open(path, "wb") as fp:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    fp.write(chunk)
+                    progress.update(task, advance=len(chunk))
         return path
 
     def __get_resource_path (self, resource: PredictionResource) -> Path:
