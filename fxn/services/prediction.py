@@ -30,6 +30,18 @@ class PredictionService:
         self.__cache_dir = self.__class__.__get_home_dir() / ".fxn" / "cache"
         self.__cache_dir.mkdir(parents=True, exist_ok=True)
 
+    def ready (self, tag: str, **kwargs) -> bool:
+        """
+        Check whether a predictor has been preloaded and is ready to make predictions.
+
+        Parameters:
+            tag (str): Predictor tag.
+
+        Returns:
+            bool: Whether the predictor is ready to make predictions.
+        """
+        return tag in self.__cache
+
     def create (
         self,
         tag: str,

@@ -1,5 +1,6 @@
 ## 0.0.41
 + Added support for streaming predictions.
++ Added `fxn.predictions.ready` to check whether a predictor has been preloaded.
 + Added `verbose` parameter in `fxn.predictions.create` method to print prediction progress.
 + Added `--quiet` option in `fxn predict` CLI action to suppress verbose logging.
 + Fixed prediction errors when making passing in `str`, `list`, or `dict` arguments.
