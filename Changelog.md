@@ -1,3 +1,6 @@
+## 0.0.42
+*INCOMPLETE*
+
 ## 0.0.41
 + Added support for streaming predictions.
 + Added `fxn.predictions.ready` to check whether a predictor has been preloaded.
