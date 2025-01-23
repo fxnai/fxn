@@ -1,9 +1,9 @@
 #
 #   Function
-#   Copyright © 2024 NatML Inc. All Rights Reserved.
+#   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ctypes import byref, c_double, c_int, c_int32, c_void_p, create_string_buffer
+from ctypes import byref, c_double, c_int32, c_void_p, create_string_buffer
 from pathlib import Path
 from typing import final
 

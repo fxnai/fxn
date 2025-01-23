@@ -1,23 +1,14 @@
 # 
 #   Function
-#   Copyright © 2024 NatML Inc. All Rights Reserved.
+#   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from enum import Enum, IntFlag
+from enum import Enum
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 from typing import Any
 
 from .dtype import Dtype
 from .user import User
-
-class Acceleration (IntFlag):
-    """
-    Predictor acceleration.
-    """
-    Auto    = 0,
-    CPU     = 1 << 0,
-    GPU     = 1 << 1,
-    NPU     = 1 << 2
 
 class AccessMode (str, Enum):
     """

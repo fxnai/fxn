@@ -1,10 +1,11 @@
 # 
 #   Function
-#   Copyright © 2024 NatML Inc. All Rights Reserved.
+#   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
 from os import environ
 
+from .beta.client import BetaClient
 from .client import FunctionClient
 from .services import PredictionService, PredictorService, UserService
 
@@ -17,6 +18,7 @@ class Function:
         users (UserService): Manage users.
         predictors (PredictorService): Manage predictors.
         predictions (PredictionService): Manage predictions.
+        beta (BetaClient): Beta client for incubating features.
 
     Constructor:
         access_key (str): Function access key.
@@ -26,6 +28,7 @@ class Function:
     users: UserService
     predictors: PredictorService
     predictions: PredictionService
+    beta: BetaClient
 
     def __init__ (self, access_key: str=None, api_url: str=None):
         access_key = access_key or environ.get("FXN_ACCESS_KEY", None)
@@ -34,3 +37,4 @@ class Function:
         self.users = UserService(self.client)
         self.predictors = PredictorService(self.client)
         self.predictions = PredictionService(self.client)
+        self.beta = BetaClient(self.client)

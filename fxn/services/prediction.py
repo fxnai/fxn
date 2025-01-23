@@ -1,6 +1,6 @@
 #
 #   Function
-#   Copyright © 2024 NatML Inc. All Rights Reserved.
+#   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
 from dataclasses import asdict, is_dataclass
@@ -16,8 +16,8 @@ from tempfile import gettempdir
 from typing import Any, AsyncIterator
 from urllib.parse import urlparse
 
-from ..client import FunctionClient
 from ..c import Configuration, Predictor, Prediction as CPrediction, Value as CValue, ValueFlags, ValueMap
+from ..client import FunctionClient
 from ..types import Acceleration, Prediction, PredictionResource
 
 Value = ndarray | str | float | int | bool | list[Any] | dict[str, Any] | Image.Image | BytesIO | memoryview

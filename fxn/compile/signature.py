@@ -1,6 +1,6 @@
 # 
 #   Function
-#   Copyright © 2024 NatML Inc. All Rights Reserved.
+#   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
 from collections.abc import Mapping, Sequence
@@ -120,6 +120,10 @@ def _infer_dtype (param_type) -> Dtype:
             return Dtype.string
         elif _is_enum_subclass(param_type):
             return Dtype.string
+        elif param_type is list:
+            return Dtype.list
+        elif param_type is dict:
+            return Dtype.dict
         elif _is_pydantic_model(param_type):
             return Dtype.dict
         else:
