@@ -19,8 +19,11 @@ class UserService:
             User: User.
         """
         try:
-            user = self.client.request(method="GET", path="/users")
-            return User(**user)
+            return self.client.request(
+                method="GET",
+                path="/users",
+                response_type=User
+            )
         except FunctionAPIError as error:
             if error.status_code == 401:
                 return None

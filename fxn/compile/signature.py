@@ -57,7 +57,6 @@ def _get_input_parameters (func) -> list[Parameter]:
             optional=param.default != param.empty,
             range=None,
             enumeration=enumeration,
-            default_value=None, # INCOMPLETE
             value_schema=value_schema
         )
         parameters.append(input_param)
@@ -90,11 +89,10 @@ def _get_output_parameter (name: str, return_type) -> Parameter:
     parameter = Parameter(
         name=name,
         type=dtype,
-        description=None, # INCOMPLETE
+        description=None,
         optional=False,
         range=None,
         enumeration=enumeration,
-        default_value=None,
         value_schema=value_schema
     )
     return parameter

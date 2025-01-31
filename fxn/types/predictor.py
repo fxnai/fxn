@@ -48,7 +48,6 @@ class Parameter (BaseModel):
         optional (bool): Whether the parameter is optional.
         range (tuple): Parameter value range for numeric parameters.
         enumeration (list): Parameter value choices for enumeration parameters.
-        default_value (str | float | int | bool | ndarray | list | dict | PIL.Image | BytesIO): Parameter default value.
         value_schema (dict): Parameter JSON schema. This is only populated for `list` and `dict` parameters.
     """
     name: str = Field(description="Parameter name.")
@@ -57,7 +56,6 @@ class Parameter (BaseModel):
     optional: bool | None = Field(default=None, description="Whether the parameter is optional.")
     range: tuple[float, float] | None = Field(default=None, description="Parameter value range for numeric parameters.")
     enumeration: list[EnumerationMember] | None = Field(default=None, description="Parameter value choices for enumeration parameters.")
-    default_value: str | float | int | bool | list[Any] | dict[str, Any] | None = Field(default=None, description="Parameter default value.", serialization_alias="defaultValue", validation_alias=AliasChoices("default_value", "defaultValue"))
     value_schema: dict[str, Any] | None = Field(default=None, description="Parameter JSON schema. This is only populated for `list` and `dict` parameters.", serialization_alias="schema", validation_alias=AliasChoices("schema", "value_schema"))
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

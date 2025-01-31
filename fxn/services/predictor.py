@@ -22,8 +22,11 @@ class PredictorService:
             Predictor: Predictor.
         """
         try:
-            predictor = self.client.request(method="GET", path=f"/predictors/{tag}")
-            return Predictor(**predictor)
+            return self.client.request(
+                method="GET",
+                path=f"/predictors/{tag}",
+                response_type=Predictor
+            )
         except FunctionAPIError as error:
             if error.status_code == 404:
                 return None

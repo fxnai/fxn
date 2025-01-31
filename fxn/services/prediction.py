@@ -134,9 +134,10 @@ class PredictionService:
                 "tag": tag,
                 "clientId": client_id,
                 "configurationId": configuration_id,
-            }
+            },
+            response_type=Prediction
         )
-        return Prediction(**prediction)
+        return prediction
 
     def __get_predictor (
         self,

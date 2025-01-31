@@ -65,9 +65,9 @@ class RemotePredictionService:
                 "inputs": input_map,
                 "acceleration": acceleration,
                 "clientId": Configuration.get_client_id()
-            }
+            },
+            response_type=RemotePrediction
         )
-        prediction = RemotePrediction(**prediction)
         results = list(map(self.__to_object, prediction.results)) if prediction.results is not None else None
         prediction = Prediction(**{ **prediction.model_dump(), "results": results })
         return prediction
@@ -157,9 +157,9 @@ class RemotePredictionService:
         value = self.client.request(
             method="POST",
             path="/values",
-            body={ "name": name }
+            body={ "name": name },
+            response_type=CreateValueResponse
         )
-        value = CreateValueResponse(**value)
         put(
             value.upload_url,
             data=data,
