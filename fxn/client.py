@@ -4,9 +4,9 @@
 #
 
 from json import loads, JSONDecodeError
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 from requests import request
-from typing import Any, Literal, Type, TypeVar
+from typing import AsyncGenerator, Literal, Type, TypeVar
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -19,11 +19,20 @@ class FunctionClient:
     def request (
         self,
         *,
-        method: Literal["GET", "POST", "DELETE"],
+        method: Literal["GET", "POST", "PATCH", "DELETE"],
         path: str,
-        body: dict[str, Any]=None,
+        body: dict[str, object]=None,
         response_type: Type[T]=None
     ) -> T:
+        """
+        Make a request to a REST endpoint.
+
+        Parameters:
+            method (str): Request method.
+            path (str): Endpoint path.
+            body (dict): Request JSON body.
+            response_type (Type): Response type.
+        """
         response = request(
             method=method,
             url=f"{self.api_url}{path}",
@@ -40,6 +49,53 @@ class FunctionClient:
         else:
             error = _ErrorResponse(**data).errors[0].message if isinstance(data, dict) else data
             raise FunctionAPIError(error, response.status_code)
+        
+    async def stream (
+        self,
+        *,
+        method: Literal["GET", "POST", "PATCH", "DELETE"],
+        path: str,
+        body: dict[str, object]=None,
+        response_type: Type[T]=None
+    ) -> AsyncGenerator[T, None]:
+        """
+        Make a request to a REST endpoint and consume the response as a server-sent events stream.
+
+        Parameters:
+            method (str): Request method.
+            path (str): Endpoint path.
+            body (dict): Request JSON body.
+            response_type (Type): Response type.
+        """
+        response = request(
+            method=method,
+            url=f"{self.api_url}{path}",
+            json=body,
+            headers={
+                "Accept": "text/event-stream",
+                "Authorization": f"Bearer {self.access_key}"
+            },
+            stream=True
+        )
+        event = None
+        data: str = ""
+        for line in response.iter_lines(decode_unicode=True):
+            if line is None:
+                break
+            line: str = line.strip()
+            if line:
+                if line.startswith("event:"):
+                    event = line[len("event:"):].strip()
+                elif line.startswith("data:"):
+                    line_data = line[len("data:"):].strip()
+                    data = f"{data}\n{line_data}"
+                continue
+            if event is not None:
+                yield _parse_sse_event(event, data, response_type)
+            event = None
+            data = ""
+        if event or data:
+            yield _parse_sse_event(event, data, response_type)
 
 class FunctionAPIError (Exception):
 
@@ -56,3 +112,8 @@ class _APIError (BaseModel):
 
 class _ErrorResponse (BaseModel):
     errors: list[_APIError]
+
+def _parse_sse_event (event: str, data: str, type: Type[T]=None) -> T:
+    result = { "event": event, "data": loads(data) }
+    result = TypeAdapter(type).validate_python(result) if type is not None else result
+    return result

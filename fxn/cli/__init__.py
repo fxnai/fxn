@@ -6,7 +6,7 @@
 from typer import Typer
 
 from .auth import app as auth_app
-#from .compile import compile_predictor
+from .compile import compile_predictor
 from .misc import cli_options
 from .predictions import create_prediction
 from .predictors import retrieve_predictor
@@ -33,10 +33,10 @@ app.command(
     help="Make a prediction.",
     context_settings={ "allow_extra_args": True, "ignore_unknown_options": True }
 )(create_prediction)
-# app.command(
-#     name="compile",
-#     help="Create a predictor by compiling a Python function."
-# )(compile_predictor)
+app.command(
+    name="compile",
+    help="Create a predictor by compiling a Python function."
+)(compile_predictor)
 app.command(name="retrieve", help="Retrieve a predictor.")(retrieve_predictor)
 
 # Run

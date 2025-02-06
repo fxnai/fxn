@@ -4,13 +4,15 @@
 #
 
 from __future__ import annotations
+from abc import ABC, abstractmethod
 from hashlib import sha256
 from pathlib import Path
 from pydantic import BaseModel
 from requests import put
 from typing import Literal
 
-from ..function import Function
+from .function import Function
+from .logging import CustomProgressTask
 
 class WorkdirCommand (BaseModel):
     kind: Literal["workdir"] = "workdir"
@@ -20,17 +22,35 @@ class EnvCommand (BaseModel):
     kind: Literal["env"] = "env"
     env: dict[str, str]
 
-class UploadFileCommand (BaseModel):
-    kind: Literal["upload_file"] = "upload_file"
+class UploadableCommand (BaseModel, ABC):
     from_path: str
     to_path: str
     manifest: dict[str, str] | None = None
 
-class UploadDirectoryCommand (BaseModel):
+    @abstractmethod
+    def get_files (self) -> list[Path]:
+        pass
+
+class UploadFileCommand (UploadableCommand):
+    kind: Literal["upload_file"] = "upload_file"
+    
+    def get_files (self) -> list[Path]:
+        return [Path(self.from_path).resolve()]
+
+class UploadDirectoryCommand (UploadableCommand):
     kind: Literal["upload_dir"] = "upload_dir"
-    from_path: str
-    to_path: str
-    manifest: dict[str, str] | None = None
+
+    def get_files (self) -> list[Path]:
+        from_path = Path(self.from_path)
+        assert from_path.is_absolute(), "Cannot upload directory because directory path must be absolute"
+        return [file for file in from_path.rglob("*") if file.is_file()]
+    
+class EntrypointCommand (UploadableCommand):
+    kind: Literal["entrypoint"] = "entrypoint"
+    name: str
+
+    def get_files (self) -> list[Path]:
+        return [Path(self.from_path).resolve()]
 
 class PipInstallCommand (BaseModel):
     kind: Literal["pip_install"] = "pip_install"
@@ -39,10 +59,6 @@ class PipInstallCommand (BaseModel):
 class AptInstallCommand (BaseModel):
     kind: Literal["apt_install"] = "apt_install"
     packages: list[str]
-
-class EntrypointCommand (BaseModel):
-    kind: Literal["entrypoint"] = "entrypoint"
-    path: str
 
 Command = (
     WorkdirCommand          |
@@ -138,16 +154,31 @@ class Sandbox (BaseModel):
         Populate all metadata.
         """
         fxn = fxn if fxn is not None else Function()
+        entrypoint = next(cmd for cmd in self.commands if isinstance(cmd, EntrypointCommand))
+        entry_path = Path(entrypoint.from_path).resolve()
         for command in self.commands:
-            if isinstance(command, UploadFileCommand):
+            if isinstance(command, UploadableCommand):
+                cwd = Path.cwd()
                 from_path = Path(command.from_path)
                 to_path = Path(command.to_path)
-                command.manifest = { str(to_path / from_path.name): self.__upload_file(from_path, fxn=fxn) }
-            elif isinstance(command, UploadDirectoryCommand):
-                from_path = Path(command.from_path)
-                to_path = Path(command.to_path)
-                files = [file for file in from_path.rglob("*") if file.is_file()]
-                command.manifest = { str(to_path / file.relative_to(from_path)): self.__upload_file(file, fxn=fxn) for file in files }
+                if not from_path.is_absolute():
+                    from_path = (entry_path / from_path).resolve()
+                    command.from_path = str(from_path)
+                files = command.get_files()
+                name = from_path.relative_to(cwd) if from_path.is_relative_to(cwd) else from_path.resolve()
+                with CustomProgressTask(
+                    loading_text=f"Uploading [light_slate_blue]{name}[/light_slate_blue]...",
+                    done_text=f"Uploaded [light_slate_blue]{name}[/light_slate_blue]",
+                    progress_type="determinate"
+                ) as task:
+                    manifest = { }
+                    for idx, file in enumerate(files):
+                        rel_file_path = file.relative_to(from_path) if from_path.is_dir() else file.name
+                        dst_path = to_path / rel_file_path
+                        checksum = self.__upload_file(file, fxn=fxn)
+                        manifest[str(dst_path)] = checksum
+                        task.update(total=len(files), completed=idx+1)
+                    command.manifest = manifest
         return self
 
     def __upload_file (self, path: Path, fxn: Function) -> str:
@@ -172,6 +203,6 @@ class Sandbox (BaseModel):
             for chunk in iter(lambda: f.read(4096), b""):
                 hash.update(chunk)
         return hash.hexdigest()
-    
+
 class _Resource (BaseModel):
     url: str

@@ -5,12 +5,12 @@
 
 from collections.abc import Callable
 from functools import wraps
+from inspect import isasyncgenfunction, iscoroutinefunction
 from pathlib import Path
 from pydantic import BaseModel, Field
 
-from ..types import AccessMode, Signature
 from .sandbox import Sandbox
-from .signature import get_function_type, infer_function_signature, FunctionType
+from .types import AccessMode
 
 class PredictorSpec (BaseModel):
     """
@@ -20,7 +20,6 @@ class PredictorSpec (BaseModel):
     description: str = Field(description="Predictor description. MUST be less than 100 characters long.", min_length=4, max_length=100)
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
     access: AccessMode = Field(description="Predictor access.")
-    signature: Signature = Field(description="Predictor signature.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")
     media: str | None = Field(default=None, description="Predictor media URL.")
     license: str | None = Field(default=None, description="Predictor license URL. This is required for public predictors.")
@@ -51,11 +50,9 @@ def compile (
         # Check type
         if not callable(func):
             raise TypeError("Cannot compile non-function objects")
-        func_type = get_function_type(func)
-        if func_type not in { FunctionType.Function, FunctionType.Generator }:
-            raise TypeError(f"Function '{func.__name__}' must be a regular function or generator")
+        if isasyncgenfunction(func) or iscoroutinefunction(func):
+            raise TypeError(f"Function '{func.__name__}' must be a regular function or generator")            
         # Gather metadata
-        signature = infer_function_signature(func) # throws
         if isinstance(card, Path):
             with open(card_content, "r") as f:
                 card_content = f.read()
@@ -66,7 +63,6 @@ def compile (
             description=description,
             sandbox=sandbox if sandbox is not None else Sandbox(),
             access=access,
-            signature=signature,
             card=card_content,
             media=None, # INCOMPLETE
             license=license
