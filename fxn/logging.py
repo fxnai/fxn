@@ -83,7 +83,7 @@ class CustomProgressTask:
     def __enter__ (self):
         progress = current_progress.get()
         indent_level = len(progress_task_stack.get())
-        indent = "└── " * indent_level
+        indent = self.__get_indent(indent_level)
         if progress is not None:
             self.task_id = progress.add_task(
                 f"{indent}{self.loading_text}",
@@ -98,7 +98,7 @@ class CustomProgressTask:
         progress = current_progress.get()
         if progress is not None and self.task_id is not None:
             indent_level = len(progress_task_stack.get()) - 1
-            indent = "└── " * indent_level
+            indent = self.__get_indent(indent_level)
             if exc_type is None:
                 total = progress._tasks[self.task_id].total
                 progress.update(
@@ -127,10 +127,16 @@ class CustomProgressTask:
                 index = stack.index(self.task_id)
             except ValueError:
                 index = len(stack) - 1
-            indent = "└── " * index
+            indent = self.__get_indent(index)
             description = kwargs["description"]
             kwargs["description"] = f"{indent}{description}"
         progress.update(self.task_id, **kwargs)
 
     def finish (self, message: str):
         self.done_text = message
+
+    def __get_indent (self, level: int) -> str:
+        if level == 0:
+            return ""
+        indicator = "└── "
+        return " " * len(indicator) * (level - 1) + indicator

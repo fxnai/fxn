@@ -9,10 +9,12 @@ from inspect import getmembers, getmodulename, isfunction
 from pathlib import Path
 from pydantic import BaseModel
 from re import sub
+from rich import print as print_rich
 from rich.progress import SpinnerColumn, TextColumn
 import sys
 from typer import Argument, Option
 from typing import Callable, Literal
+from urllib.parse import urlparse, urlunparse
 
 from ..compile import PredictorSpec
 from ..function import Function
@@ -44,32 +46,28 @@ async def _compile_predictor_async (path: str):
         with CustomProgressTask(loading_text="Uploading sandbox...", done_text="Uploaded sandbox"):
             sandbox.populate(fxn=fxn)
         # Compile
-        with CustomProgressTask(loading_text="Compiling predictor...", done_text="Compiled predictor"):
-            with CustomProgressTask(loading_text="Creating predictor...", done_text="Created predictor"):
+        with CustomProgressTask(loading_text="Generating predictor...", done_text="Generated predictor"):
+            with CustomProgressTask(loading_text="Creating predictor..."):
                 predictor = fxn.client.request(
                     method="POST",
                     path="/predictors",
                     body=spec.model_dump(mode="json"),
                     response_type=_Predictor
                 )
-            current_task = None
-            async for event in fxn.client.stream(
-                method="POST",
-                path=f"/predictors/{predictor.tag}/compile",
-                body={ },
-                response_type=_LogEvent | _ErrorEvent
-            ):
-                if isinstance(event, _LogEvent):
-                    if current_task is not None:
-                        current_task.__exit__(None, None, None)
-                    message = sub(r"`([^`]+)`", r"[hot_pink]\1[/hot_pink]", event.data.message)
-                    current_task = CustomProgressTask(loading_text=message).__enter__()
-                elif isinstance(event, _ErrorEvent):
-                    if current_task is not None:
-                        current_task.__exit__(RuntimeError, None, None)
-                    raise RuntimeError(event.data.error)
-            if current_task is not None:
-                current_task.__exit__(None, None, None)
+            with ProgressLogQueue() as task_queue:
+                async for event in fxn.client.stream(
+                    method="POST",
+                    path=f"/predictors/{predictor.tag}/compile",
+                    body={ },
+                    response_type=_LogEvent | _ErrorEvent
+                ):
+                    if isinstance(event, _LogEvent):
+                        task_queue.push_log(event)
+                    elif isinstance(event, _ErrorEvent):
+                        task_queue.push_error(event)
+                        raise RuntimeError(event.data.error)
+    predictor_url = _compute_predictor_url(fxn.client.api_url, spec.tag)
+    print_rich(f"\n[bold spring_green3]🎉 Predictor is now being compiled.[/bold spring_green3] Check it out at {predictor_url}")
 
 def _load_predictor_func (path: str) -> Callable[...,object]:
     if "" not in sys.path:
@@ -84,11 +82,22 @@ def _load_predictor_func (path: str) -> Callable[...,object]:
     main_func = next(func for _, func in getmembers(module, isfunction) if hasattr(func, "__predictor_spec"))
     return main_func
 
+def _compute_predictor_url (api_url: str, tag: str) -> str:
+    parsed_url = urlparse(api_url)
+    hostname_parts = parsed_url.hostname.split(".")
+    if hostname_parts[0] == "api":
+        hostname_parts.pop(0)
+    hostname = ".".join(hostname_parts)
+    netloc = hostname if not parsed_url.port else f"{hostname}:{parsed_url.port}"
+    predictor_url = urlunparse(parsed_url._replace(netloc=netloc, path=f"{tag}"))
+    return predictor_url
+
 class _Predictor (BaseModel):
     tag: str
 
 class _LogData (BaseModel):
     message: str
+    level: int = 0
 
 class _LogEvent (BaseModel):
     event: Literal["log"]
@@ -100,3 +109,33 @@ class _ErrorData (BaseModel):
 class _ErrorEvent (BaseModel):
     event: Literal["error"]
     data: _ErrorData
+
+class ProgressLogQueue:
+
+    def __init__ (self):
+        self.queue: list[tuple[int, CustomProgressTask]] = []
+
+    def push_log (self, event: _LogEvent):
+        while self.queue:
+            current_level, current_task = self.queue[-1]
+            if event.data.level > current_level:
+                break
+            current_task.__exit__(None, None, None)
+            self.queue.pop()
+        message = sub(r"`([^`]+)`", r"[hot_pink]\1[/hot_pink]", event.data.message)
+        task = CustomProgressTask(loading_text=message)
+        task.__enter__()
+        self.queue.append((event.data.level, task))
+
+    def push_error (self, error: _ErrorEvent):
+        while self.queue:
+            _, current_task = self.queue.pop()
+            current_task.__exit__(RuntimeError, None, None)
+
+    def __enter__ (self):
+        return self
+    
+    def __exit__ (self, exc_type, exc_value, traceback):
+        while self.queue:
+            _, current_task = self.queue.pop()
+            current_task.__exit__(None, None, None)
