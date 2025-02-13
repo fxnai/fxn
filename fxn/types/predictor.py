@@ -21,7 +21,7 @@ class PredictorStatus (str, Enum):
     """
     Predictor status.
     """
-    Provisioning = "PROVISIONING"
+    Compiling = "COMPILING"
     Active = "ACTIVE"
     Invalid = "INVALID"
     Archived = "ARCHIVED"

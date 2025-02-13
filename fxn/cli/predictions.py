@@ -9,11 +9,11 @@ from numpy import array_repr, ndarray
 from pathlib import Path, PurePath
 from PIL import Image
 from rich import print_json
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from tempfile import mkstemp
 from typer import Argument, Context, Option
 
 from ..function import Function
+from ..logging import CustomProgress, CustomProgressTask
 from ..types import Prediction
 from .auth import get_access_key
 
@@ -26,18 +26,21 @@ def create_prediction (
 
 async def _predict_async (tag: str, quiet: bool, context: Context):
     # Preload
-    fxn = Function(get_access_key())
-    fxn.predictions.create(tag, inputs={ }, verbose=not quiet)
-    # Predict
-    with Progress(
-        SpinnerColumn(spinner_name="dots"),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True
-    ) as progress:
-        progress.add_task(description="Running Function...", total=None)
-        inputs = { context.args[i].replace("-", ""): _parse_value(context.args[i+1]) for i in range(0, len(context.args), 2) }
-        prediction = fxn.predictions.create(tag, inputs=inputs)
-        _log_prediction(prediction)
+    with CustomProgress(transient=True, disable=quiet):
+        fxn = Function(get_access_key())
+        with CustomProgressTask(
+            loading_text="Preloading predictor...",
+            done_text="Preloaded predictor"
+        ):
+            fxn.predictions.create(tag, inputs={ })
+        with CustomProgressTask(loading_text="Making prediction..."):
+            inputs = { }
+            for i in range(0, len(context.args), 2):
+                name = context.args[i].replace("-", "")
+                value = _parse_value(context.args[i+1])
+                inputs[name] = value
+            prediction = fxn.predictions.create(tag, inputs=inputs)
+    _log_prediction(prediction)
 
 def _parse_value (value: str):
     """

@@ -1,3 +1,9 @@
+## 0.0.43
++ Added `fxn compile` CLI function for access to the Function compiler proof of concept.
++ Added `fxn archive` CLI function for archiving predictors.
++ Added `fxn delete` CLI function for deleting predictors.
++ Refactored `PredictorStatus.Provisioning` enumeration member to `Compiling`.
+
 ## 0.0.42
 + Added `fxn.beta.predictions.remote.create` method for creating predictions on remote GPU servers.
 

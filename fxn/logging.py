@@ -4,10 +4,8 @@
 #
 
 from contextvars import ContextVar
-from rich.progress import BarColumn, Progress, TextColumn
+from rich.progress import BarColumn, Progress, ProgressColumn, SpinnerColumn, TextColumn
 from typing import Literal
-
-ProgressTaskType = Literal["indeterminate", "determinate"]
 
 current_progress = ContextVar("current_progress", default=None)
 progress_task_stack = ContextVar("progress_task_stack", default=[])
@@ -16,7 +14,7 @@ class CustomProgress(Progress):
 
     def __init__ (
         self,
-        *columns,
+        *columns: ProgressColumn,
         console=None,
         auto_refresh=True,
         refresh_per_second = 10,
@@ -28,8 +26,12 @@ class CustomProgress(Progress):
         disable=False,
         expand=False
     ):
+        default_columns = list(columns) if len(columns) > 0 else [
+            SpinnerColumn(spinner_name="dots", finished_text="[bold green]✔[/bold green]"),
+            TextColumn("[progress.description]{task.description}"),
+        ]
         super().__init__(
-            *columns,
+            *default_columns,
             console=console,
             auto_refresh=auto_refresh,
             refresh_per_second=refresh_per_second,
@@ -41,11 +43,7 @@ class CustomProgress(Progress):
             disable=disable,
             expand=expand
         )
-        self.indeterminate_columns = self.columns
-        self.determinate_columns = self.columns + (
-            BarColumn(),
-            TextColumn("{task.completed}/{task.total}")
-        )
+        self.default_columns = default_columns
 
     def __enter__ (self):
         self._token = current_progress.set(self)
@@ -59,11 +57,8 @@ class CustomProgress(Progress):
     
     def get_renderables (self):
         for task in self.tasks:
-            progress_type: ProgressTaskType = task.fields.get("progress_type", "indeterminate")
-            if progress_type ==  "determinate":
-                self.columns = self.determinate_columns
-            elif progress_type == "indeterminate":
-                self.columns = self.indeterminate_columns
+            task_columns = task.fields.get("columns") or list()
+            self.columns = self.default_columns + task_columns
             yield self.make_tasks_table([task])
 
 class CustomProgressTask:
@@ -73,12 +68,12 @@ class CustomProgressTask:
         *,
         loading_text: str,
         done_text: str=None,
-        progress_type: ProgressTaskType="indeterminate"
+        columns: list[ProgressColumn]=None
     ):
         self.loading_text = loading_text
         self.done_text = done_text if done_text is not None else loading_text
         self.task_id = None
-        self.progress_type = progress_type
+        self.columns = columns
 
     def __enter__ (self):
         progress = current_progress.get()
@@ -88,7 +83,7 @@ class CustomProgressTask:
             self.task_id = progress.add_task(
                 f"{indent}{self.loading_text}",
                 total=1,
-                progress_type=self.progress_type
+                columns=self.columns
             )
             current_stack = progress_task_stack.get()
             progress_task_stack.set(current_stack + [self.task_id])

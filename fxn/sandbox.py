@@ -9,6 +9,7 @@ from hashlib import sha256
 from pathlib import Path
 from pydantic import BaseModel
 from requests import put
+from rich.progress import BarColumn, TextColumn
 from typing import Literal
 
 from .function import Function
@@ -84,16 +85,14 @@ class Sandbox (BaseModel):
             path (str | Path): Path to change to.
         """
         command = WorkdirCommand(path=str(path))
-        self.commands.append(command)
-        return self
+        return Sandbox(commands=self.commands + [command])
 
     def env (self, **env: str) -> Sandbox:
         """
         Set environment variables in the sandbox.
         """
         command = EnvCommand(env=env)
-        self.commands.append(command)
-        return self
+        return Sandbox(commands=self.commands + [command])
 
     def upload_file (
         self,
@@ -108,8 +107,7 @@ class Sandbox (BaseModel):
             to_path (str | Path): Remote path to upload file to.
         """
         command = UploadFileCommand(from_path=str(from_path), to_path=str(to_path))
-        self.commands.append(command)
-        return self
+        return Sandbox(commands=self.commands + [command])
 
     def upload_directory (
         self,
@@ -124,8 +122,7 @@ class Sandbox (BaseModel):
             to_path (str | Path): Remote path to upload directory to.
         """
         command = UploadDirectoryCommand(from_path=str(from_path), to_path=str(to_path))
-        self.commands.append(command)
-        return self
+        return Sandbox(commands=self.commands + [command])
 
     def pip_install (self, *packages: str) -> Sandbox:
         """
@@ -135,8 +132,7 @@ class Sandbox (BaseModel):
             packages (list): Packages to install.
         """
         command = PipInstallCommand(packages=packages)
-        self.commands.append(command)
-        return self
+        return Sandbox(commands=self.commands + [command])
 
     def apt_install (self, *packages: str) -> Sandbox:
         """
@@ -146,10 +142,9 @@ class Sandbox (BaseModel):
             packages (list): Packages to install.
         """
         command = AptInstallCommand(packages=packages)
-        self.commands.append(command)
-        return self
-    
-    def populate (self, fxn: Function=None) -> Sandbox:
+        return Sandbox(commands=self.commands + [command])
+
+    def populate (self, fxn: Function=None) -> Sandbox: # CHECK # In place
         """
         Populate all metadata.
         """
@@ -169,7 +164,10 @@ class Sandbox (BaseModel):
                 with CustomProgressTask(
                     loading_text=f"Uploading [light_slate_blue]{name}[/light_slate_blue]...",
                     done_text=f"Uploaded [light_slate_blue]{name}[/light_slate_blue]",
-                    progress_type="determinate"
+                    columns=[
+                        BarColumn(),
+                        TextColumn("{task.completed}/{task.total}")
+                    ]
                 ) as task:
                     manifest = { }
                     for idx, file in enumerate(files):

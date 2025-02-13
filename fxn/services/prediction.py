@@ -11,13 +11,14 @@ from pathlib import Path
 from PIL import Image
 from pydantic import BaseModel
 from requests import get
-from rich.progress import Progress, TextColumn, BarColumn, DownloadColumn, TransferSpeedColumn, TimeRemainingColumn
-from tempfile import gettempdir
+from rich.progress import BarColumn, DownloadColumn, TransferSpeedColumn, TimeRemainingColumn
+from tempfile import gettempdir, NamedTemporaryFile
 from typing import Any, AsyncIterator
 from urllib.parse import urlparse
 
 from ..c import Configuration, Predictor, Prediction as CPrediction, Value as CValue, ValueFlags, ValueMap
 from ..client import FunctionClient
+from ..logging import CustomProgressTask
 from ..types import Acceleration, Prediction, PredictionResource
 
 Value = ndarray | str | float | int | bool | list[Any] | dict[str, Any] | Image.Image | BytesIO | memoryview
@@ -50,8 +51,7 @@ class PredictionService:
         acceleration: Acceleration=Acceleration.Auto,
         device=None,
         client_id: str=None,
-        configuration_id: str=None,
-        verbose: bool=False
+        configuration_id: str=None
     ) -> Prediction:
         """
         Create a prediction.
@@ -62,7 +62,6 @@ class PredictionService:
             acceleration (Acceleration): Prediction acceleration.
             client_id (str): Function client identifier. Specify this to override the current client identifier.
             configuration_id (str): Configuration identifier. Specify this to override the current client configuration identifier.
-            verbose (bool): Enable verbose logging.
 
         Returns:
             Prediction: Created prediction.
@@ -78,8 +77,7 @@ class PredictionService:
             acceleration=acceleration,
             device=device,
             client_id=client_id,
-            configuration_id=configuration_id,
-            verbose=verbose
+            configuration_id=configuration_id
         )
         with (
             self.__to_value_map(inputs) as input_map,
@@ -145,8 +143,7 @@ class PredictionService:
         acceleration: Acceleration=Acceleration.Auto,
         device=None,
         client_id: str=None,
-        configuration_id: str=None,
-        verbose: bool=False
+        configuration_id: str=None
     ) -> Predictor:
         if tag in self.__cache:
             return self.__cache[tag]
@@ -155,20 +152,13 @@ class PredictionService:
             client_id=client_id,
             configuration_id=configuration_id
         )
-        with Configuration() as configuration, Progress(
-            TextColumn("[bold blue]{task.fields[filename]}"),
-            BarColumn(),
-            DownloadColumn(),
-            TransferSpeedColumn(),
-            TimeRemainingColumn(),
-            disable=not verbose
-        ) as progress:
+        with Configuration() as configuration:
             configuration.tag = prediction.tag
             configuration.token = prediction.configuration
             configuration.acceleration = acceleration
             configuration.device = device
             for resource in prediction.resources:
-                path = self.__download_resource(resource, progress=progress)
+                path = self.__download_resource(resource)
                 configuration.add_resource(resource.type, path)
             predictor = Predictor(configuration)
         self.__cache[tag] = predictor
@@ -227,12 +217,7 @@ class PredictionService:
         )
         return prediction
     
-    def __download_resource (
-        self,
-        resource: PredictionResource,
-        *,
-        progress: Progress
-    ) -> Path:
+    def __download_resource (self, resource: PredictionResource) -> Path:
         path = self.__get_resource_path(resource)
         if path.exists():
             return path
@@ -241,12 +226,26 @@ class PredictionService:
         response.raise_for_status()
         size = int(response.headers.get("content-length", 0))
         stem = Path(urlparse(resource.url).path).name
-        task = progress.add_task(f"Downloading", filename=stem, total=size)
-        with open(path, "wb") as fp:
+        completed = 0
+        color = "dark_orange" if not resource.type == "dso" else "purple"
+        with (
+            CustomProgressTask(
+                loading_text=f"[{color}]{stem}[/{color}]",
+                columns=[
+                    BarColumn(),
+                    DownloadColumn(),
+                    TransferSpeedColumn(),
+                    TimeRemainingColumn()
+                ]
+            ) as task,
+            NamedTemporaryFile(mode="wb", delete=False) as tmp_file
+        ):
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
-                    fp.write(chunk)
-                    progress.update(task, advance=len(chunk))
+                    tmp_file.write(chunk)
+                    completed += len(chunk)
+                    task.update(total=size, completed=completed)
+            Path(tmp_file.name).replace(path)
         return path
 
     def __get_resource_path (self, resource: PredictionResource) -> Path:

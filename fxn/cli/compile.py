@@ -22,7 +22,7 @@ from ..sandbox import EntrypointCommand
 from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
 
-def compile_predictor ( # INCOMPLETE
+def compile_predictor (
     path: str=Argument(..., help="Predictor path.")
 ):
     run_async(_compile_predictor_async(path))
@@ -46,7 +46,7 @@ async def _compile_predictor_async (path: str):
         with CustomProgressTask(loading_text="Uploading sandbox...", done_text="Uploaded sandbox"):
             sandbox.populate(fxn=fxn)
         # Compile
-        with CustomProgressTask(loading_text="Generating predictor...", done_text="Generated predictor"):
+        with CustomProgressTask(loading_text="Running codegen...", done_text="Completed codegen"):
             with CustomProgressTask(loading_text="Creating predictor..."):
                 predictor = fxn.client.request(
                     method="POST",
@@ -122,7 +122,7 @@ class ProgressLogQueue:
                 break
             current_task.__exit__(None, None, None)
             self.queue.pop()
-        message = sub(r"`([^`]+)`", r"[hot_pink]\1[/hot_pink]", event.data.message)
+        message = sub(r"`([^`]+)`", r"[hot_pink italic]\1[/hot_pink italic]", event.data.message)
         task = CustomProgressTask(loading_text=message)
         task.__enter__()
         self.queue.append((event.data.level, task))
