@@ -1,3 +1,6 @@
+## 0.0.44
+*INCOMPLETE*
+
 ## 0.0.43
 + Added `fxn compile` CLI function for access to the Function compiler proof of concept.
 + Added `fxn archive` CLI function for archiving predictors.
