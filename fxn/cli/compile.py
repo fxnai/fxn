@@ -8,7 +8,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 from inspect import getmembers, getmodulename, isfunction
 from pathlib import Path
 from pydantic import BaseModel
-from re import sub
 from rich import print as print_rich
 from rich.progress import SpinnerColumn, TextColumn
 import sys
@@ -122,8 +121,7 @@ class ProgressLogQueue:
                 break
             current_task.__exit__(None, None, None)
             self.queue.pop()
-        message = sub(r"`([^`]+)`", r"[hot_pink italic]\1[/hot_pink italic]", event.data.message)
-        task = CustomProgressTask(loading_text=message)
+        task = CustomProgressTask(loading_text=event.data.message)
         task.__enter__()
         self.queue.append((event.data.level, task))
 
