@@ -1,5 +1,5 @@
 ## 0.0.44
-*INCOMPLETE*
++ Added `target` argument in `@compile` decorator for specifying specific targets to compile for.
 
 ## 0.0.43
 + Added `fxn compile` CLI function for access to the Function compiler proof of concept.

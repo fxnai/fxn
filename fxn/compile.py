@@ -8,9 +8,12 @@ from functools import wraps
 from inspect import isasyncgenfunction, iscoroutinefunction
 from pathlib import Path
 from pydantic import BaseModel, Field
+from typing import Literal
 
 from .sandbox import Sandbox
 from .types import AccessMode
+
+CompileTarget = Literal["android", "ios", "linux", "macos", "visionos", "web", "windows"]
 
 class PredictorSpec (BaseModel):
     """
@@ -18,6 +21,7 @@ class PredictorSpec (BaseModel):
     """
     tag: str = Field(description="Predictor tag.")
     description: str = Field(description="Predictor description. MUST be less than 100 characters long.", min_length=4, max_length=100)
+    targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
     access: AccessMode = Field(description="Predictor access.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")
@@ -28,6 +32,7 @@ def compile (
     tag: str,
     *,
     description: str,
+    targets: list[CompileTarget]=None,
     sandbox: Sandbox=None,
     access: AccessMode=AccessMode.Private,
     card: str | Path=None,
@@ -40,6 +45,7 @@ def compile (
     Parameters:
         tag (str): Predictor tag.
         description (str): Predictor description. MUST be less than 100 characters long.
+        targets (list): Targets to compile this predictor for. Pass `None` to compile for our default targets.
         sandbox (Sandbox): Sandbox to compile the function.
         access (AccessMode): Predictor access.
         card (str | Path): Predictor card markdown string or path to card.
@@ -61,6 +67,7 @@ def compile (
         spec = PredictorSpec(
             tag=tag,
             description=description,
+            targets=targets,
             sandbox=sandbox if sandbox is not None else Sandbox(),
             access=access,
             card=card_content,
