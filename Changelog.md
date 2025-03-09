@@ -1,5 +1,6 @@
 ## 0.0.44
 + Added `target` argument in `@compile` decorator for specifying specific targets to compile for.
++ Changed `fxn.predictions.stream` method to be a plain `Iterator` instead of `AsyncIterator`.
 
 ## 0.0.43
 + Added `fxn compile` CLI function for access to the Function compiler proof of concept.

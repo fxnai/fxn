@@ -5,4 +5,4 @@ rich
 typer
 pydantic
 pytest
-pytest_asyncio
+pytest-asyncio

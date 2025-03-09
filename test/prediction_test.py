@@ -6,8 +6,6 @@
 from fxn import Function
 import pytest
 
-pytest_plugins = ("pytest_asyncio",)
-
 def test_create_raw_prediction ():
     fxn = Function()
     prediction = fxn.predictions.create(tag="@fxn/greeting")
@@ -25,16 +23,15 @@ def test_create_prediction ():
     assert prediction.results
     assert isinstance(prediction.results[0], float)
 
-# @pytest.mark.asyncio
-# async def test_stream_prediction ():
-#     fxn = Function()
-#     sentence = "Hello world"
-#     stream = fxn.predictions.stream(
-#         tag="@yusuf/streaming",
-#         inputs={ "sentence": sentence }
-#     )
-#     async for prediction in stream:
-#         print(prediction)
+def test_stream_prediction ():
+    fxn = Function()
+    sentence = "Hello world"
+    stream = fxn.predictions.stream(
+        tag="@yusuf/streaming",
+        inputs={ "sentence": sentence }
+    )
+    for prediction in stream:
+        print(prediction)
 
 def test_create_invalid_prediction ():
     fxn = Function()

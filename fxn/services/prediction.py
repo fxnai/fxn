@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from requests import get
 from rich.progress import BarColumn, DownloadColumn, TransferSpeedColumn, TimeRemainingColumn
 from tempfile import gettempdir, NamedTemporaryFile
-from typing import Any, AsyncIterator
+from typing import Iterator
 from urllib.parse import urlparse
 
 from ..c import Configuration, Predictor, Prediction as CPrediction, Value as CValue, ValueFlags, ValueMap
@@ -21,7 +21,19 @@ from ..client import FunctionClient
 from ..logging import CustomProgressTask
 from ..types import Acceleration, Prediction, PredictionResource
 
-Value = ndarray | str | float | int | bool | list[Any] | dict[str, Any] | Image.Image | BytesIO | memoryview
+Value = (
+    None                |
+    float               |
+    int                 |
+    bool                |
+    ndarray             |
+    str                 |
+    list[object]        |
+    dict[str, object]   |
+    Image.Image         |
+    BytesIO             |
+    memoryview
+)
 
 class PredictionService:
 
@@ -85,14 +97,14 @@ class PredictionService:
         ):
             return self.__to_prediction(tag, prediction)
 
-    async def stream (
+    def stream (
         self,
         tag: str,
         *,
         inputs: dict[str, Value],
         acceleration: Acceleration=Acceleration.Auto,
         device=None
-    ) -> AsyncIterator[Prediction]:
+    ) -> Iterator[Prediction]:
         """
         Stream a prediction.
 
@@ -266,7 +278,7 @@ class PredictionService:
             return Path(gettempdir())
 
     @classmethod
-    def __try_ensure_serializable (cls, object: Any) -> Any:
+    def __try_ensure_serializable (cls, object: object) -> object:
         if object is None:
             return object
         if isinstance(object, list):
