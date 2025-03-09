@@ -21,6 +21,9 @@ from ..sandbox import EntrypointCommand
 from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
 
+class CompileError (Exception):
+    pass
+
 def compile_predictor (
     path: str=Argument(..., help="Predictor path.")
 ):
@@ -64,9 +67,9 @@ async def _compile_predictor_async (path: str):
                         task_queue.push_log(event)
                     elif isinstance(event, _ErrorEvent):
                         task_queue.push_error(event)
-                        raise RuntimeError(event.data.error)
+                        raise CompileError(event.data.error)
     predictor_url = _compute_predictor_url(fxn.client.api_url, spec.tag)
-    print_rich(f"\n[bold spring_green3]🎉 Predictor is now being compiled.[/bold spring_green3] Check it out at {predictor_url}")
+    print_rich(f"\n[bold spring_green3]🎉 Predictor is now being compiled.[/bold spring_green3] Check it out at [link={predictor_url}]{predictor_url}[/link]")
 
 def _load_predictor_func (path: str) -> Callable[...,object]:
     if "" not in sys.path:

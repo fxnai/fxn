@@ -3,17 +3,19 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from typer import Typer
+import typer
 
 from .auth import app as auth_app
 from .compile import compile_predictor
 from .misc import cli_options
 from .predictions import create_prediction
 from .predictors import archive_predictor, delete_predictor, retrieve_predictor
+from ..logging import TracebackMarkupConsole
 from ..version import __version__
 
 # Define CLI
-app = Typer(
+typer.main.console_stderr = TracebackMarkupConsole()
+app = typer.Typer(
     name=f"Function CLI {__version__}",
     no_args_is_help=True,
     pretty_exceptions_show_locals=False,

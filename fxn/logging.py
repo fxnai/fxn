@@ -4,8 +4,11 @@
 #
 
 from contextvars import ContextVar
-from rich.progress import BarColumn, Progress, ProgressColumn, SpinnerColumn, TextColumn
-from typing import Literal
+from rich.console import Console, ConsoleOptions, RenderResult
+from rich.progress import Progress, ProgressColumn, SpinnerColumn, TextColumn
+from rich.text import Text
+from rich.traceback import Traceback
+from types import MethodType
 
 current_progress = ContextVar("current_progress", default=None)
 progress_task_stack = ContextVar("progress_task_stack", default=[])
@@ -135,3 +138,58 @@ class CustomProgressTask:
             return ""
         indicator = "└── "
         return " " * len(indicator) * (level - 1) + indicator
+    
+class TracebackMarkupConsole (Console):
+
+    def print(
+        self,
+        *objects,
+        sep = " ",
+        end = "\n",
+        style = None,
+        justify = None,
+        overflow = None,
+        no_wrap = None,
+        emoji = None,
+        markup = None,
+        highlight = None,
+        width = None,
+        height = None,
+        crop = True,
+        soft_wrap = None,
+        new_line_start = False
+    ):
+        traceback = objects[0]
+        if isinstance(traceback, Traceback):
+            stack = traceback.trace.stacks[0]
+            original_rich_console = traceback.__rich_console__
+            def __rich_console__ (self: Traceback, console: Console, options: ConsoleOptions) -> RenderResult:
+                for renderable in original_rich_console(console, options):
+                    if (
+                        isinstance(renderable, Text) and
+                        any(part.startswith(f"{stack.exc_type}:") for part in renderable._text)
+                    ):
+                        yield Text.assemble(
+                            (f"{stack.exc_type}: ", "traceback.exc_type"),
+                            Text.from_markup(stack.exc_value)
+                        )
+                    else:
+                        yield renderable
+            traceback.__rich_console__ = MethodType(__rich_console__, traceback)
+        return super().print(
+            *objects,
+            sep=sep,
+            end=end,
+            style=style,
+            justify=justify,
+            overflow=overflow,
+            no_wrap=no_wrap,
+            emoji=emoji,
+            markup=markup,
+            highlight=highlight,
+            width=width,
+            height=height,
+            crop=crop,
+            soft_wrap=soft_wrap,
+            new_line_start=new_line_start
+        )
