@@ -9,20 +9,20 @@ from typing import AsyncIterator, Iterator
 
 fxn = Function()
 
-@fxn.predict("@yusuf/add3")
+@fxn.beta.predict("@yusuf/add3")
 def add_numbers (a, b):
     ...
 
-@fxn.predict("@yusuf/add3")
-async def remote_add_numbers (a, b):
+@fxn.beta.predict("@yusuf/add3", remote=True)
+def remote_add_numbers (a, b):
     ...
 
-@fxn.predict("@yusuf/split-string")
+@fxn.beta.predict("@yusuf/split-string")
 def split_sentence (sentence: str) -> Iterator[str]:
     ...
 
-@fxn.predict("@yusuf/split-string")
-async def split_sentence (sentence: str) -> AsyncIterator[str]:
+@fxn.beta.predict("@yusuf/split-string", remote=True)
+def remote_split_sentence (sentence: str) -> Iterator[str]:
     ...
 
 def test_wrapped_create_prediction (): # INCOMPLETE

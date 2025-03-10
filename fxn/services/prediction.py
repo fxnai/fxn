@@ -60,7 +60,7 @@ class PredictionService:
         tag: str,
         *,
         inputs: dict[str, Value] | None=None,
-        acceleration: Acceleration=Acceleration.Auto,
+        acceleration: Acceleration="auto",
         device=None,
         client_id: str=None,
         configuration_id: str=None
@@ -102,7 +102,7 @@ class PredictionService:
         tag: str,
         *,
         inputs: dict[str, Value],
-        acceleration: Acceleration=Acceleration.Auto,
+        acceleration: Acceleration="auto",
         device=None
     ) -> Iterator[Prediction]:
         """
@@ -152,7 +152,7 @@ class PredictionService:
     def __get_predictor (
         self,
         tag: str,
-        acceleration: Acceleration=Acceleration.Auto,
+        acceleration: Acceleration="auto",
         device=None,
         client_id: str=None,
         configuration_id: str=None

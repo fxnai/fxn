@@ -13,7 +13,7 @@ from numpy import array, frombuffer, ndarray
 from PIL import Image
 from pydantic import BaseModel, Field
 from requests import get, put
-from typing import Any
+from typing import Literal
 from urllib.request import urlopen
 
 from ..c import Configuration
@@ -21,14 +21,7 @@ from ..client import FunctionClient
 from ..services import Value
 from ..types import Dtype, Prediction
 
-class RemoteAcceleration (str, Enum):
-    """
-    Remote acceleration.
-    """
-    Auto = "auto"
-    CPU = "cpu"
-    A40 = "a40"
-    A100 = "a100"
+RemoteAcceleration = Literal["auto", "cpu", "a40", "a100"]
 
 class RemotePredictionService:
     """
@@ -43,7 +36,7 @@ class RemotePredictionService:
         tag: str,
         *,
         inputs: dict[str, Value],
-        acceleration: RemoteAcceleration=RemoteAcceleration.Auto
+        acceleration: RemoteAcceleration="auto"
     ) -> Prediction:
         """
         Create a remote prediction.
@@ -74,51 +67,51 @@ class RemotePredictionService:
 
     def __to_value (
         self,
-        object: Value,
+        obj: Value,
         *,
         name: str,
         max_data_url_size: int=4 * 1024 * 1024
     ) -> RemoteValue:
-        object = self.__try_ensure_serializable(object)
-        if object is None:
+        obj = self.__try_ensure_serializable(obj)
+        if obj is None:
             return RemoteValue(data=None, type=Dtype.null)
-        elif isinstance(object, float):
-            object = array(object, dtype=Dtype.float32)
-            return self.__to_value(object, name=name, max_data_url_size=max_data_url_size)
-        elif isinstance(object, bool):
-            object = array(object, dtype=Dtype.bool)
-            return self.__to_value(object, name=name, max_data_url_size=max_data_url_size)
-        elif isinstance(object, int):
-            object = array(object, dtype=Dtype.int32)
-            return self.__to_value(object, name=name, max_data_url_size=max_data_url_size)
-        elif isinstance(object, ndarray):
-            buffer = BytesIO(object.tobytes())
+        elif isinstance(obj, float):
+            obj = array(obj, dtype=Dtype.float32)
+            return self.__to_value(obj, name=name, max_data_url_size=max_data_url_size)
+        elif isinstance(obj, bool):
+            obj = array(obj, dtype=Dtype.bool)
+            return self.__to_value(obj, name=name, max_data_url_size=max_data_url_size)
+        elif isinstance(obj, int):
+            obj = array(obj, dtype=Dtype.int32)
+            return self.__to_value(obj, name=name, max_data_url_size=max_data_url_size)
+        elif isinstance(obj, ndarray):
+            buffer = BytesIO(obj.tobytes())
             data = self.__upload(buffer, name=name, max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=object.dtype.name, shape=list(object.shape))
-        elif isinstance(object, str):
-            buffer = BytesIO(object.encode())
+            return RemoteValue(data=data, type=obj.dtype.name, shape=list(obj.shape))
+        elif isinstance(obj, str):
+            buffer = BytesIO(obj.encode())
             data = self.__upload(buffer, name=name, mime="text/plain", max_data_url_size=max_data_url_size)
             return RemoteValue(data=data, type=Dtype.string)
-        elif isinstance(object, list):
-            buffer = BytesIO(dumps(object).encode())
+        elif isinstance(obj, list):
+            buffer = BytesIO(dumps(obj).encode())
             data = self.__upload(buffer, name=name, mime="application/json", max_data_url_size=max_data_url_size)
             return RemoteValue(data=data, type=Dtype.list)
-        elif isinstance(object, dict):
-            buffer = BytesIO(dumps(object).encode())
+        elif isinstance(obj, dict):
+            buffer = BytesIO(dumps(obj).encode())
             data = self.__upload(buffer, name=name, mime="application/json", max_data_url_size=max_data_url_size)
             return RemoteValue(data=data, type=Dtype.dict)
-        elif isinstance(object, Image.Image):
+        elif isinstance(obj, Image.Image):
             buffer = BytesIO()
-            format = "PNG" if object.mode == "RGBA" else "JPEG"
+            format = "PNG" if obj.mode == "RGBA" else "JPEG"
             mime = f"image/{format.lower()}"
-            object.save(buffer, format=format)
+            obj.save(buffer, format=format)
             data = self.__upload(buffer, name=name, mime=mime, max_data_url_size=max_data_url_size)
             return RemoteValue(data=data, type=Dtype.image)
-        elif isinstance(object, BytesIO):
-            data = self.__upload(object, name=name, max_data_url_size=max_data_url_size)
+        elif isinstance(obj, BytesIO):
+            data = self.__upload(obj, name=name, max_data_url_size=max_data_url_size)
             return RemoteValue(data=data, type=Dtype.binary)
         else:
-            raise ValueError(f"Failed to serialize value '{object}' of type `{type(object)}` because it is not supported")
+            raise ValueError(f"Failed to serialize value '{obj}' of type `{type(obj)}` because it is not supported")
 
     def __to_object (self, value: RemoteValue) -> Value:
         if value.type == Dtype.null:
@@ -177,16 +170,16 @@ class RemotePredictionService:
         return result
 
     @classmethod
-    def __try_ensure_serializable (cls, object: Any) -> Any:
-        if object is None:
-            return object
-        if isinstance(object, list):
-            return [cls.__try_ensure_serializable(x) for x in object]
-        if is_dataclass(object) and not isinstance(object, type):
-            return asdict(object)
-        if isinstance(object, BaseModel):
-            return object.model_dump(mode="json", by_alias=True)
-        return object
+    def __try_ensure_serializable (cls, obj: object) -> object:
+        if obj is None:
+            return obj
+        if isinstance(obj, list):
+            return [cls.__try_ensure_serializable(x) for x in obj]
+        if is_dataclass(obj) and not isinstance(obj, type):
+            return asdict(obj)
+        if isinstance(obj, BaseModel):
+            return obj.model_dump(mode="json", by_alias=True)
+        return obj
 
 class RemoteValue (BaseModel):
     data: str | None

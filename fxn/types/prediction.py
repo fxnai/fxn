@@ -3,9 +3,10 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from enum import IntFlag
 from pydantic import BaseModel, Field
-from typing import Any
+from typing import Literal
+
+Acceleration = Literal["auto", "cpu", "gpu", "npu"]
 
 class PredictionResource (BaseModel):
     """
@@ -39,17 +40,8 @@ class Prediction (BaseModel):
     tag: str = Field(description="Predictor tag.")
     configuration: str | None = Field(default=None, description="Prediction configuration token. This is only populated for `EDGE` predictions.")
     resources: list[PredictionResource] | None = Field(default=None, description="Prediction resources. This is only populated for `EDGE` predictions.")
-    results: list[Any] | None = Field(default=None, description="Prediction results.")
+    results: list[object] | None = Field(default=None, description="Prediction results.")
     latency: float | None = Field(default=None, description="Prediction latency in milliseconds.")
     error: str | None = Field(default=None, description="Prediction error. This is `None` if the prediction completed successfully.")
     logs: str | None = Field(default=None, description="Prediction logs.")
     created: str = Field(description="Date created.")
-
-class Acceleration (IntFlag):
-    """
-    Predictor acceleration.
-    """
-    Auto    = 0,
-    CPU     = 1 << 0,
-    GPU     = 1 << 1,
-    NPU     = 1 << 2

@@ -16,15 +16,18 @@ class Configuration:
     def __init__ (self):
         configuration = c_void_p()
         status = get_fxnc().FXNConfigurationCreate(byref(configuration))
-        if status == FXNStatus.OK:
-            self.__configuration = configuration
-        else:
+        if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to create configuration with error: {status_to_error(status)}")
+        self.__configuration = configuration            
 
     @property
     def tag (self) -> str:
         buffer = create_string_buffer(2048)
-        status = get_fxnc().FXNConfigurationGetTag(self.__configuration, buffer, len(buffer))
+        status = get_fxnc().FXNConfigurationGetTag(
+            self.__configuration,
+            buffer,
+            len(buffer)
+        )
         if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to get configuration tag with error: {status_to_error(status)}")
         tag = buffer.value.decode("utf-8")
@@ -40,7 +43,11 @@ class Configuration:
     @property
     def token (self) -> str:
         buffer = create_string_buffer(2048)
-        status = get_fxnc().FXNConfigurationGetToken(self.__configuration, buffer, len(buffer))
+        status = get_fxnc().FXNConfigurationGetToken(
+            self.__configuration,
+            buffer,
+            len(buffer)
+        )
         if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to get configuration token with error: {status_to_error(status)}")
         token = buffer.value.decode("utf-8")
@@ -56,26 +63,33 @@ class Configuration:
     @property
     def acceleration (self) -> Acceleration:
         acceleration = c_int()
-        status = get_fxnc().FXNConfigurationGetAcceleration(self.__configuration, byref(acceleration))
-        if status == FXNStatus.OK:
-            return Acceleration(acceleration.value)
-        else:
+        status = get_fxnc().FXNConfigurationGetAcceleration(
+            self.__configuration,
+            byref(acceleration)
+        )
+        if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to get configuration acceleration with error: {status_to_error(status)}")
+        return self.__to_acceleration_str(acceleration.value)
 
     @acceleration.setter
     def acceleration (self, acceleration: Acceleration):
-        status = get_fxnc().FXNConfigurationSetAcceleration(self.__configuration, acceleration.value)
+        status = get_fxnc().FXNConfigurationSetAcceleration(
+            self.__configuration,
+            self.__to_acceleration_int(acceleration)
+        )
         if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to set configuration acceleration with error: {status_to_error(status)}")
 
     @property
     def device (self):
         device = c_void_p()
-        status = get_fxnc().FXNConfigurationGetDevice(self.__configuration, byref(device))
-        if status == FXNStatus.OK:
-            return device if device.value else None
-        else:
+        status = get_fxnc().FXNConfigurationGetDevice(
+            self.__configuration,
+            byref(device)
+        )
+        if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to get configuration device with error: {status_to_error(status)}")
+        return device if device.value else None            
 
     @device.setter
     def device (self, device):
@@ -84,10 +98,31 @@ class Configuration:
             raise RuntimeError(f"Failed to set configuration device with error: {status_to_error(status)}")
 
     def add_resource (self, type: str, path: Path):
-        status = get_fxnc().FXNConfigurationAddResource(self.__configuration, type.encode(), str(path).encode())
+        status = get_fxnc().FXNConfigurationAddResource(
+            self.__configuration,
+            type.encode(),
+            str(path).encode()
+        )
         if status != FXNStatus.OK:
             raise RuntimeError(f"Failed to add configuration resource with error: {status_to_error(status)}")
 
+    @classmethod
+    def get_unique_id (cls) -> str:
+        buffer = create_string_buffer(2048)
+        status = get_fxnc().FXNConfigurationGetUniqueID(buffer, len(buffer))
+        if status != FXNStatus.OK:
+            raise RuntimeError(f"Failed to retrieve configuration identifier with error: {status_to_error(status)}")
+        return buffer.value.decode("utf-8")
+
+    @classmethod
+    def get_client_id (cls) -> str:
+        buffer = create_string_buffer(64)
+        status = get_fxnc().FXNConfigurationGetClientID(buffer, len(buffer))
+        if status == FXNStatus.OK:
+            return buffer.value.decode("utf-8")
+        else:
+            raise RuntimeError(f"Failed to retrieve client identifier with error: {status_to_error(status)}")
+        
     def __enter__ (self):
         return self
     
@@ -99,20 +134,17 @@ class Configuration:
             get_fxnc().FXNConfigurationRelease(self.__configuration)
         self.__configuration = None
 
-    @classmethod
-    def get_unique_id (cls) -> str:
-        buffer = create_string_buffer(2048)
-        status = get_fxnc().FXNConfigurationGetUniqueID(buffer, len(buffer))
-        if status == FXNStatus.OK:
-            return buffer.value.decode("utf-8")
-        else:
-            raise RuntimeError(f"Failed to retrieve configuration identifier with error: {status_to_error(status)}")
+    def __to_acceleration_int (self, value: Acceleration) -> int:
+        match value:
+            case "auto": return 0
+            case "cpu": return 1
+            case "gpu": return 2
+            case "npu": return 4
 
-    @classmethod
-    def get_client_id (cls) -> str:
-        buffer = create_string_buffer(64)
-        status = get_fxnc().FXNConfigurationGetClientID(buffer, len(buffer))
-        if status == FXNStatus.OK:
-            return buffer.value.decode("utf-8")
-        else:
-            raise RuntimeError(f"Failed to retrieve client identifier with error: {status_to_error(status)}")
+    def __to_acceleration_str (self, value: int) -> Acceleration:
+        match value:
+            case 0: return "auto"
+            case 1: return "cpu"
+            case 2: return "gpu"
+            case 4: return "npu"
+            case _: return None
