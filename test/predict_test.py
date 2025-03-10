@@ -5,16 +5,16 @@
 
 from fxn import Function
 import pytest
-from typing import AsyncIterator, Iterator
+from typing import Iterator
 
 fxn = Function()
 
-@fxn.beta.predict("@yusuf/add3")
-def add_numbers (a, b):
+@fxn.beta.predict("@yusuf/area")
+def compute_area (radius):
     ...
 
-@fxn.beta.predict("@yusuf/add3", remote=True)
-def remote_add_numbers (a, b):
+@fxn.beta.predict("@yusuf/area", remote=True)
+def compute_area_remote (radius):
     ...
 
 @fxn.beta.predict("@yusuf/split-string")
@@ -22,19 +22,21 @@ def split_sentence (sentence: str) -> Iterator[str]:
     ...
 
 @fxn.beta.predict("@yusuf/split-string", remote=True)
-def remote_split_sentence (sentence: str) -> Iterator[str]:
+def split_sentence_remote (sentence: str) -> Iterator[str]:
     ...
 
-def test_wrapped_create_prediction (): # INCOMPLETE
+def test_decorated_create_prediction ():
+    area = compute_area(2)
+    assert isinstance(area, float)
+
+def test_decorated_create_remote_prediction ():
+    area = compute_area_remote(2)
+    assert isinstance(area, float)
+
+@pytest.mark.skip
+def test_decorated_stream_prediction (): # INCOMPLETE
     pass
 
-def test_wrapped_stream_prediction (): # INCOMPLETE
-    pass
-
-@pytest.mark.asyncio
-async def test_wrapped_create_prediction (): # INCOMPLETE
-    pass
-
-@pytest.mark.asyncio
-async def test_wrapped_stream_prediction (): # INCOMPLETE
+@pytest.mark.skip
+def test_decorated_stream_remote_prediction (): # INCOMPLETE
     pass

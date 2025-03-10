@@ -8,6 +8,7 @@ from inspect import signature as get_signature, Signature
 from typing import get_origin, Callable, Generator, Iterator, TypeVar
 
 from ..client import FunctionClient
+from ..services import PredictionService as EdgePredictionService
 from ..types import Acceleration
 from .prediction import PredictionService
 from .remote import RemoteAcceleration
@@ -20,8 +21,14 @@ class BetaClient:
     """
     predictions: PredictionService
     
-    def __init__ (self, client: FunctionClient):
+    def __init__ (
+        self,
+        client: FunctionClient,
+        *,
+        predictions: EdgePredictionService
+    ):
         self.predictions = PredictionService(client)
+        self.__edge_predictions = predictions
 
     def predict (
         self,
@@ -48,8 +55,9 @@ class BetaClient:
                     signature.return_annotation is not Signature.empty and
                     get_origin(signature.return_annotation) in [Iterator, Generator]
                 )
+                create_func = self.predictions.remote.create if remote else self.__edge_predictions.create
                 def _predict (): # INCOMPLETE
-                    prediction = self.predictions.create(
+                    prediction = create_func(
                         tag=tag,
                         inputs=bound_args.arguments,
                         acceleration=acceleration

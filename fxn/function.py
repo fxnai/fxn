@@ -42,4 +42,4 @@ class Function:
         self.users = UserService(self.client)
         self.predictors = PredictorService(self.client)
         self.predictions = PredictionService(self.client)
-        self.beta = BetaClient(self.client)
+        self.beta = BetaClient(self.client, predictions=self.predictions)
