@@ -13,6 +13,53 @@ from types import MethodType
 current_progress = ContextVar("current_progress", default=None)
 progress_task_stack = ContextVar("progress_task_stack", default=[])
 
+class CustomSpinnerColumn (SpinnerColumn):
+    
+    def __init__ (
+        self,
+        spinner_name="dots",
+        success_text="[bold green]✔[/bold green]",
+        failure_text="[bright_red]✘[/bright_red]",
+        style="",
+    ):
+        super().__init__(spinner_name=spinner_name, style=style)
+        self.success_text = success_text
+        self.failure_text = failure_text
+
+    def render (self, task):
+        done_text = (
+            self.failure_text
+            if task.fields.get("status") == "error"
+            else self.success_text
+        )
+        return done_text if task.finished else self.spinner
+
+class CustomTextColumn (TextColumn):
+    """Custom text column that changes color based on task status"""
+    
+    def __init__ (self, text_format="{task.description}"):
+        super().__init__(text_format)
+    
+    def render (self, task):
+        # Indent and color
+        description = task.description
+        indent_level = task.fields.get("indent_level", 0)
+        indent = self.__get_indent(indent_level)
+        task.description = f"{indent}{description}"
+        if task.fields.get("status") == "error":
+            task.description = f"[bright_red]{task.description}[/bright_red]"
+        # Render
+        text = super().render(task)
+        task.description = description        
+        # Return
+        return text
+    
+    def __get_indent (self, level: int) -> str:
+        if level == 0:
+            return ""
+        indicator = "└── "
+        return " " * len(indicator) * (level - 1) + indicator
+
 class CustomProgress(Progress):
 
     def __init__ (
@@ -30,8 +77,8 @@ class CustomProgress(Progress):
         expand=False
     ):
         default_columns = list(columns) if len(columns) > 0 else [
-            SpinnerColumn(spinner_name="dots", finished_text="[bold green]✔[/bold green]"),
-            TextColumn("[progress.description]{task.description}"),
+            CustomSpinnerColumn(),
+            CustomTextColumn("[progress.description]{task.description}"),
         ]
         super().__init__(
             *default_columns,
@@ -74,19 +121,18 @@ class CustomProgressTask:
         columns: list[ProgressColumn]=None
     ):
         self.loading_text = loading_text
-        self.done_text = done_text if done_text is not None else loading_text
+        self.done_text = done_text
         self.task_id = None
         self.columns = columns
 
     def __enter__ (self):
         progress = current_progress.get()
-        indent_level = len(progress_task_stack.get())
-        indent = self.__get_indent(indent_level)
         if progress is not None:
             self.task_id = progress.add_task(
-                f"{indent}{self.loading_text}",
+                self.loading_text,
                 total=1,
-                columns=self.columns
+                columns=self.columns,
+                indent_level=len(progress_task_stack.get())
             )
             current_stack = progress_task_stack.get()
             progress_task_stack.set(current_stack + [self.task_id])
@@ -95,20 +141,13 @@ class CustomProgressTask:
     def __exit__ (self, exc_type, exc_val, exc_tb):
         progress = current_progress.get()
         if progress is not None and self.task_id is not None:
-            indent_level = len(progress_task_stack.get()) - 1
-            indent = self.__get_indent(indent_level)
-            if exc_type is None:
-                total = progress._tasks[self.task_id].total
-                progress.update(
-                    self.task_id,
-                    description=f"{indent}{self.done_text}",
-                    completed=total
-                )
-            else:
-                progress.update(
-                    self.task_id,
-                    description=f"{indent}[bright_red]✘ {self.loading_text}[/bright_red]",
-                )
+            current_task = progress._tasks[self.task_id]
+            progress.update(
+                self.task_id,
+                description=self.done_text or current_task.description,
+                completed=current_task.total,
+                status="error" if exc_type is not None else current_task.fields.get("status")
+            )
             current_stack = progress_task_stack.get()
             if current_stack:
                 progress_task_stack.set(current_stack[:-1])
@@ -119,25 +158,10 @@ class CustomProgressTask:
         progress = current_progress.get()
         if progress is None or self.task_id is None:
             return
-        if "description" in kwargs:
-            stack = progress_task_stack.get()
-            try:
-                index = stack.index(self.task_id)
-            except ValueError:
-                index = len(stack) - 1
-            indent = self.__get_indent(index)
-            description = kwargs["description"]
-            kwargs["description"] = f"{indent}{description}"
         progress.update(self.task_id, **kwargs)
 
     def finish (self, message: str):
         self.done_text = message
-
-    def __get_indent (self, level: int) -> str:
-        if level == 0:
-            return ""
-        indicator = "└── "
-        return " " * len(indicator) * (level - 1) + indicator
     
 class TracebackMarkupConsole (Console):
 

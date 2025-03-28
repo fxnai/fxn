@@ -32,10 +32,7 @@ def compile_predictor (
 async def _compile_predictor_async (path: str):
     fxn = Function(get_access_key())
     path: Path = Path(path).resolve()
-    with CustomProgress(
-        SpinnerColumn(spinner_name="dots", finished_text="[bold green]✔[/bold green]"),
-        TextColumn("[progress.description]{task.description}"),
-    ):
+    with CustomProgress():
         # Load
         with CustomProgressTask(loading_text="Loading predictor...") as task:
             func = _load_predictor_func(path)
@@ -100,6 +97,8 @@ class _Predictor (BaseModel):
 class _LogData (BaseModel):
     message: str
     level: int = 0
+    status: Literal["success", "error"] = "success"
+    update: bool = False
 
 class _LogEvent (BaseModel):
     event: Literal["log"]
@@ -118,6 +117,12 @@ class ProgressLogQueue:
         self.queue: list[tuple[int, CustomProgressTask]] = []
 
     def push_log (self, event: _LogEvent):
+        # Check for update
+        if event.data.update and self.queue:
+            current_level, current_task = self.queue[-1]
+            current_task.update(description=event.data.message, status=event.data.status)
+            return
+        # Pop
         while self.queue:
             current_level, current_task = self.queue[-1]
             if event.data.level > current_level:

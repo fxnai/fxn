@@ -21,7 +21,7 @@ class PredictorSpec (BaseModel):
     """
     tag: str = Field(description="Predictor tag.")
     description: str = Field(description="Predictor description. MUST be less than 100 characters long.", min_length=4, max_length=100)
-    targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
+    #targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
     access: AccessMode = Field(description="Predictor access.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")

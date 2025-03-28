@@ -48,7 +48,7 @@ class Value:
 
     @property
     def shape (self) -> list[int] | None:
-        if self.type not in _TENSOR_DTYPES:
+        if self.type not in _TENSOR_ISH_DTYPES:
             return None
         fxnc = get_fxnc()
         dims = c_int32()
@@ -221,3 +221,4 @@ _TENSOR_DTYPES = {
     Dtype.uint64,
     Dtype.bool,
 }
+_TENSOR_ISH_DTYPES = _TENSOR_DTYPES | { Dtype.image }

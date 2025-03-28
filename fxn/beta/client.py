@@ -30,12 +30,13 @@ class BetaClient:
         self.predictions = PredictionService(client)
         self.__edge_predictions = predictions
 
-    def predict (
+    def predict ( # INCOMPLETE # Preload
         self,
         tag: str,
         *,
         remote: bool=False,
         acceleration: Acceleration | RemoteAcceleration="auto",
+        preload: bool=True
     ) -> Callable[[F], F]:
         """
         Create a prediction and return results when the decorated function is invoked.
@@ -44,6 +45,7 @@ class BetaClient:
             tag (str): Predictor tag.
             remote (bool): Whether to create the prediction remotely.
             acceleration (Acceleration | RemoteAcceleration): Prediction acceleration.
+            preload (bool): Whether to preload the predictor on the first run.
         """
         def decorator(func: F) -> F:
             signature = get_signature(func)
