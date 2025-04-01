@@ -8,7 +8,7 @@ from pathlib import Path
 from requests import get
 
 parser = ArgumentParser()
-parser.add_argument("--version", type=str, default=None)
+parser.add_argument("--version", type=str, required=True)
 
 def _download_fxnc (name: str, version: str, path: Path):
     url = f"https://cdn.fxn.ai/fxnc/{version}/{name}"
@@ -19,15 +19,8 @@ def _download_fxnc (name: str, version: str, path: Path):
         f.write(response.content)
     print(f"Wrote {name} {version} to path: {path}")
 
-def _get_latest_version () -> str:
-    response = get(f"https://api.github.com/repos/fxnai/fxnc/releases/latest")
-    response.raise_for_status()
-    release = response.json()
-    return release["tag_name"]
-
 def main ():
     args = parser.parse_args()
-    version = args.version if args.version else _get_latest_version()
     LIB_PATH_BASE = Path("fxn") / "lib"
     DOWNLOADS = [
         ("Function-macos-x86_64.dylib", LIB_PATH_BASE / "macos" / "x86_64" / "Function.dylib"),
@@ -38,7 +31,7 @@ def main ():
         ("libFunction-linux-arm64.so", LIB_PATH_BASE / "linux" / "arm64" / "libFunction.so"),
     ]
     for name, path in DOWNLOADS:
-        _download_fxnc(name, version, path)
+        _download_fxnc(name, args.version, path)
 
 if __name__ == "__main__":
     main()
