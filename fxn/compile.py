@@ -23,7 +23,6 @@ class PredictorSpec (BaseModel):
     tag: str = Field(description="Predictor tag.")
     description: str = Field(description="Predictor description. MUST be less than 100 characters long.", min_length=4, max_length=100)
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
-    trace_modules: list[ModuleType] = Field(description="Modules to trace and compile.", exclude=True)
     targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
     access: AccessMode = Field(description="Predictor access.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")
@@ -69,12 +68,12 @@ def compile (
             tag=tag,
             description=description,
             sandbox=sandbox if sandbox is not None else Sandbox(),
-            trace_modules=trace_modules,
             targets=targets,
             access=access,
             card=card.read_text() if isinstance(card, Path) else card,
             media=None, # INCOMPLETE
             license=license,
+            trace_modules=trace_modules,
             **kwargs
         )
         # Wrap
