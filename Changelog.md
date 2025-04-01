@@ -1,5 +1,6 @@
 ## 0.0.44
-+ Added `target` argument in `@compile` decorator for specifying specific targets to compile for.
++ Added `trace_modules` argument in `@compile` decorator to opt specific modules into tracing and compilation.
++ Added `targets` argument in `@compile` decorator for specifying targets to compile for.
 + Fixed prediction error when prediction output includes a `PIL.Image`.
 + Refactored `fxn.predictions.stream` method to return an `Iterator` instead of `AsyncIterator`.
 + Refactored `Acceleration` enumeration to string literal type.

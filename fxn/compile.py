@@ -7,13 +7,14 @@ from collections.abc import Callable
 from functools import wraps
 from inspect import isasyncgenfunction, iscoroutinefunction
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from types import ModuleType
 from typing import Literal
 
 from .sandbox import Sandbox
 from .types import AccessMode
 
-CompileTarget = Literal["android", "ios", "linux", "macos", "visionos", "web", "windows"]
+CompileTarget = Literal["android", "ios", "linux", "macos", "visionos", "wasm", "windows"]
 
 class PredictorSpec (BaseModel):
     """
@@ -21,23 +22,27 @@ class PredictorSpec (BaseModel):
     """
     tag: str = Field(description="Predictor tag.")
     description: str = Field(description="Predictor description. MUST be less than 100 characters long.", min_length=4, max_length=100)
-    #targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
+    trace_modules: list[ModuleType] = Field(description="Modules to trace and compile.", exclude=True)
+    targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
     access: AccessMode = Field(description="Predictor access.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")
     media: str | None = Field(default=None, description="Predictor media URL.")
     license: str | None = Field(default=None, description="Predictor license URL. This is required for public predictors.")
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", frozen=True)
 
 def compile (
     tag: str,
     *,
     description: str,
-    targets: list[CompileTarget]=None,
     sandbox: Sandbox=None,
+    trace_modules: list[ModuleType]=[],
+    targets: list[CompileTarget]=None,
     access: AccessMode=AccessMode.Private,
     card: str | Path=None,
     media: Path=None,
     license: str=None,
+    **kwargs
 ):
     """
     Create a predictor by compiling a stateless function.
@@ -45,8 +50,9 @@ def compile (
     Parameters:
         tag (str): Predictor tag.
         description (str): Predictor description. MUST be less than 100 characters long.
-        targets (list): Targets to compile this predictor for. Pass `None` to compile for our default targets.
         sandbox (Sandbox): Sandbox to compile the function.
+        trace_modules (list): Modules to trace and compile.
+        targets (list): Targets to compile this predictor for. Pass `None` to compile for our default targets.
         access (AccessMode): Predictor access.
         card (str | Path): Predictor card markdown string or path to card.
         media (Path): Predictor thumbnail image (jpeg or png) path.
@@ -57,22 +63,19 @@ def compile (
         if not callable(func):
             raise TypeError("Cannot compile non-function objects")
         if isasyncgenfunction(func) or iscoroutinefunction(func):
-            raise TypeError(f"Function '{func.__name__}' must be a regular function or generator")            
+            raise TypeError(f"Entrypoint function '{func.__name__}' must be a regular function or generator")            
         # Gather metadata
-        if isinstance(card, Path):
-            with open(card_content, "r") as f:
-                card_content = f.read()
-        else:
-            card_content = card
         spec = PredictorSpec(
             tag=tag,
             description=description,
-            targets=targets,
             sandbox=sandbox if sandbox is not None else Sandbox(),
+            trace_modules=trace_modules,
+            targets=targets,
             access=access,
-            card=card_content,
+            card=card.read_text() if isinstance(card, Path) else card,
             media=None, # INCOMPLETE
-            license=license
+            license=license,
+            **kwargs
         )
         # Wrap
         @wraps(func)

@@ -50,7 +50,7 @@ async def _compile_predictor_async (path: str):
                 predictor = fxn.client.request(
                     method="POST",
                     path="/predictors",
-                    body=spec.model_dump(mode="json"),
+                    body=spec.model_dump(mode="json", exclude=spec.model_extra.keys(), by_alias=True),
                     response_type=_Predictor
                 )
             with ProgressLogQueue() as task_queue:

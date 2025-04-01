@@ -4,9 +4,19 @@
 #
 
 from fxn import compile
+from fxn.compile import PredictorSpec
+import numpy as np
 
 def test_populate_predictor_spec ():
-    @compile("@yusuf/test", description="Test function.")
+    @compile(
+        "@yusuf/test",
+        description="Test function.",
+        trace_modules=[np],
+        targets=["android", "macos"],
+        hidden_attribute="kept"
+    )
     def predictor () -> str:
         return "Hello world"
-    assert predictor.__predictor_spec is not None
+    spec: PredictorSpec = predictor.__predictor_spec
+    assert spec is not None
+    assert spec.hidden_attribute is not None
