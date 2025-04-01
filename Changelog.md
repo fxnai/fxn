@@ -1,3 +1,6 @@
+## 0.0.45
+*INCOMPLETE*
+
 ## 0.0.44
 + Added `trace_modules` argument in `@compile` decorator to opt specific modules into tracing and compilation.
 + Added `targets` argument in `@compile` decorator for specifying targets to compile for.
