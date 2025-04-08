@@ -8,4 +8,4 @@ from .compile import compile, CompileTarget
 from .function import Function
 from .sandbox import Sandbox
 from .types import *
-from .version import *
+from .version import __version__

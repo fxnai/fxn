@@ -1,3 +1,6 @@
+## 0.0.46
+*INCOMPLETE*
+
 ## 0.0.45
 + Added `fxn source` CLI command to retrieve the native source code for a given prediction.
 + Added `--overwrite` flag in `fxn compile` CLI command to overwrite existing predictor before compiling.

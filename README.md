@@ -1,4 +1,4 @@
-# Function for Python and CLI
+# Function for Python
 
 ![function logo](https://raw.githubusercontent.com/fxnai/.github/main/logo_wide.png)
 
