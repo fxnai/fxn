@@ -1,5 +1,6 @@
 ## 0.0.45
-*INCOMPLETE*
++ Added `fxn source` CLI command to retrieve the native source code for a given prediction.
++ Added `--overwrite` flag in `fxn compile` CLI command to overwrite existing predictor before compiling.
 
 ## 0.0.44
 + Added `trace_modules` argument in `@compile` decorator to opt specific modules into tracing and compilation.
@@ -10,9 +11,9 @@
 + Refactored `RemoteAcceleration` enumeration to string literal type.
 
 ## 0.0.43
-+ Added `fxn compile` CLI function for access to the Function compiler proof of concept.
-+ Added `fxn archive` CLI function for archiving predictors.
-+ Added `fxn delete` CLI function for deleting predictors.
++ Added `fxn compile` CLI command for access to the Function compiler proof of concept.
++ Added `fxn archive` CLI command for archiving predictors.
++ Added `fxn delete` CLI command for deleting predictors.
 + Refactored `PredictorStatus.Provisioning` enumeration member to `Compiling`.
 
 ## 0.0.42

@@ -9,12 +9,12 @@ from inspect import getmembers, getmodulename, isfunction
 from pathlib import Path
 from pydantic import BaseModel
 from rich import print as print_rich
-from rich.progress import SpinnerColumn, TextColumn
 import sys
 from typer import Argument, Option
 from typing import Callable, Literal
 from urllib.parse import urlparse, urlunparse
 
+from ..client import FunctionAPIError
 from ..compile import PredictorSpec
 from ..function import Function
 from ..sandbox import EntrypointCommand
@@ -25,11 +25,16 @@ class CompileError (Exception):
     pass
 
 def compile_predictor (
-    path: str=Argument(..., help="Predictor path.")
+    path: str=Argument(..., help="Predictor path."),
+    overwrite: bool=Option(False, "--overwrite", help="Whether to delete any existing predictor with the same tag before compiling."),
 ):
-    run_async(_compile_predictor_async(path))
+    run_async(_compile_predictor_async(path, overwrite=overwrite))
 
-async def _compile_predictor_async (path: str):
+async def _compile_predictor_async (
+    path: str,
+    *,
+    overwrite: bool
+):
     fxn = Function(get_access_key())
     path: Path = Path(path).resolve()
     with CustomProgress():
@@ -47,6 +52,15 @@ async def _compile_predictor_async (path: str):
         # Compile
         with CustomProgressTask(loading_text="Running codegen...", done_text="Completed codegen"):
             with CustomProgressTask(loading_text="Creating predictor..."):
+                if overwrite:
+                    try:
+                        fxn.client.request(
+                            method="DELETE",
+                            path=f"/predictors/{spec.tag}"
+                        )
+                    except FunctionAPIError as error:
+                        if error.status_code != 404:
+                            raise
                 predictor = fxn.client.request(
                     method="POST",
                     path="/predictors",

@@ -5,13 +5,15 @@
 
 import typer
 
+from ..logging import TracebackMarkupConsole
+from ..version import __version__
+
 from .auth import app as auth_app
 from .compile import compile_predictor
 from .misc import cli_options
 from .predictions import create_prediction
 from .predictors import archive_predictor, delete_predictor, retrieve_predictor
-from ..logging import TracebackMarkupConsole
-from ..version import __version__
+from .sources import retrieve_source
 
 # Define CLI
 typer.main.console_stderr = TracebackMarkupConsole()
@@ -42,6 +44,7 @@ app.command(
 app.command(name="retrieve", help="Retrieve a predictor.")(retrieve_predictor)
 app.command(name="archive", help="Archive a predictor.")(archive_predictor)
 app.command(name="delete", help="Delete a predictor.")(delete_predictor)
+app.command(name="source", help="Retrieve the native source code for a given prediction.")(retrieve_source)
 
 # Run
 if __name__ == "__main__":
