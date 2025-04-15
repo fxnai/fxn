@@ -38,6 +38,7 @@ def compile (
     trace_modules: list[ModuleType]=[],
     targets: list[CompileTarget]=None,
     access: AccessMode=AccessMode.Private,
+    metadata: list[object],
     card: str | Path=None,
     media: Path=None,
     license: str=None,
@@ -53,6 +54,7 @@ def compile (
         trace_modules (list): Modules to trace and compile.
         targets (list): Targets to compile this predictor for. Pass `None` to compile for our default targets.
         access (AccessMode): Predictor access.
+        metadata (list): Metadata to use while compiling the function.
         card (str | Path): Predictor card markdown string or path to card.
         media (Path): Predictor thumbnail image (jpeg or png) path.
         license (str): Predictor license URL. This is required for public predictors.
@@ -74,6 +76,7 @@ def compile (
             media=None, # INCOMPLETE
             license=license,
             trace_modules=trace_modules,
+            metadata=metadata,
             **kwargs
         )
         # Wrap

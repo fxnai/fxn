@@ -1,5 +1,9 @@
 ## 0.0.46
-*INCOMPLETE*
++ Added `metadata` parameter in `@compile` decorator to provide metadata to the compiler.
++ Added `beta.CoreMLInferenceMetadata` class to lower PyTorch models for inference on iOS, macOS, and visionOS with CoreML.
++ Added `beta.ONNXInferenceMetadata` class to lower PyTorch models for inference.
++ Added `beta.ONNXRuntimeInferenceSessionMetadata` class to lower ONNXRuntime inference sessions for inference.
++ Added `beta.GGUFInferenceMetadata` class to lower GGUF models for LLM inference.
 
 ## 0.0.45
 + Added `fxn source` CLI command to retrieve the native source code for a given prediction.

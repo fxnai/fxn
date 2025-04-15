@@ -27,23 +27,31 @@ def _validate_ort_inference_session (session: "onnxruntime.InferenceSession") ->
 
 class CoreMLInferenceMetadata (BaseModel):
     """
-    Inference metadata required to lower PyTorch models to CoreML for inference on iOS, macOS, and visionOS.
+    Metadata required to lower PyTorch models for inference on iOS, macOS, and visionOS with CoreML.
     """
     model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.")
     model_args: list[object] = Field(description="Positional inputs to the model.")
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-class ONNXRuntimeInferenceMetadata (BaseModel):
+class ONNXInferenceMetadata (BaseModel):
     """
-    Inference metadata required to lower ONNX models for inference.
+    Metadata required to lower PyTorch models for inference.
+    """
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.")
+    model_args: list[object] = Field(description="Positional inputs to the model.")
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
+class ONNXRuntimeInferenceSessionMetadata (BaseModel):
+    """
+    Metadata required to lower ONNXRuntime inference sessions for inference.
     """
     session: Annotated[object, BeforeValidator(_validate_ort_inference_session)] = Field(description="ONNXRuntime inference session to apply metadata to.")
     model_path: Path = Field(description="ONNX model path. The model must exist at this path in the compiler sandbox.")
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class GGUFInferenceMetadata (BaseModel): # INCOMPLETE
     """
-    Inference metadata required to lower GGUF models for inference.
+    Metadata required to lower GGUF models for LLM inference.
     """
     model_path: Path = Field(description="GGUF model path. The model must exist at this path in the compiler sandbox.")
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
