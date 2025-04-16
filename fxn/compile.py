@@ -38,7 +38,7 @@ def compile (
     trace_modules: list[ModuleType]=[],
     targets: list[CompileTarget]=None,
     access: AccessMode=AccessMode.Private,
-    metadata: list[object],
+    metadata: list[object]=[],
     card: str | Path=None,
     media: Path=None,
     license: str=None,

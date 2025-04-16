@@ -7,18 +7,18 @@ from pathlib import Path
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 from typing import Annotated
 
-def _validate_torch_module (module: "torch.nn.Module") -> "torch.nn.Module":
+def _validate_torch_module (module: "torch.nn.Module") -> "torch.nn.Module": # type: ignore
     try:
-        from torch.nn import Module
+        from torch.nn import Module # type: ignore
         if not isinstance(module, Module):
             raise ValueError(f"Expected torch.nn.Module, got {type(module)}")
         return module
     except ImportError:
         raise ImportError("PyTorch is required to create this metadata but is not installed.")
 
-def _validate_ort_inference_session (session: "onnxruntime.InferenceSession") -> "onnxruntime.InferenceSession":
+def _validate_ort_inference_session (session: "onnxruntime.InferenceSession") -> "onnxruntime.InferenceSession": # type: ignore
     try:
-        from onnxruntime import InferenceSession
+        from onnxruntime import InferenceSession # type: ignore
         if not isinstance(session, InferenceSession):
             raise ValueError(f"Expected onnxruntime.InferenceSession, got {type(session)}")
         return session
