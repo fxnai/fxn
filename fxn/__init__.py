@@ -4,7 +4,7 @@
 #
 
 from .client import FunctionAPIError
-from .compile import compile, CompileTarget
+from .compile import compile, CompileMetadata, CompileTarget
 from .function import Function
 from .sandbox import Sandbox
 from .types import *

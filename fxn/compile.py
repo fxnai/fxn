@@ -11,10 +11,21 @@ from pydantic import BaseModel, ConfigDict, Field
 from types import ModuleType
 from typing import Literal
 
+from .beta import (
+    CoreMLInferenceMetadata, GGUFInferenceMetadata,
+    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata
+)
 from .sandbox import Sandbox
 from .types import AccessMode
 
 CompileTarget = Literal["android", "ios", "linux", "macos", "visionos", "wasm", "windows"]
+
+CompileMetadata = (
+    CoreMLInferenceMetadata             |
+    GGUFInferenceMetadata               |
+    ONNXInferenceMetadata               |
+    ONNXRuntimeInferenceSessionMetadata
+)
 
 class PredictorSpec (BaseModel):
     """
@@ -38,7 +49,7 @@ def compile (
     trace_modules: list[ModuleType]=[],
     targets: list[CompileTarget]=None,
     access: AccessMode=AccessMode.Private,
-    metadata: list[object]=[],
+    metadata: list[CompileMetadata]=[],
     card: str | Path=None,
     media: Path=None,
     license: str=None,
