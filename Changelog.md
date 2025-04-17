@@ -1,7 +1,7 @@
 ## 0.0.46
 + Added `metadata` parameter in `@compile` decorator to provide metadata to the compiler.
-+ Added `beta.CoreMLInferenceMetadata` class to lower PyTorch models for inference on iOS, macOS, and visionOS with CoreML.
-+ Added `beta.ONNXInferenceMetadata` class to lower PyTorch models for inference.
++ Added `beta.CoreMLInferenceMetadata` class to lower PyTorch models to CoreML for inference on iOS, macOS, and visionOS.
++ Added `beta.ONNXInferenceMetadata` class to lower PyTorch models to ONNX for inference.
 + Added `beta.ONNXRuntimeInferenceSessionMetadata` class to lower ONNXRuntime inference sessions for inference.
 + Added `beta.GGUFInferenceMetadata` class to lower GGUF models for LLM inference.
 
