@@ -107,7 +107,11 @@ class Sandbox (BaseModel):
             from_path (str | Path): File path on the local file system.
             to_path (str | Path): Remote path to upload file to.
         """
-        command = UploadFileCommand(from_path=str(from_path), to_path=str(to_path))
+        from_path = from_path if isinstance(from_path, Path) else Path(from_path)
+        command = UploadFileCommand(
+            from_path=str(from_path.resolve()),
+            to_path=str(to_path)
+        )
         return Sandbox(commands=self.commands + [command])
 
     def upload_directory (
@@ -122,7 +126,11 @@ class Sandbox (BaseModel):
             from_path (str | Path): Directory path on the local file system.
             to_path (str | Path): Remote path to upload directory to.
         """
-        command = UploadDirectoryCommand(from_path=str(from_path), to_path=str(to_path))
+        from_path = from_path if isinstance(from_path, Path) else Path(from_path)
+        command = UploadDirectoryCommand(
+            from_path=str(from_path.resolve()),
+            to_path=str(to_path)
+        )
         return Sandbox(commands=self.commands + [command])
 
     def pip_install (self, *packages: str) -> Sandbox:
