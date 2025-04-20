@@ -43,7 +43,8 @@ class UploadDirectoryCommand (UploadableCommand):
 
     def get_files (self) -> list[Path]:
         from_path = Path(self.from_path)
-        assert from_path.is_absolute(), "Cannot upload directory because directory path must be absolute"
+        if not from_path.is_absolute():
+            raise ValueError("Cannot upload directory because directory path must be absolute")
         return [file for file in from_path.rglob("*") if file.is_file()]
     
 class EntrypointCommand (UploadableCommand):
@@ -180,7 +181,8 @@ class Sandbox (BaseModel):
         return self
 
     def __upload_file (self, path: Path, fxn: Function) -> str:
-        assert path.is_file(), "Cannot upload file at path {path} because it is not a file"
+        if not path.is_file():
+            raise ValueError(f"Cannot upload file at path {path} because it is not a file")
         hash = self.__compute_hash(path)
         try:
             fxn.client.request(method="HEAD", path=f"/resources/{hash}")
