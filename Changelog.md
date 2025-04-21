@@ -1,3 +1,6 @@
+## 0.0.48
+*INCOMPLETE*
+
 ## 0.0.47
 + Fixed `Sandbox.upload_file` function failing to upload files when `from_path` is not an absolute path.
 + Fixed `Sandbox.upload_directory` function failing to upload files when `from_path` is not an absolute path.
