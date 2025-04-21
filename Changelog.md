@@ -1,5 +1,6 @@
 ## 0.0.47
-*INCOMPLETE*
++ Fixed `Sandbox.upload_file` function failing to upload files when `from_path` is not an absolute path.
++ Fixed `Sandbox.upload_directory` function failing to upload files when `from_path` is not an absolute path.
 
 ## 0.0.46
 + Added `metadata` parameter in `@compile` decorator to provide metadata to the compiler.
