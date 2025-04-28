@@ -1,6 +1,7 @@
 ## 0.0.48
 + Added `beta.LiteRTInferenceMetadata` class to lower PyTorch models for inference with LiteRT (fka TensorFlow Lite).
 + Refactored `beta.GGUFInferenceMetadata` class to `beta.LlamaCppInferenceMetadata`.
++ Upgraded to Function 0.0.35.
 
 ## 0.0.47
 + Fixed `Sandbox.upload_file` function failing to upload files when `from_path` is not an absolute path.

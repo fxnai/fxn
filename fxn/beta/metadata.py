@@ -52,14 +52,6 @@ class ONNXRuntimeInferenceSessionMetadata (BaseModel):
     model_path: Path = Field(description="ONNX model path. The model must exist at this path in the compiler sandbox.")
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
-    """
-    Metadata required to lower a GGUF model for LLM inference.
-    """
-    kind: Literal["meta.inference.gguf"] = "meta.inference.gguf"
-    model_path: Path = Field(description="GGUF model path. The model must exist at this path in the compiler sandbox.")
-    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
-
 class LiteRTInferenceMetadata (BaseModel):
     """
     Metadata required to lower PyTorch model for inference with LiteRT (fka TensorFlow Lite).
@@ -67,4 +59,12 @@ class LiteRTInferenceMetadata (BaseModel):
     kind: Literal["meta.inference.litert"] = "meta.inference.litert"
     model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.")
     model_args: list[object] = Field(description="Positional inputs to the model.")
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
+class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
+    """
+    Metadata required to lower a GGUF model for LLM inference.
+    """
+    kind: Literal["meta.inference.gguf"] = "meta.inference.gguf"
+    model_path: Path = Field(description="GGUF model path. The model must exist at this path in the compiler sandbox.")
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
