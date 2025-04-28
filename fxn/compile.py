@@ -12,7 +12,7 @@ from types import ModuleType
 from typing import Literal
 
 from .beta import (
-    CoreMLInferenceMetadata, GGUFInferenceMetadata,
+    CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
     ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata
 )
 from .sandbox import Sandbox
@@ -22,7 +22,8 @@ CompileTarget = Literal["android", "ios", "linux", "macos", "visionos", "wasm", 
 
 CompileMetadata = (
     CoreMLInferenceMetadata             |
-    GGUFInferenceMetadata               |
+    LiteRTInferenceMetadata             |
+    LlamaCppInferenceMetadata           |
     ONNXInferenceMetadata               |
     ONNXRuntimeInferenceSessionMetadata
 )
