@@ -1,5 +1,5 @@
 ## 0.0.49
-*INCOMPLETE*
++ Fixed import errors in `fxn.beta` module.
 
 ## 0.0.48
 + Added `beta.LiteRTInferenceMetadata` class to lower PyTorch models for inference with LiteRT (fka TensorFlow Lite).

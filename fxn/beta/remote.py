@@ -6,7 +6,6 @@
 from __future__ import annotations
 from base64 import b64encode
 from dataclasses import asdict, is_dataclass
-from enum import Enum
 from io import BytesIO
 from json import dumps, loads
 from numpy import array, frombuffer, ndarray
