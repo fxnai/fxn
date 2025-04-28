@@ -1,3 +1,6 @@
+## 0.0.49
+*INCOMPLETE*
+
 ## 0.0.48
 + Added `beta.LiteRTInferenceMetadata` class to lower PyTorch models for inference with LiteRT (fka TensorFlow Lite).
 + Refactored `beta.GGUFInferenceMetadata` class to `beta.LlamaCppInferenceMetadata`.
