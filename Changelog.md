@@ -1,3 +1,6 @@
+## 0.0.50
+*INCOMPLETE*
+
 ## 0.0.49
 + Fixed import errors in `fxn.beta` module.
 
