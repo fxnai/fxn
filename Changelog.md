@@ -1,3 +1,6 @@
+## 0.0.51
+*INCOMPLETE*
+
 ## 0.0.50
 + Fixed import errors in `fxn.compile` module.
 
