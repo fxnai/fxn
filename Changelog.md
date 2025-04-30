@@ -1,5 +1,5 @@
 ## 0.0.51
-*INCOMPLETE*
++ Minor improvements.
 
 ## 0.0.50
 + Fixed import errors in `fxn.compile` module.

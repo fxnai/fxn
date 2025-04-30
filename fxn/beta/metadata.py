@@ -30,8 +30,8 @@ class CoreMLInferenceMetadata (BaseModel):
     Metadata required to lower a PyTorch model for inference on iOS, macOS, and visionOS with CoreML.
     """
     kind: Literal["meta.inference.coreml"] = "meta.inference.coreml"
-    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.")
-    model_args: list[object] = Field(description="Positional inputs to the model.")
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.", exclude=True)
+    model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class ONNXInferenceMetadata (BaseModel):
@@ -39,8 +39,8 @@ class ONNXInferenceMetadata (BaseModel):
     Metadata required to lower a PyTorch model for inference.
     """
     kind: Literal["meta.inference.onnx"] = "meta.inference.onnx"
-    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.")
-    model_args: list[object] = Field(description="Positional inputs to the model.")
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.", exclude=True)
+    model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class ONNXRuntimeInferenceSessionMetadata (BaseModel):
@@ -48,8 +48,8 @@ class ONNXRuntimeInferenceSessionMetadata (BaseModel):
     Metadata required to lower an ONNXRuntime `InferenceSession` for inference.
     """
     kind: Literal["meta.inference.onnxruntime"] = "meta.inference.onnxruntime"
-    session: Annotated[object, BeforeValidator(_validate_ort_inference_session)] = Field(description="ONNXRuntime inference session to apply metadata to.")
-    model_path: Path = Field(description="ONNX model path. The model must exist at this path in the compiler sandbox.")
+    session: Annotated[object, BeforeValidator(_validate_ort_inference_session)] = Field(description="ONNXRuntime inference session to apply metadata to.", exclude=True)
+    model_path: Path = Field(description="ONNX model path. The model must exist at this path in the compiler sandbox.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class LiteRTInferenceMetadata (BaseModel):
@@ -57,8 +57,8 @@ class LiteRTInferenceMetadata (BaseModel):
     Metadata required to lower PyTorch model for inference with LiteRT (fka TensorFlow Lite).
     """
     kind: Literal["meta.inference.litert"] = "meta.inference.litert"
-    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.")
-    model_args: list[object] = Field(description="Positional inputs to the model.")
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.", exclude=True)
+    model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
@@ -66,5 +66,5 @@ class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
     Metadata required to lower a GGUF model for LLM inference.
     """
     kind: Literal["meta.inference.gguf"] = "meta.inference.gguf"
-    model_path: Path = Field(description="GGUF model path. The model must exist at this path in the compiler sandbox.")
+    model_path: Path = Field(description="GGUF model path. The model must exist at this path in the compiler sandbox.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)

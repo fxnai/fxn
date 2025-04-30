@@ -36,6 +36,7 @@ class PredictorSpec (BaseModel):
     description: str = Field(description="Predictor description. MUST be less than 100 characters long.", min_length=4, max_length=100)
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
     targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
+    metadata: list[object] = Field(default=[], description="Metadata to use while compiling the function.")
     access: AccessMode = Field(description="Predictor access.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")
     media: str | None = Field(default=None, description="Predictor media URL.")
@@ -49,8 +50,8 @@ def compile (
     sandbox: Sandbox=None,
     trace_modules: list[ModuleType]=[],
     targets: list[CompileTarget]=None,
-    access: AccessMode=AccessMode.Private,
     metadata: list[CompileMetadata]=[],
+    access: AccessMode=AccessMode.Private,
     card: str | Path=None,
     media: Path=None,
     license: str=None,
@@ -65,8 +66,8 @@ def compile (
         sandbox (Sandbox): Sandbox to compile the function.
         trace_modules (list): Modules to trace and compile.
         targets (list): Targets to compile this predictor for. Pass `None` to compile for our default targets.
-        access (AccessMode): Predictor access.
         metadata (list): Metadata to use while compiling the function.
+        access (AccessMode): Predictor access.
         card (str | Path): Predictor card markdown string or path to card.
         media (Path): Predictor thumbnail image (jpeg or png) path.
         license (str): Predictor license URL. This is required for public predictors.
