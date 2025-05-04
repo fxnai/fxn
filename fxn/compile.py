@@ -13,7 +13,7 @@ from typing import Literal
 
 from .beta import (
     CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
-    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata
+    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata
 )
 from .sandbox import Sandbox
 from .types import AccessMode
@@ -25,7 +25,8 @@ CompileMetadata = (
     LiteRTInferenceMetadata             |
     LlamaCppInferenceMetadata           |
     ONNXInferenceMetadata               |
-    ONNXRuntimeInferenceSessionMetadata
+    ONNXRuntimeInferenceSessionMetadata |
+    OpenVINOInferenceMetadata
 )
 
 class PredictorSpec (BaseModel):

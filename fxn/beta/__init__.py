@@ -5,6 +5,6 @@
 
 from .metadata import (
     CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
-    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata
+    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata
 )
 from .remote import RemoteAcceleration

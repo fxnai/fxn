@@ -1,5 +1,5 @@
 ## 0.0.52
-*INCOMPLETE*
++ Added `beta.OpenVINOInferenceMetadata` class to lower PyTorch models for inference with Intel OpenVINO.
 
 ## 0.0.51
 + Minor improvements.

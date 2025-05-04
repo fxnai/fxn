@@ -61,6 +61,15 @@ class LiteRTInferenceMetadata (BaseModel):
     model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+class OpenVINOInferenceMetadata (BaseModel):
+    """
+    Metadata required to lower PyTorch model for interence with Intel OpenVINO.
+    """
+    kind: Literal["meta.inference.openvino"] = "meta.inference.openvino"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.", exclude=True)
+    model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
 class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
     """
     Metadata required to lower a GGUF model for LLM inference.
