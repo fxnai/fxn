@@ -13,7 +13,8 @@ from typing import Any, Callable, Literal, ParamSpec, TypeVar, cast
 
 from .beta import (
     CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
-    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata
+    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
+    QnnInferenceMetadata
 )
 from .sandbox import Sandbox
 from .types import AccessMode
@@ -26,7 +27,8 @@ CompileMetadata = (
     LlamaCppInferenceMetadata           |
     ONNXInferenceMetadata               |
     ONNXRuntimeInferenceSessionMetadata |
-    OpenVINOInferenceMetadata
+    OpenVINOInferenceMetadata           |
+    QnnInferenceMetadata
 )
 
 P = ParamSpec("P")
