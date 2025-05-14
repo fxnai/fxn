@@ -70,6 +70,16 @@ class OpenVINOInferenceMetadata (BaseModel):
     model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+class QnnInferenceMetadata (BaseModel):
+    """
+    Metadata required to lower a PyTorch model for inference on Qualcomm accelerators with QNN SDK.
+    """
+    kind: Literal["meta.inference.qnn"] = "meta.inference.qnn"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(description="PyTorch module to apply metadata to.", exclude=True)
+    model_args: list[object] = Field(description="Positional inputs to the model.", exclude=True)
+    backend: Literal["cpu", "gpu"] = Field(default="cpu", description="QNN backend to execute the model.", exclude=True) # CHECK # Add `htp`
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
 class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
     """
     Metadata required to lower a GGUF model for LLM inference.

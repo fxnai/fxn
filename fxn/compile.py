@@ -9,7 +9,7 @@ from inspect import isasyncgenfunction, iscoroutinefunction
 from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 from types import ModuleType
-from typing import Literal
+from typing import Any, Callable, Literal, ParamSpec, TypeVar, cast
 
 from .beta import (
     CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
@@ -28,6 +28,9 @@ CompileMetadata = (
     ONNXRuntimeInferenceSessionMetadata |
     OpenVINOInferenceMetadata
 )
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 class PredictorSpec (BaseModel):
     """
@@ -57,7 +60,7 @@ def compile (
     media: Path=None,
     license: str=None,
     **kwargs
-):
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """
     Create a predictor by compiling a stateless function.
 
@@ -98,5 +101,5 @@ def compile (
         def wrapper (*args, **kwargs):
             return func(*args, **kwargs)
         wrapper.__predictor_spec = spec
-        return wrapper
+        return cast(Callable[P, R], wrapper)
     return decorator

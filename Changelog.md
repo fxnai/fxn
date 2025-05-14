@@ -1,5 +1,7 @@
 ## 0.0.52
 + Added `beta.OpenVINOInferenceMetadata` class to lower PyTorch models for inference with Intel OpenVINO.
++ Added `beta.QnnInferenceMetadata` class to lower PyTorch models for inference on Qualcomm accelerators with QNN SDK.
++ Updated `@compile` decorator to preserve type information for decorated prediction functions.
 
 ## 0.0.51
 + Minor improvements.
