@@ -19,7 +19,15 @@ from .beta import (
 from .sandbox import Sandbox
 from .types import AccessMode
 
-CompileTarget = Literal["android", "ios", "linux", "macos", "visionos", "wasm", "windows"]
+CompileTarget = Literal[
+    "android",
+    "ios",
+    "linux",
+    "macos",
+    "visionos",
+    "wasm",
+    "windows"
+]
 
 CompileMetadata = (
     CoreMLInferenceMetadata             |
