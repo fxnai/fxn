@@ -1,5 +1,5 @@
 ## 0.0.53
-*INCOMPLETE*
++ Removed `fxn.predictions.ready` method. You must manually track whether a predictor is loaded.
 
 ## 0.0.52
 + Added `beta.OpenVINOInferenceMetadata` class to lower PyTorch models for inference with Intel OpenVINO.
