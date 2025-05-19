@@ -86,6 +86,8 @@ def _load_predictor_func (path: str) -> Callable[...,object]:
     if "" not in sys.path:
         sys.path.insert(0, "")
     path: Path = Path(path).resolve()
+    if not path.exists():
+        raise ValueError(f"Cannot compile predictor because no Python module exists at the given path.")
     sys.path.insert(0, str(path.parent))
     name = getmodulename(path)
     spec = spec_from_file_location(name, path)
