@@ -3,7 +3,7 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ..client import FunctionClient
+from ...client import FunctionClient
 from .remote import RemotePredictionService
 
 class PredictionService:

@@ -8,4 +8,4 @@ from .metadata import (
     ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
     QnnInferenceMetadata
 )
-from .remote import RemoteAcceleration
+from .services import RemoteAcceleration

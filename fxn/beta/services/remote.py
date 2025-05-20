@@ -15,10 +15,10 @@ from requests import get, put
 from typing import Literal
 from urllib.request import urlopen
 
-from ..c import Configuration
-from ..client import FunctionClient
-from ..services import Value
-from ..types import Dtype, Prediction
+from ...c import Configuration
+from ...client import FunctionClient
+from ...services.prediction import Value
+from ...types import Dtype, Prediction
 
 RemoteAcceleration = Literal["auto", "cpu", "a40", "a100"]
 

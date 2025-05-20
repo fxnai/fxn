@@ -10,8 +10,7 @@ from typing import get_origin, Callable, Generator, Iterator, TypeVar
 from ..client import FunctionClient
 from ..services import PredictionService as EdgePredictionService
 from ..types import Acceleration
-from .prediction import PredictionService
-from .remote import RemoteAcceleration
+from .services import PredictionService, RemoteAcceleration
 
 F = TypeVar("F", bound=Callable[..., object])
 
