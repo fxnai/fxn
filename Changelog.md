@@ -1,4 +1,8 @@
 ## 0.0.53
++ Added `beta.QnnInferenceMetadata.backend` field for specifying the backend to use for Qualcomm QNN AI inference. Currently, CPU and GPU backends are supported, with HTP backend coming soon.
++ Added `beta.QnnInferenceMetadata.quantization` field for specifying how to quantize a Qualcomm QNN model when running with the HTP backend.
++ Refactored `beta.ONNXInferenceMetadata` metadata type to `beta.OnnxInferenceMetadata`.
++ Refactored `beta.ONNXRuntimeInferenceSessionMetadata` metadata type to `beta.OnnxRuntimeInferenceSessionMetadata`.
 + Removed `fxn.predictions.ready` method. You must manually track whether a predictor is loaded.
 
 ## 0.0.52
