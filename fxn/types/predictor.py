@@ -11,7 +11,7 @@ from .user import User
 
 PredictorAccess = Literal["public", "private", "unlisted"]
 
-PredictorStatus = Literal["compiling", "active", "invalid", "archived"]
+PredictorStatus = Literal["compiling", "active", "archived"]
 
 class EnumerationMember (BaseModel):
     """
