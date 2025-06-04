@@ -3,28 +3,15 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from enum import Enum
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
-from typing import Any
+from typing import Any, Literal
 
 from .dtype import Dtype
 from .user import User
 
-class AccessMode (str, Enum):
-    """
-    Predictor access mode.
-    """
-    Public = "PUBLIC"
-    Private = "PRIVATE"
+PredictorAccess = Literal["public", "private", "unlisted"]
 
-class PredictorStatus (str, Enum):
-    """
-    Predictor status.
-    """
-    Compiling = "COMPILING"
-    Active = "ACTIVE"
-    Invalid = "INVALID"
-    Archived = "ARCHIVED"
+PredictorStatus = Literal["compiling", "active", "invalid", "archived"]
 
 class EnumerationMember (BaseModel):
     """
@@ -79,7 +66,7 @@ class Predictor (BaseModel):
         owner (User): Predictor owner.
         name (str): Predictor name.
         status (PredictorStatus): Predictor status.
-        access (AccessMode): Predictor access.
+        access (PredictorAccess): Predictor access.
         signature (Signature): Predictor signature.
         created (str): Date created.
         description (str): Predictor description.
@@ -91,7 +78,7 @@ class Predictor (BaseModel):
     owner: User = Field(description="Predictor owner.")
     name: str = Field(description="Predictor name.")
     status: PredictorStatus = Field(description="Predictor status.")
-    access: AccessMode = Field(description="Predictor access.")
+    access: PredictorAccess = Field(description="Predictor access.")
     signature: Signature = Field(description="Predictor signature.")
     created: str = Field(description="Date created.")
     description: str | None = Field(default=None, description="Predictor description.")

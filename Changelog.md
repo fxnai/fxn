@@ -1,5 +1,6 @@
 ## 0.0.54
-*INCOMPLETE*
++ Refactored `AccessMode` enumeration to `PredictorAccess` literal type.
++ Refactored `PredictorStatus` enumeration to literal type.
 
 ## 0.0.53
 + Added `beta.QnnInferenceMetadata.backend` field for specifying the backend to use for Qualcomm QNN AI inference. Currently, CPU and GPU backends are supported, with HTP backend coming soon.

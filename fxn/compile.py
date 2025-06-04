@@ -17,7 +17,7 @@ from .beta import (
     QnnInferenceMetadata
 )
 from .sandbox import Sandbox
-from .types import AccessMode
+from .types import PredictorAccess
 
 CompileTarget = Literal[
     "android",
@@ -51,7 +51,7 @@ class PredictorSpec (BaseModel):
     sandbox: Sandbox = Field(description="Sandbox to compile the function.")
     targets: list[str] | None = Field(description="Targets to compile this predictor for. Pass `None` to compile for our default targets.")
     metadata: list[object] = Field(default=[], description="Metadata to use while compiling the function.")
-    access: AccessMode = Field(description="Predictor access.")
+    access: PredictorAccess = Field(description="Predictor access.")
     card: str | None = Field(default=None, description="Predictor card (markdown).")
     media: str | None = Field(default=None, description="Predictor media URL.")
     license: str | None = Field(default=None, description="Predictor license URL. This is required for public predictors.")
@@ -65,7 +65,7 @@ def compile (
     trace_modules: list[ModuleType]=[],
     targets: list[CompileTarget]=None,
     metadata: list[CompileMetadata]=[],
-    access: AccessMode=AccessMode.Private,
+    access: PredictorAccess="private",
     card: str | Path=None,
     media: Path=None,
     license: str=None,
@@ -81,7 +81,7 @@ def compile (
         trace_modules (list): Modules to trace and compile.
         targets (list): Targets to compile this predictor for. Pass `None` to compile for our default targets.
         metadata (list): Metadata to use while compiling the function.
-        access (AccessMode): Predictor access.
+        access (PredictorAccess): Predictor access.
         card (str | Path): Predictor card markdown string or path to card.
         media (Path): Predictor thumbnail image (jpeg or png) path.
         license (str): Predictor license URL. This is required for public predictors.
