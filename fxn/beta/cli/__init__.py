@@ -4,3 +4,4 @@
 #
 
 from .llm import app as llm_app
+from .mcp import app as mcp_app
