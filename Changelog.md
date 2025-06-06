@@ -1,4 +1,5 @@
 ## 0.0.54
++ Added support for targeting `htp` backend in `QnnInferenceMetadata`.
 + Refactored `AccessMode` enumeration to `PredictorAccess` literal type.
 + Refactored `PredictorStatus` enumeration to literal type.
 

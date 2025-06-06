@@ -3,7 +3,6 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from os import PathLike
 from pathlib import Path
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 from typing import Annotated, Literal
@@ -12,19 +11,29 @@ def _validate_torch_module (module: "torch.nn.Module") -> "torch.nn.Module": # t
     try:
         from torch.nn import Module # type: ignore
         if not isinstance(module, Module):
-            raise ValueError(f"Expected torch.nn.Module, got {type(module)}")
+            raise ValueError(f"Expected `torch.nn.Module` model but got `{type(module).__qualname__}`")
         return module
     except ImportError:
-        raise ImportError("PyTorch is required to create this metadata but is not installed.")
+        raise ImportError("PyTorch is required to create this metadata but it is not installed.")
 
 def _validate_ort_inference_session (session: "onnxruntime.InferenceSession") -> "onnxruntime.InferenceSession": # type: ignore
     try:
         from onnxruntime import InferenceSession # type: ignore
         if not isinstance(session, InferenceSession):
-            raise ValueError(f"Expected onnxruntime.InferenceSession, got {type(session)}")
+            raise ValueError(f"Expected `onnxruntime.InferenceSession` model but got `{type(session).__qualname__}`")
         return session
     except ImportError:
-        raise ImportError("ONNXRuntime is required to create this metadata but is not installed.")
+        raise ImportError("ONNXRuntime is required to create this metadata but it is not installed.")
+
+def _validate_torch_args (args: list) -> list:
+    try:
+        from torch import Tensor
+        for idx, arg in enumerate(args):
+            if not isinstance(arg, Tensor):
+                raise ValueError(f"Expected `torch.Tensor` instance at `model_args[{idx}]` but got `{type(arg).__qualname__}`")
+        return args
+    except ImportError:
+        raise ImportError("PyTorch is required to create this metadata but it is not installed.")
 
 class CoreMLInferenceMetadata (BaseModel):
     """
@@ -39,7 +48,7 @@ class CoreMLInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: list[object] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -58,7 +67,7 @@ class OnnxInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: list[object] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -96,7 +105,7 @@ class LiteRTInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: list[object] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -115,13 +124,13 @@ class OpenVINOInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: list[object] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-QnnInferenceBackend = Literal["cpu", "gpu"] # `htp` coming soon
+QnnInferenceBackend = Literal["cpu", "gpu", "htp"]
 QnnInferenceQuantization = Literal["w8a8", "w8a16", "w4a8", "w4a16"]
 
 class QnnInferenceMetadata (BaseModel):
@@ -139,7 +148,7 @@ class QnnInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: list[object] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
