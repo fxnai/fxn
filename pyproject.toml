@@ -4,7 +4,7 @@
 #
 
 [project]
-name = "fxn"
+name = "muna"
 dynamic = ["version"]
 description = "Run prediction functions locally in Python. Register at https://fxn.ai."
 readme = "README.md"
