@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 
 def _validate_torch_module (module: "torch.nn.Module") -> "torch.nn.Module": # type: ignore
     try:
-        from torch.nn import Module # type: ignore
+        from torch.nn import Module
         if not isinstance(module, Module):
             raise ValueError(f"Expected `torch.nn.Module` model but got `{type(module).__qualname__}`")
         return module
@@ -18,14 +18,14 @@ def _validate_torch_module (module: "torch.nn.Module") -> "torch.nn.Module": # t
 
 def _validate_ort_inference_session (session: "onnxruntime.InferenceSession") -> "onnxruntime.InferenceSession": # type: ignore
     try:
-        from onnxruntime import InferenceSession # type: ignore
+        from onnxruntime import InferenceSession
         if not isinstance(session, InferenceSession):
             raise ValueError(f"Expected `onnxruntime.InferenceSession` model but got `{type(session).__qualname__}`")
         return session
     except ImportError:
         raise ImportError("ONNXRuntime is required to create this metadata but it is not installed.")
 
-def _validate_torch_args (args: list) -> list:
+def _validate_torch_tensor_args (args: list) -> list:
     try:
         from torch import Tensor
         for idx, arg in enumerate(args):
@@ -34,6 +34,15 @@ def _validate_torch_args (args: list) -> list:
         return args
     except ImportError:
         raise ImportError("PyTorch is required to create this metadata but it is not installed.")
+    
+def _validate_llama_cpp_model (model: "llama_cpp.llama.Llama") -> "llama_cpp.llama.Llama": # type: ignore
+    try:
+        from llama_cpp import Llama
+        if not isinstance(model, Llama):
+            raise ValueError(f"Expected `llama_cpp.llama.Llama` model but got `{type(model).__qualname__}`")
+        return model
+    except ImportError:
+        raise ImportError("Llama-cpp-python is required to create this metadata but it is not installed.")
 
 class CoreMLInferenceMetadata (BaseModel):
     """
@@ -48,7 +57,7 @@ class CoreMLInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -67,7 +76,7 @@ class OnnxInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -105,7 +114,7 @@ class LiteRTInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -124,7 +133,7 @@ class OpenVINOInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -148,7 +157,7 @@ class QnnInferenceMetadata (BaseModel):
         description="PyTorch module to apply metadata to.",
         exclude=True
     )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_args)] = Field(
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
         exclude=True
     )
@@ -164,13 +173,13 @@ class QnnInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-class LlamaCppInferenceMetadata (BaseModel): # INCOMPLETE
+class LlamaCppInferenceMetadata (BaseModel):
     """
-    Metadata required to lower a GGUF model for LLM inference.
+    Metadata required to lower a Llama.cpp model for LLM inference.
     """
-    kind: Literal["meta.inference.gguf"] = "meta.inference.gguf"
-    model_path: Path = Field(
-        description="GGUF model path. The model must exist at this path in the compiler sandbox.",
+    kind: Literal["meta.inference.llama_cpp"] = "meta.inference.llama_cpp"
+    model: Annotated[object, BeforeValidator(_validate_llama_cpp_model)] = Field(
+        description="Llama model that metadata applies to.",
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
