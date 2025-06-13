@@ -1,5 +1,8 @@
 ## 0.0.54
-+ Added support for targeting `htp` backend in `QnnInferenceMetadata`.
++ Added support for targeting `htp` inference backend in `beta.QnnInferenceMetadata`.
++ Added `index_url` argument in `Sandbox.pip_install(...)` method to specify Python package index URL.
++ Added `flags` argument in `Sandbox.pip_install(...)` method to specify arbitrary `pip` flags when installing Python packages.
++ Updated `beta.LlamaCppInferenceMetadata` class to accept a `Llama` model instance from the `llama-cpp-python` package.
 + Refactored `AccessMode` enumeration to `PredictorAccess` literal type.
 + Refactored `PredictorStatus` enumeration to literal type.
 

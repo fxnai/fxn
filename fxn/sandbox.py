@@ -57,6 +57,8 @@ class EntrypointCommand (UploadableCommand):
 class PipInstallCommand (BaseModel):
     kind: Literal["pip_install"] = "pip_install"
     packages: list[str]
+    index_url: str | None
+    flags: str
 
 class AptInstallCommand (BaseModel):
     kind: Literal["apt_install"] = "apt_install"
@@ -133,14 +135,25 @@ class Sandbox (BaseModel):
         )
         return Sandbox(commands=self.commands + [command])
 
-    def pip_install (self, *packages: str) -> Sandbox:
+    def pip_install (
+        self,
+        *packages: str,
+        index_url: str=None,
+        flags: str=""
+    ) -> Sandbox:
         """
         Install Python packages in the sandbox.
 
         Parameters:
             packages (list): Packages to install.
+            index_url (str | None): Index URL to search for package.
+            flags (str): Additional flags to pass to `pip`.
         """
-        command = PipInstallCommand(packages=packages)
+        command = PipInstallCommand(
+            packages=packages,
+            index_url=index_url,
+            flags=flags
+        )
         return Sandbox(commands=self.commands + [command])
 
     def apt_install (self, *packages: str) -> Sandbox:
