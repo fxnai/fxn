@@ -245,7 +245,7 @@ class PredictionService:
                     tmp_file.write(chunk)
                     completed += len(chunk)
                     task.update(total=size, completed=completed)
-            Path(tmp_file.name).replace(path)
+        Path(tmp_file.name).replace(path)
         return path
 
     def __get_resource_path (self, resource: PredictionResource) -> Path:
