@@ -1,5 +1,5 @@
 ## 0.0.55
-+ Fixed `fxn.predictions.create` method failing due to downloaded resources being used by more than one process.
++ Fixed `fxn.predictions.create` method failing on Windows due to downloaded resources being used by more than one process.
 
 ## 0.0.54
 + Added support for targeting `htp` inference backend in `beta.QnnInferenceMetadata`.
