@@ -1,4 +1,5 @@
 ## 0.0.55
++ Added `fxn.predictions.delete` method to unload an active predictor from memory.
 + Fixed `fxn.predictions.create` method failing on Windows due to downloaded resources being used by more than one process.
 
 ## 0.0.54

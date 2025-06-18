@@ -117,6 +117,21 @@ class PredictionService:
                 with prediction:
                     yield self.__to_prediction(tag, prediction)
 
+    def delete (self, tag: str) -> bool:
+        """
+        Delete a predictor that is loaded in memory.
+
+        Parameters:
+            tag (str): Predictor tag.
+
+        Returns:
+            bool: Whether the predictor was successfully deleted from memory.
+        """
+        if tag not in self.__cache:
+            return False
+        with self.__cache.pop(tag):
+            return True
+
     def __create_raw_prediction (
         self,
         tag: str,
