@@ -10,6 +10,7 @@ from ..version import __version__
 
 from .auth import app as auth_app
 from .compile import compile_predictor
+from .insiders import triage_compile_error
 from .misc import cli_options
 from .predictions import create_prediction
 from .predictors import archive_predictor, delete_predictor, retrieve_predictor
@@ -85,6 +86,14 @@ app.add_typer(
     help="Provide prediction functions as tools for use by AI assistants.",
     rich_help_panel="Beta"
 )
+
+# Insiders
+app.command(
+    name="triage",
+    help="Triage a compile error.",
+    rich_help_panel="Insiders",
+    hidden=True
+)(triage_compile_error)
 
 # Run
 if __name__ == "__main__":
