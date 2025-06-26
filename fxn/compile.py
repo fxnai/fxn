@@ -14,7 +14,7 @@ from typing import Any, Callable, Literal, ParamSpec, TypeVar, cast
 from .beta import (
     CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
     OnnxInferenceMetadata, OnnxRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
-    QnnInferenceMetadata
+    QnnInferenceMetadata, TensorRTInferenceMetadata
 )
 from .sandbox import Sandbox
 from .types import PredictorAccess
@@ -36,7 +36,8 @@ CompileMetadata = (
     OnnxInferenceMetadata               |
     OnnxRuntimeInferenceSessionMetadata |
     OpenVINOInferenceMetadata           |
-    QnnInferenceMetadata
+    QnnInferenceMetadata                |
+    TensorRTInferenceMetadata
 )
 
 P = ParamSpec("P")

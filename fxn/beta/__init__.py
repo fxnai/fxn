@@ -6,8 +6,9 @@
 from .metadata import (
     CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
     OnnxInferenceMetadata, OnnxRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
-    QnnInferenceMetadata, QnnInferenceBackend, QnnInferenceQuantization,
-    # Deprecated
-    ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata
+    QnnInferenceMetadata, QnnInferenceBackend, QnnInferenceQuantization, TensorRTInferenceMetadata    
 )
 from .services import RemoteAcceleration
+
+# DEPRECATED
+from .metadata import ONNXInferenceMetadata, ONNXRuntimeInferenceSessionMetadata

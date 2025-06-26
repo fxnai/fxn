@@ -173,6 +173,46 @@ class QnnInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+CudaArchitecture = Literal[
+    "sm_80", "sm_86", "sm_87",  # Ampere (A100)
+    "sm_89",                    # Ada Lovelace (L40)
+    "sm_90",                    # Hopper (H100)
+    "sm_100",                   # Blackwell (B200)
+]
+
+TensorRTPrecision = Literal["fp32", "fp16", "int8", "int4"]
+
+class TensorRTInferenceMetadata (BaseModel):
+    """
+    Metadata required to lower a PyTorch model for inference on Nvidia GPUs with TensorRT.
+
+    Members:
+        model (torch.nn.Module): PyTorch module to apply metadata to.
+        model_args (tuple[Tensor,...]): Positional inputs to the model.
+        cuda_arch (CudaArchitecture): Target CUDA architecture for the TensorRT engine. Defaults to `sm_80` (Ampere).
+        precision (TensorRTPrecision): TensorRT engine inference precision. Defaults to `fp16`.
+    """
+    kind: Literal["meta.inference.tensorrt"] = "meta.inference.tensorrt"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
+        description="PyTorch module to apply metadata to.",
+        exclude=True
+    )
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
+        description="Positional inputs to the model.",
+        exclude=True
+    )
+    cuda_arch: CudaArchitecture = Field(
+        default="sm_80",
+        description="Target CUDA architecture for the TensorRT engine.",
+        exclude=True
+    )
+    precision: TensorRTPrecision = Field(
+        default="fp16",
+        description="TensorRT engine inference precision.",
+        exclude=True
+    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
 class LlamaCppInferenceMetadata (BaseModel):
     """
     Metadata required to lower a Llama.cpp model for LLM inference.
