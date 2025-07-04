@@ -61,6 +61,11 @@ class CoreMLInferenceMetadata (BaseModel):
         description="Positional inputs to the model.",
         exclude=True
     )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
+        exclude=True
+    )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class OnnxInferenceMetadata (BaseModel):
@@ -78,6 +83,11 @@ class OnnxInferenceMetadata (BaseModel):
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
@@ -118,6 +128,11 @@ class LiteRTInferenceMetadata (BaseModel):
         description="Positional inputs to the model.",
         exclude=True
     )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
+        exclude=True
+    )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
 class OpenVINOInferenceMetadata (BaseModel):
@@ -135,6 +150,11 @@ class OpenVINOInferenceMetadata (BaseModel):
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
@@ -159,6 +179,11 @@ class QnnInferenceMetadata (BaseModel):
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
         exclude=True
     )
     backend: QnnInferenceBackend = Field(
@@ -199,6 +224,11 @@ class TensorRTInferenceMetadata (BaseModel):
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
         exclude=True
     )
     cuda_arch: CudaArchitecture = Field(

@@ -1,5 +1,6 @@
 ## 0.0.55
 + Added `beta.TensorRTInferenceMetadata` class to lower PyTorch models for inference on Nvidia GPUs with TensorRT.
++ Added `beta.OnnxInferenceMetadata.output_keys` field for specifying model output dictionary keys.
 + Added `fxn.predictions.delete` method to unload an active predictor from memory.
 + Fixed `fxn.predictions.create` method failing on Windows due to downloaded resources being used by more than one process.
 
