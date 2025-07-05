@@ -14,7 +14,7 @@ from ..function import Function
 from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
 
-def retrieve_source (
+def retrieve_source(
     prediction: Annotated[str, Option(help="Prediction identifier. If specified, this MUST be from a prediction returned by the Function API.")] = None,
     predictor: Annotated[str, Option(help="Predictor tag. If specified, a prediction will be made with this predictor before retrieving the source.")] = None,
     output: Annotated[Path, Option(help="Path to output source file.")] = Path("predictor.cpp")
@@ -37,7 +37,7 @@ def retrieve_source (
             source.code = str(output.resolve())
             print_json(data=source.model_dump(mode="json", by_alias=True))
 
-class _PredictionSource (BaseModel):
+class _PredictionSource(BaseModel):
     tag: str
     target: str
     code: str

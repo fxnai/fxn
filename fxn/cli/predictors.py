@@ -10,7 +10,7 @@ from ..function import Function
 from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
 
-def retrieve_predictor (
+def retrieve_predictor(
     tag: str=Argument(..., help="Predictor tag.")
 ):
     with CustomProgress(transient=True):
@@ -20,7 +20,7 @@ def retrieve_predictor (
             predictor = predictor.model_dump() if predictor else None
             print_json(data=predictor)
 
-def archive_predictor (
+def archive_predictor(
     tag: str=Argument(..., help="Predictor tag.")
 ):
     with CustomProgress():
@@ -34,7 +34,7 @@ def archive_predictor (
                 path=f"/predictors/{tag}/archive"
             )
 
-def delete_predictor (
+def delete_predictor(
     tag: str=Argument(..., help="Predictor tag.")
 ):
     with CustomProgress():

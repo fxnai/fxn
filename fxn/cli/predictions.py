@@ -24,7 +24,7 @@ def create_prediction (
 ):
     run_async(_predict_async(tag, quiet=quiet, context=context))
 
-async def _predict_async (tag: str, quiet: bool, context: Context):
+async def _predict_async(tag: str, quiet: bool, context: Context):
     # Preload
     with CustomProgress(transient=True, disable=quiet):
         fxn = Function(get_access_key())
@@ -42,16 +42,7 @@ async def _predict_async (tag: str, quiet: bool, context: Context):
             prediction = fxn.predictions.create(tag, inputs=inputs)
     _log_prediction(prediction)
 
-def _parse_value (value: str):
-    """
-    Parse a value from a CLI argument.
-
-    Parameters:
-        value (str): CLI input argument.
-
-    Returns:
-        bool | int | float | str | Path: Parsed value.
-    """
+def _parse_value (value: str) -> float | int | bool | str | Image.Image | BytesIO:
     # Boolean
     if value == "true":
         return True
@@ -81,14 +72,14 @@ def _parse_value (value: str):
     # String
     return value
 
-def _log_prediction (prediction: Prediction):
+def _log_prediction(prediction: Prediction):
     images = [value for value in prediction.results or [] if isinstance(value, Image.Image)]
     prediction.results = [_serialize_value(value) for value in prediction.results] if prediction.results is not None else None
     print_json(data=prediction.model_dump())
     for image in images:
         image.show()
 
-def _serialize_value (value):
+def _serialize_value(value) -> str:
     if isinstance(value, ndarray):
         return array_repr(value)
     if isinstance(value, Image.Image):
