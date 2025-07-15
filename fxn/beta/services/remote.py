@@ -20,7 +20,7 @@ from ...client import FunctionClient
 from ...services.prediction import Value
 from ...types import Dtype, Prediction
 
-RemoteAcceleration = Literal["auto", "cpu", "a40", "a100"]
+RemoteAcceleration = Literal["remote_auto", "remote_cpu", "remote_a40", "remote_a100"]
 
 class RemotePredictionService:
     """

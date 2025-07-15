@@ -1,5 +1,5 @@
 ## 0.0.56
-*INCOMPLETE*
++ Refactored `beta.RemoteAcceleration` constants to use a `remote_` prefix.
 
 ## 0.0.55
 + Added `beta.TensorRTInferenceMetadata` class to lower PyTorch models for inference on Nvidia GPUs with TensorRT.

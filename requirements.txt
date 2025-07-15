@@ -1,3 +1,4 @@
+mcp
 numpy
 pillow
 requests

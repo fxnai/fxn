@@ -103,7 +103,7 @@ async def _compile_predictor_async(
                         task_queue.push_log(event)
                     elif isinstance(event, _ErrorEvent):
                         task_queue.push_error(event)
-                        raise _CompileError(event.data.error)
+                        raise CompileError(event.data.error)
     predictor_url = _compute_predictor_url(fxn.client.api_url, spec.tag)
     print_rich(f"\n[bold spring_green3]🎉 Predictor is now being compiled.[/bold spring_green3] Check it out at [link={predictor_url}]{predictor_url}[/link]")
 
@@ -152,7 +152,7 @@ class _ErrorEvent(BaseModel):
     event: Literal["error"]
     data: _ErrorData
 
-class _CompileError(Exception):
+class CompileError(Exception):
     pass
 
 class _TriagedCompileError(BaseModel):
