@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -10,7 +10,7 @@ from requests import get
 parser = ArgumentParser()
 parser.add_argument("--version", type=str, required=True)
 
-def _download_fxnc (name: str, version: str, path: Path):
+def _download_fxnc(name: str, version: str, path: Path):
     url = f"https://cdn.fxn.ai/fxnc/{version}/{name}"
     response = get(url)
     response.raise_for_status()

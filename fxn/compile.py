@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -9,11 +9,11 @@ from inspect import isasyncgenfunction, iscoroutinefunction
 from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 from types import ModuleType
-from typing import Any, Callable, Literal, ParamSpec, TypeVar, cast
+from typing import Callable, Literal, ParamSpec, TypeVar, cast
 
 from .beta import (
-    CoreMLInferenceMetadata, LiteRTInferenceMetadata, LlamaCppInferenceMetadata,
-    OnnxInferenceMetadata, OnnxRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
+    CoreMLInferenceMetadata, LiteRTInferenceMetadata, OnnxInferenceMetadata,
+    OnnxRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
     QnnInferenceMetadata, TensorRTInferenceMetadata
 )
 from .sandbox import Sandbox
@@ -32,7 +32,6 @@ CompileTarget = Literal[
 CompileMetadata = (
     CoreMLInferenceMetadata             |
     LiteRTInferenceMetadata             |
-    LlamaCppInferenceMetadata           |
     OnnxInferenceMetadata               |
     OnnxRuntimeInferenceSessionMetadata |
     OpenVINOInferenceMetadata           |
@@ -43,7 +42,7 @@ CompileMetadata = (
 P = ParamSpec("P")
 R = TypeVar("R")
 
-class PredictorSpec (BaseModel):
+class PredictorSpec(BaseModel):
     """
     Descriptor of a predictor to be compiled.
     """
@@ -58,7 +57,7 @@ class PredictorSpec (BaseModel):
     license: str | None = Field(default=None, description="Predictor license URL. This is required for public predictors.")
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow", frozen=True)
 
-def compile (
+def compile(
     tag: str,
     *,
     description: str,
@@ -87,7 +86,7 @@ def compile (
         media (Path): Predictor thumbnail image (jpeg or png) path.
         license (str): Predictor license URL. This is required for public predictors.
     """
-    def decorator (func: Callable):
+    def decorator(func: Callable):
         # Check type
         if not callable(func):
             raise TypeError("Cannot compile non-function objects")

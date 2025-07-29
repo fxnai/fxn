@@ -10,7 +10,7 @@ from typing import get_origin, Callable, Generator, Iterator, TypeVar
 from ..client import FunctionClient
 from ..services import PredictionService as EdgePredictionService
 from ..types import Acceleration
-from .services import PredictionService, RemoteAcceleration
+from .services import ChatService, PredictionService, RemoteAcceleration
 
 F = TypeVar("F", bound=Callable[..., object])
 
@@ -19,6 +19,7 @@ class BetaClient:
     Client for incubating features.
     """
     predictions: PredictionService
+    chat: ChatService
     
     def __init__ (
         self,
@@ -27,6 +28,7 @@ class BetaClient:
         predictions: EdgePredictionService
     ):
         self.predictions = PredictionService(client)
+        self.chat = ChatService(None)
         self.__edge_predictions = predictions
 
     def predict ( # INCOMPLETE # Preload

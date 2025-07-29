@@ -1,11 +1,11 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
 from enum import Enum
 
-class Dtype (str, Enum):
+class Dtype(str, Enum):
     """
     Value type.
     This follows `numpy` dtypes.

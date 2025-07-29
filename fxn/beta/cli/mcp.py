@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -14,7 +14,7 @@ from ...beta import RemoteAcceleration
 from ...types import Acceleration, Predictor
 
 app = Typer(no_args_is_help=True)
-mcp = FastMCP("Function")
+mcp = FastMCP("Muna")
 
 class MCPScalarValue(BaseModel):
     kind: Literal["scalar"] = "scalar"
@@ -51,7 +51,7 @@ MCPValue = (
     MCPImageValue
 )
 
-class MCPPrediction (BaseModel):
+class MCPPrediction(BaseModel):
     id: str = Field(description="Prediction identifier.")
     tag: str = Field(description="Predictor tag.")
     results: list[MCPValue] | None = Field(default=None, description="Prediction results.")
@@ -61,7 +61,7 @@ class MCPPrediction (BaseModel):
     created: str = Field(description="Date created.")
 
 @app.command(name="serve", help="Start an MCP server.")
-def serve (
+def serve(
     #port: Annotated[int, Option(help="Port to start the server on.")] = 11436
 ):
     mcp.run()

@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -13,7 +13,7 @@ PredictorAccess = Literal["public", "private", "unlisted"]
 
 PredictorStatus = Literal["compiling", "active", "archived"]
 
-class EnumerationMember (BaseModel):
+class EnumerationMember(BaseModel):
     """
     Prediction parameter enumeration member.
 
@@ -24,7 +24,7 @@ class EnumerationMember (BaseModel):
     name: str = Field(description="Enumeration member name.")
     value: str | int = Field(description="Enumeration member value.")
 
-class Parameter (BaseModel):
+class Parameter(BaseModel):
     """
     Predictor parameter.
 
@@ -46,7 +46,7 @@ class Parameter (BaseModel):
     value_schema: dict[str, Any] | None = Field(default=None, description="Parameter JSON schema. This is only populated for `list` and `dict` parameters.", serialization_alias="schema", validation_alias=AliasChoices("schema", "value_schema"))
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-class Signature (BaseModel):
+class Signature(BaseModel):
     """
     Predictor signature.
 
@@ -57,7 +57,7 @@ class Signature (BaseModel):
     inputs: list[Parameter] = Field(description="Input parameters.")
     outputs: list[Parameter] = Field(description="Output parameters.")
 
-class Predictor (BaseModel):
+class Predictor(BaseModel):
     """
     Predictor.
 

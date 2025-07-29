@@ -1,5 +1,8 @@
 ## 0.0.56
 + Refactored `beta.RemoteAcceleration` constants to use a `remote_` prefix.
++ Removed `beta.LlamaCppInferenceMetadata` metadata type as it is no longer needed.
++ Removed `beta.ONNXInferenceMetadata` metadata type. Use `beta.OnnxInferenceMetadata` instead.
++ Removed `beta.ONNXRuntimeInferenceSessionMetadata` metadata type. Use `beta.OnnxRuntimeInferenceSessionMetadata` instead.
 
 ## 0.0.55
 + Added `beta.TensorRTInferenceMetadata` class to lower PyTorch models for inference on Nvidia GPUs with TensorRT.

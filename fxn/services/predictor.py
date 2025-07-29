@@ -1,17 +1,17 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ..client import FunctionClient, FunctionAPIError
+from ..client import MunaClient, FunctionAPIError
 from ..types import Predictor
 
 class PredictorService:
 
-    def __init__ (self, client: FunctionClient) -> None:
+    def __init__(self, client: MunaClient) -> None:
         self.client = client
 
-    def retrieve (self, tag: str) -> Predictor:
+    def retrieve(self, tag: str) -> Predictor:
         """
         Retrieve a predictor.
 

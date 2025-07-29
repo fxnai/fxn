@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -7,7 +7,7 @@ from pathlib import Path
 from rich import print, print_json
 from typer import Argument, Typer
 
-from ..function import Function
+from ..muna import Muna
 
 app = Typer(no_args_is_help=True)
 
@@ -15,16 +15,16 @@ app = Typer(no_args_is_help=True)
 def login(
     access_key: str=Argument(..., help="Function access key.", envvar="FXN_ACCESS_KEY")
 ):
-    fxn = Function(access_key=access_key)
-    user = fxn.users.retrieve()
+    muna = Muna(access_key=access_key)
+    user = muna.users.retrieve()
     user = user.model_dump() if user else None
     _set_access_key(access_key if user is not None else None)
     print_json(data=user)
 
 @app.command(name="status", help="Get current authentication status.")
 def auth_status():
-    fxn = Function(get_access_key())
-    user = fxn.users.retrieve()
+    muna = Muna(get_access_key())
+    user = muna.users.retrieve()
     user = user.model_dump() if user else None
     print_json(data=user)
 
