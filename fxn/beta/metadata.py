@@ -243,17 +243,6 @@ class TensorRTInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-class LlamaCppInferenceMetadata (BaseModel):
-    """
-    Metadata required to lower a Llama.cpp model for LLM inference.
-    """
-    kind: Literal["meta.inference.llama_cpp"] = "meta.inference.llama_cpp"
-    model: Annotated[object, BeforeValidator(_validate_llama_cpp_model)] = Field(
-        description="Llama model that metadata applies to.",
-        exclude=True
-    )
-    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
-
 # DEPRECATED
 ONNXInferenceMetadata = OnnxInferenceMetadata
 ONNXRuntimeInferenceSessionMetadata = OnnxRuntimeInferenceSessionMetadata

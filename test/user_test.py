@@ -1,11 +1,11 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from fxn import Function
+from muna import Muna
 
-def test_retrieve_user ():
-    fxn = Function()
-    user = fxn.users.retrieve()
+def test_retrieve_user():
+    muna = Muna()
+    user = muna.users.retrieve()
     assert user is not None

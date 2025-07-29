@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -18,7 +18,7 @@ from urllib.parse import urlparse, urlunparse
 
 from ..client import FunctionAPIError
 from ..compile import PredictorSpec
-from ..function import Function
+from ..muna import Muna
 from ..sandbox import EntrypointCommand
 from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
@@ -32,8 +32,8 @@ def compile_predictor(
 def triage_predictor(
     reference_code: Annotated[str, Argument(help="Predictor compilation reference code.")]
 ):
-    fxn = Function(get_access_key())
-    error = fxn.client.request(
+    muna = Muna(get_access_key())
+    error = muna.client.request(
         method="GET",
         path=f"/predictors/triage?referenceCode={reference_code}",
         response_type=_TriagedCompileError
@@ -60,7 +60,7 @@ async def _compile_predictor_async(
     *,
     overwrite: bool
 ):
-    fxn = Function(get_access_key())
+    muna = Muna(get_access_key())
     path: Path = Path(path).resolve()
     with CustomProgress():
         # Load
@@ -73,27 +73,27 @@ async def _compile_predictor_async(
         sandbox = spec.sandbox
         sandbox.commands.append(entrypoint)
         with CustomProgressTask(loading_text="Uploading sandbox...", done_text="Uploaded sandbox"):
-            sandbox.populate(fxn=fxn)
+            sandbox.populate(muna=muna)
         # Compile
         with CustomProgressTask(loading_text="Running codegen...", done_text="Completed codegen"):
             with CustomProgressTask(loading_text="Creating predictor..."):
                 if overwrite:
                     try:
-                        fxn.client.request(
+                        muna.client.request(
                             method="DELETE",
                             path=f"/predictors/{spec.tag}"
                         )
                     except FunctionAPIError as error:
                         if error.status_code != 404:
                             raise
-                predictor = fxn.client.request(
+                predictor = muna.client.request(
                     method="POST",
                     path="/predictors",
                     body=spec.model_dump(mode="json", exclude=spec.model_extra.keys(), by_alias=True),
                     response_type=_Predictor
                 )
             with ProgressLogQueue() as task_queue:
-                async for event in fxn.client.stream(
+                async for event in muna.client.stream(
                     method="POST",
                     path=f"/predictors/{predictor.tag}/compile",
                     body={ },
@@ -104,7 +104,7 @@ async def _compile_predictor_async(
                     elif isinstance(event, _ErrorEvent):
                         task_queue.push_error(event)
                         raise CompileError(event.data.error)
-    predictor_url = _compute_predictor_url(fxn.client.api_url, spec.tag)
+    predictor_url = _compute_predictor_url(muna.client.api_url, spec.tag)
     print_rich(f"\n[bold spring_green3]🎉 Predictor is now being compiled.[/bold spring_green3] Check it out at [link={predictor_url}]{predictor_url}[/link]")
 
 def _load_predictor_func(path: str) -> Callable[...,object]:

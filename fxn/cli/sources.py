@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -10,7 +10,7 @@ from rich import print_json
 from typer import Argument, Option
 from typing_extensions import Annotated
 
-from ..function import Function
+from ..muna import Muna
 from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
 
@@ -21,14 +21,14 @@ def retrieve_source(
 ):
     if not ((predictor is not None) ^ (prediction is not None)):
         raise ValueError(f"Predictor tag or prediction identifier must be provided, but not both.")
-    fxn = Function(get_access_key())
+    muna = Muna(get_access_key())
     with CustomProgress(transient=True):
         if prediction is None:
             with CustomProgressTask(loading_text="Creating prediction..."):
-                empty_prediction = fxn.predictions.create(tag=predictor)
+                empty_prediction = muna.predictions.create(tag=predictor)
                 prediction = empty_prediction.id
         with CustomProgressTask(loading_text="Retrieving source..."):
-            source = fxn.client.request(
+            source = muna.client.request(
                 method="GET",
                 path=f"/predictions/{prediction}/source",
                 response_type=_PredictionSource

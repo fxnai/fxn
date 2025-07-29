@@ -1,11 +1,11 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from fxn import Function
+from muna import Muna
 
-def test_retrieve_predictor ():
-    fxn = Function()
-    predictor = fxn.predictors.retrieve("@fxn/greeting")
+def test_retrieve_predictor():
+    muna = Muna()
+    predictor = muna.predictors.retrieve("@fxn/greeting")
     assert predictor is not None

@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -12,55 +12,55 @@ from requests import put
 from rich.progress import BarColumn, TextColumn
 from typing import Literal
 
-from .function import Function
+from .muna import Muna
 from .logging import CustomProgressTask
 
-class WorkdirCommand (BaseModel):
+class WorkdirCommand(BaseModel):
     kind: Literal["workdir"] = "workdir"
     path: str
 
-class EnvCommand (BaseModel):
+class EnvCommand(BaseModel):
     kind: Literal["env"] = "env"
     env: dict[str, str]
 
-class UploadableCommand (BaseModel, ABC):
+class UploadableCommand(BaseModel, ABC):
     from_path: str
     to_path: str
     manifest: dict[str, str] | None = None
 
     @abstractmethod
-    def get_files (self) -> list[Path]:
+    def get_files(self) -> list[Path]:
         pass
 
-class UploadFileCommand (UploadableCommand):
+class UploadFileCommand(UploadableCommand):
     kind: Literal["upload_file"] = "upload_file"
     
-    def get_files (self) -> list[Path]:
+    def get_files(self) -> list[Path]:
         return [Path(self.from_path).resolve()]
 
-class UploadDirectoryCommand (UploadableCommand):
+class UploadDirectoryCommand(UploadableCommand):
     kind: Literal["upload_dir"] = "upload_dir"
 
-    def get_files (self) -> list[Path]:
+    def get_files(self) -> list[Path]:
         from_path = Path(self.from_path)
         if not from_path.is_absolute():
             raise ValueError("Cannot upload directory because directory path must be absolute")
         return [file for file in from_path.rglob("*") if file.is_file()]
     
-class EntrypointCommand (UploadableCommand):
+class EntrypointCommand(UploadableCommand):
     kind: Literal["entrypoint"] = "entrypoint"
     name: str
 
-    def get_files (self) -> list[Path]:
+    def get_files(self) -> list[Path]:
         return [Path(self.from_path).resolve()]
 
-class PipInstallCommand (BaseModel):
+class PipInstallCommand(BaseModel):
     kind: Literal["pip_install"] = "pip_install"
     packages: list[str]
     index_url: str | None
     flags: str
 
-class AptInstallCommand (BaseModel):
+class AptInstallCommand(BaseModel):
     kind: Literal["apt_install"] = "apt_install"
     packages: list[str]
 
@@ -74,13 +74,13 @@ Command = (
     EntrypointCommand
 )
 
-class Sandbox (BaseModel):
+class Sandbox(BaseModel):
     """
     Sandbox which defines a containerized environment for compiling your Python function.
     """
     commands: list[Command] = []
 
-    def workdir (self, path: str | Path) -> Sandbox:
+    def workdir(self, path: str | Path) -> Sandbox:
         """
         Change the current working directory for subsequent commands.
 
@@ -90,14 +90,14 @@ class Sandbox (BaseModel):
         command = WorkdirCommand(path=str(path))
         return Sandbox(commands=self.commands + [command])
 
-    def env (self, **env: str) -> Sandbox:
+    def env(self, **env: str) -> Sandbox:
         """
         Set environment variables in the sandbox.
         """
         command = EnvCommand(env=env)
         return Sandbox(commands=self.commands + [command])
 
-    def upload_file (
+    def upload_file(
         self,
         from_path: str | Path,
         to_path: str | Path = "./"
@@ -116,7 +116,7 @@ class Sandbox (BaseModel):
         )
         return Sandbox(commands=self.commands + [command])
 
-    def upload_directory (
+    def upload_directory(
         self,
         from_path: str | Path,
         to_path: str | Path = "."
@@ -135,7 +135,7 @@ class Sandbox (BaseModel):
         )
         return Sandbox(commands=self.commands + [command])
 
-    def pip_install (
+    def pip_install(
         self,
         *packages: str,
         index_url: str=None,
@@ -156,7 +156,7 @@ class Sandbox (BaseModel):
         )
         return Sandbox(commands=self.commands + [command])
 
-    def apt_install (self, *packages: str) -> Sandbox:
+    def apt_install(self, *packages: str) -> Sandbox:
         """
         Install Debian packages in the sandbox.
 
@@ -166,11 +166,11 @@ class Sandbox (BaseModel):
         command = AptInstallCommand(packages=packages)
         return Sandbox(commands=self.commands + [command])
 
-    def populate (self, fxn: Function=None) -> Sandbox: # CHECK # In place
+    def populate(self, muna: Muna=None) -> Sandbox: # CHECK # In place
         """
         Populate all metadata.
         """
-        fxn = fxn if fxn is not None else Function()
+        muna = muna or Muna()
         entrypoint = next(cmd for cmd in self.commands if isinstance(cmd, EntrypointCommand))
         entry_path = Path(entrypoint.from_path).resolve()
         for command in self.commands:
@@ -195,20 +195,20 @@ class Sandbox (BaseModel):
                     for idx, file in enumerate(files):
                         rel_file_path = file.relative_to(from_path) if from_path.is_dir() else file.name
                         dst_path = to_path / rel_file_path
-                        checksum = self.__upload_file(file, fxn=fxn)
+                        checksum = self.__upload_file(file, muna=muna)
                         manifest[str(dst_path)] = checksum
                         task.update(total=len(files), completed=idx+1)
                     command.manifest = manifest
         return self
 
-    def __upload_file (self, path: Path, fxn: Function) -> str:
+    def __upload_file(self, path: Path, muna: Muna) -> str:
         if not path.is_file():
             raise ValueError(f"Cannot upload file at path {path} because it is not a file")
         hash = self.__compute_hash(path)
         try:
-            fxn.client.request(method="HEAD", path=f"/resources/{hash}")
+            muna.client.request(method="HEAD", path=f"/resources/{hash}")
         except:
-            resource = fxn.client.request(
+            resource = muna.client.request(
                 method="POST",
                 path="/resources",
                 body={ "name": hash },
@@ -218,12 +218,12 @@ class Sandbox (BaseModel):
                 put(resource.url, data=f).raise_for_status()
         return hash
     
-    def __compute_hash (self, path: Path) -> str:
+    def __compute_hash(self, path: Path) -> str:
         hash = sha256()
         with path.open("rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
                 hash.update(chunk)
         return hash.hexdigest()
 
-class _Resource (BaseModel):
+class _Resource(BaseModel):
     url: str

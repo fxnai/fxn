@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -13,9 +13,9 @@ from types import MethodType
 current_progress = ContextVar("current_progress", default=None)
 progress_task_stack = ContextVar("progress_task_stack", default=[])
 
-class CustomSpinnerColumn (SpinnerColumn):
+class CustomSpinnerColumn(SpinnerColumn):
     
-    def __init__ (
+    def __init__(
         self,
         spinner_name="dots",
         success_text="[bold green]✔[/bold green]",
@@ -26,7 +26,7 @@ class CustomSpinnerColumn (SpinnerColumn):
         self.success_text = success_text
         self.failure_text = failure_text
 
-    def render (self, task):
+    def render(self, task):
         done_text = (
             self.failure_text
             if task.fields.get("status") == "error"
@@ -34,13 +34,13 @@ class CustomSpinnerColumn (SpinnerColumn):
         )
         return done_text if task.finished else self.spinner
 
-class CustomTextColumn (TextColumn):
+class CustomTextColumn(TextColumn):
     """Custom text column that changes color based on task status"""
     
-    def __init__ (self, text_format="{task.description}"):
+    def __init__(self, text_format="{task.description}"):
         super().__init__(text_format)
     
-    def render (self, task):
+    def render(self, task):
         # Indent and color
         description = task.description
         indent_level = task.fields.get("indent_level", 0)
@@ -62,7 +62,7 @@ class CustomTextColumn (TextColumn):
 
 class CustomProgress(Progress):
 
-    def __init__ (
+    def __init__(
         self,
         *columns: ProgressColumn,
         console=None,
@@ -95,17 +95,17 @@ class CustomProgress(Progress):
         )
         self.default_columns = default_columns
 
-    def __enter__ (self):
+    def __enter__(self):
         self._token = current_progress.set(self)
         self._stack_token = progress_task_stack.set([])
         return super().__enter__()
 
-    def __exit__ (self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         current_progress.reset(self._token)
         progress_task_stack.reset(self._stack_token)
         return super().__exit__(exc_type, exc_val, exc_tb)
     
-    def get_renderables (self):
+    def get_renderables(self):
         for task in self.tasks:
             task_columns = task.fields.get("columns") or list()
             self.columns = self.default_columns + task_columns
@@ -113,7 +113,7 @@ class CustomProgress(Progress):
 
 class CustomProgressTask:
 
-    def __init__ (
+    def __init__(
         self,
         *,
         loading_text: str,
@@ -125,7 +125,7 @@ class CustomProgressTask:
         self.task_id = None
         self.columns = columns
 
-    def __enter__ (self):
+    def __enter__(self):
         progress = current_progress.get()
         if progress is not None:
             self.task_id = progress.add_task(
@@ -138,7 +138,7 @@ class CustomProgressTask:
             progress_task_stack.set(current_stack + [self.task_id])
         return self
 
-    def __exit__ (self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         progress = current_progress.get()
         if progress is not None and self.task_id is not None:
             current_task = progress._tasks[self.task_id]
@@ -154,7 +154,7 @@ class CustomProgressTask:
         self.task_id = None
         return False
 
-    def update (self, **kwargs):
+    def update(self, **kwargs):
         progress = current_progress.get()
         if progress is None or self.task_id is None:
             return
@@ -163,7 +163,7 @@ class CustomProgressTask:
     def finish (self, message: str):
         self.done_text = message
     
-class TracebackMarkupConsole (Console):
+class TracebackMarkupConsole(Console):
 
     def print(
         self,

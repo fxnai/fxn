@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -8,7 +8,7 @@ from typing import Literal
 
 Acceleration = Literal["auto", "cpu", "gpu", "npu"]
 
-class PredictionResource (BaseModel):
+class PredictionResource(BaseModel):
     """
     Prediction resource.
 
@@ -21,7 +21,7 @@ class PredictionResource (BaseModel):
     url: str = Field(description="Resource URL.")
     name: str | None = Field(default=None, description="Resource name.")
 
-class Prediction (BaseModel):
+class Prediction(BaseModel):
     """
     Prediction.
 

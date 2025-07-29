@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -17,7 +17,7 @@ from typing import Iterator
 from urllib.parse import urlparse
 
 from ..c import Configuration, Predictor, Prediction as CPrediction, Value as CValue, ValueFlags, ValueMap
-from ..client import FunctionClient
+from ..client import MunaClient
 from ..logging import CustomProgressTask
 from ..types import Acceleration, Prediction, PredictionResource
 
@@ -37,13 +37,13 @@ Value = (
 
 class PredictionService:
 
-    def __init__ (self, client: FunctionClient):
+    def __init__(self, client: MunaClient):
         self.client = client
         self.__cache = { }
         self.__cache_dir = self.__class__.__get_home_dir() / ".fxn" / "cache"
         self.__cache_dir.mkdir(parents=True, exist_ok=True)
 
-    def create (
+    def create(
         self,
         tag: str,
         *,
@@ -85,7 +85,7 @@ class PredictionService:
         ):
             return self.__to_prediction(tag, prediction)
 
-    def stream (
+    def stream(
         self,
         tag: str,
         *,
@@ -117,7 +117,7 @@ class PredictionService:
                 with prediction:
                     yield self.__to_prediction(tag, prediction)
 
-    def delete (self, tag: str) -> bool:
+    def delete(self, tag: str) -> bool:
         """
         Delete a predictor that is loaded in memory.
 
@@ -132,7 +132,7 @@ class PredictionService:
         with self.__cache.pop(tag):
             return True
 
-    def __create_raw_prediction (
+    def __create_raw_prediction(
         self,
         tag: str,
         client_id: str=None,
@@ -152,7 +152,7 @@ class PredictionService:
         )
         return prediction
 
-    def __get_predictor (
+    def __get_predictor(
         self,
         tag: str,
         acceleration: Acceleration="auto",
@@ -179,13 +179,13 @@ class PredictionService:
         self.__cache[tag] = predictor
         return predictor
     
-    def __to_value_map (self, inputs: dict[str, Value]) -> ValueMap:
+    def __to_value_map(self, inputs: dict[str, Value]) -> ValueMap:
         map = ValueMap()
         for name, value in inputs.items():
             map[name] = self.__to_value(value)
         return map
 
-    def __to_value (
+    def __to_value(
         self,
         value: Value,
         *,
@@ -218,7 +218,11 @@ class PredictionService:
         else:
             raise RuntimeError(f"Failed to convert object to Function value because object has an unsupported type: {type(value)}")
 
-    def __to_prediction (self, tag: str, raw_prediction: CPrediction) -> Prediction:
+    def __to_prediction(
+        self,
+        tag: str,
+        raw_prediction: CPrediction
+    ) -> Prediction:
         output_map = raw_prediction.results
         results = [output_map[output_map.key(idx)].to_object() for idx in range(len(output_map))] if output_map else None
         prediction = Prediction(
@@ -232,7 +236,7 @@ class PredictionService:
         )
         return prediction
     
-    def __download_resource (self, resource: PredictionResource) -> Path:
+    def __download_resource(self, resource: PredictionResource) -> Path:
         path = self.__get_resource_path(resource)
         if path.exists():
             return path
@@ -263,14 +267,14 @@ class PredictionService:
         Path(tmp_file.name).replace(path)
         return path
 
-    def __get_resource_path (self, resource: PredictionResource) -> Path:
+    def __get_resource_path(self, resource: PredictionResource) -> Path:
         stem = Path(urlparse(resource.url).path).name
         path = self.__cache_dir / stem
         path = path / resource.name if resource.name else path
         return path
 
     @classmethod
-    def __get_home_dir (cls) -> Path:
+    def __get_home_dir(cls) -> Path:
         try:
             check = Path.home() / ".fxntest"
             with open(check, "w") as f:
@@ -281,7 +285,7 @@ class PredictionService:
             return Path(gettempdir())
 
     @classmethod
-    def __try_ensure_serializable (cls, object: object) -> object:
+    def __try_ensure_serializable(cls, object: object) -> object:
         if object is None:
             return object
         if isinstance(object, list):

@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -10,13 +10,13 @@ from typing import AsyncGenerator, Literal, Type, TypeVar
 
 T = TypeVar("T", bound=BaseModel)
 
-class FunctionClient:
+class MunaClient:
     
     def __init__(self, access_key: str, api_url: str | None) -> None:
         self.access_key = access_key
-        self.api_url = api_url or "https://api.fxn.ai/v1"
+        self.api_url = api_url or "https://api.muna.ai/v1"
 
-    def request (
+    def request(
         self,
         *,
         method: Literal["GET", "POST", "PATCH", "DELETE"],
@@ -50,7 +50,7 @@ class FunctionClient:
             error = _ErrorResponse(**data).errors[0].message if isinstance(data, dict) else data
             raise FunctionAPIError(error, response.status_code)
         
-    async def stream (
+    async def stream(
         self,
         *,
         method: Literal["GET", "POST", "PATCH", "DELETE"],
@@ -97,7 +97,7 @@ class FunctionClient:
         if event or data:
             yield _parse_sse_event(event, data, response_type)
 
-class FunctionAPIError (Exception):
+class FunctionAPIError(Exception):
 
     def __init__(self, message: str, status_code: int):
         super().__init__(message)
@@ -107,13 +107,13 @@ class FunctionAPIError (Exception):
     def __str__(self):
         return f"FunctionAPIError: {self.message} (Status Code: {self.status_code})"
     
-class _APIError (BaseModel):
+class _APIError(BaseModel):
     message: str
 
-class _ErrorResponse (BaseModel):
+class _ErrorResponse(BaseModel):
     errors: list[_APIError]
 
-def _parse_sse_event (event: str, data: str, type: Type[T]=None) -> T:
+def _parse_sse_event(event: str, data: str, type: Type[T]=None) -> T:
     result = { "event": event, "data": loads(data) }
     result = TypeAdapter(type).validate_python(result) if type is not None else result
     return result
