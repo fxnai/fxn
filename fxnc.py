@@ -21,7 +21,7 @@ def _download_fxnc(name: str, version: str, path: Path):
 
 def main ():
     args = parser.parse_args()
-    LIB_PATH_BASE = Path("fxn") / "lib"
+    LIB_PATH_BASE = Path("muna") / "lib"
     DOWNLOADS = [
         ("Function-macos-x86_64.dylib", LIB_PATH_BASE / "macos" / "x86_64" / "Function.dylib"),
         ("Function-macos-arm64.dylib", LIB_PATH_BASE / "macos" / "arm64" / "Function.dylib"),

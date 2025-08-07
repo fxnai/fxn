@@ -3,8 +3,8 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from fxn import compile
-from fxn.compile import PredictorSpec
+from muna import compile
+from muna.compile import PredictorSpec
 import numpy as np
 
 def test_populate_predictor_spec():
