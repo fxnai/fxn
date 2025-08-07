@@ -1,13 +1,13 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from fxn import Function
+from muna import Muna
 
-def test_create_remote_prediction ():
-    fxn = Function()
-    prediction = fxn.beta.predictions.remote.create(
+def test_create_remote_prediction():
+    muna = Muna()
+    prediction = muna.beta.predictions.remote.create(
         tag="@fxn/greeting",
         inputs={ "name": "Yusuf" }
     )

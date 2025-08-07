@@ -1,12 +1,12 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
 [project]
-name = "fxn"
+name = "muna"
 dynamic = ["version"]
-description = "Run prediction functions locally in Python. Register at https://fxn.ai."
+description = "Run AI models in Python. Register at https://muna.ai."
 readme = "README.md"
 dependencies = [
     "numpy",
@@ -17,7 +17,7 @@ dependencies = [
     "typer"
 ]
 requires-python = ">=3.10"
-authors = [ { name = "NatML Inc.", email = "hi@fxn.ai" } ]
+authors = [ { name = "NatML Inc.", email = "hi@muna.ai" } ]
 license = { file = "LICENSE" }
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -28,16 +28,16 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://fxn.ai"
-Documentation = "https://docs.fxn.ai"
-Source = "https://github.com/fxnai/fxn"
-Changelog = "https://github.com/fxnai/fxn/blob/main/Changelog.md"
+Homepage = "https://muna.ai"
+Documentation = "https://docs.muna.ai"
+Source = "https://github.com/muna-ai/muna-py"
+Changelog = "https://github.com/muna-ai/muna-py/blob/main/Changelog.md"
 
 [project.optional-dependencies]
 # None
 
 [project.scripts]
-fxn = "fxn.cli.__init__:app"
+muna = "muna.cli.__init__:app"
 
 [build-system]
 requires = ["setuptools>=42", "wheel"]
@@ -47,11 +47,11 @@ build-backend = "setuptools.build_meta"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["fxn", "fxn*"]
+include = ["muna", "muna*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"fxn.lib" = ["macos/*/*.dylib", "windows/*/*.dll", "linux/*/*.so"]
+"muna.lib" = ["macos/*/*.dylib", "windows/*/*.dll", "linux/*/*.so"]
 
 [tool.setuptools.dynamic]
-version = { attr = "fxn.version.__version__" }
+version = { attr = "muna.version.__version__" }

@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -10,7 +10,7 @@ from requests import get
 parser = ArgumentParser()
 parser.add_argument("--version", type=str, required=True)
 
-def _download_fxnc (name: str, version: str, path: Path):
+def _download_fxnc(name: str, version: str, path: Path):
     url = f"https://cdn.fxn.ai/fxnc/{version}/{name}"
     response = get(url)
     response.raise_for_status()
@@ -21,7 +21,7 @@ def _download_fxnc (name: str, version: str, path: Path):
 
 def main ():
     args = parser.parse_args()
-    LIB_PATH_BASE = Path("fxn") / "lib"
+    LIB_PATH_BASE = Path("muna") / "lib"
     DOWNLOADS = [
         ("Function-macos-x86_64.dylib", LIB_PATH_BASE / "macos" / "x86_64" / "Function.dylib"),
         ("Function-macos-arm64.dylib", LIB_PATH_BASE / "macos" / "arm64" / "Function.dylib"),

@@ -24,7 +24,7 @@ jobs:
     - name: Pull Function C
       run: python3 fxnc.py --version 0.0.36
 
-    - name: Build Function
+    - name: Build Muna
       run: python3 -m build
 
     - name: Publish to PyPi

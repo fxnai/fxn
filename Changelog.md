@@ -1,8 +1,12 @@
 ## 0.0.56
++ Added `beta.ExecuTorchInferenceMetadata` class to compile PyTorch models for inference with ExecuTorch.
 + Refactored `beta.RemoteAcceleration` constants to use a `remote_` prefix.
++ Removed `beta.LlamaCppInferenceMetadata` metadata type as it is no longer needed.
++ Removed `beta.ONNXInferenceMetadata` metadata type. Use `beta.OnnxInferenceMetadata` instead.
++ Removed `beta.ONNXRuntimeInferenceSessionMetadata` metadata type. Use `beta.OnnxRuntimeInferenceSessionMetadata` instead.
 
 ## 0.0.55
-+ Added `beta.TensorRTInferenceMetadata` class to lower PyTorch models for inference on Nvidia GPUs with TensorRT.
++ Added `beta.TensorRTInferenceMetadata` class to compile PyTorch models for inference on Nvidia GPUs with TensorRT.
 + Added `beta.OnnxInferenceMetadata.output_keys` field for specifying model output dictionary keys.
 + Added `fxn.predictions.delete` method to unload an active predictor from memory.
 + Fixed `fxn.predictions.create` method failing on Windows due to downloaded resources being used by more than one process.
@@ -23,7 +27,7 @@
 + Removed `fxn.predictions.ready` method. You must manually track whether a predictor is loaded.
 
 ## 0.0.52
-+ Added `beta.OpenVINOInferenceMetadata` class to lower PyTorch models for inference with Intel OpenVINO.
++ Added `beta.OpenVINOInferenceMetadata` class to compile PyTorch models for inference with Intel OpenVINO.
 + Added `beta.QnnInferenceMetadata` class to lower PyTorch models for inference on Qualcomm accelerators with QNN SDK.
 + Updated `@compile` decorator to preserve type information for decorated prediction functions.
 
@@ -37,7 +41,7 @@
 + Fixed import errors in `fxn.beta` module.
 
 ## 0.0.48
-+ Added `beta.LiteRTInferenceMetadata` class to lower PyTorch models for inference with LiteRT (fka TensorFlow Lite).
++ Added `beta.LiteRTInferenceMetadata` class to compile PyTorch models for inference with LiteRT (fka TensorFlow Lite).
 + Refactored `beta.GGUFInferenceMetadata` class to `beta.LlamaCppInferenceMetadata`.
 + Upgraded to Function 0.0.35.
 
@@ -47,10 +51,10 @@
 
 ## 0.0.46
 + Added `metadata` parameter in `@compile` decorator to provide metadata to the compiler.
-+ Added `beta.CoreMLInferenceMetadata` class to lower PyTorch models for inference on iOS, macOS, and visionOS with CoreML.
-+ Added `beta.ONNXInferenceMetadata` class to lower PyTorch models to ONNX for inference.
-+ Added `beta.ONNXRuntimeInferenceSessionMetadata` class to lower ONNXRuntime inference sessions for inference.
-+ Added `beta.GGUFInferenceMetadata` class to lower GGUF models for LLM inference.
++ Added `beta.CoreMLInferenceMetadata` class to compile PyTorch models for inference on iOS, macOS, and visionOS with CoreML.
++ Added `beta.ONNXInferenceMetadata` class to compile PyTorch models to ONNX for inference.
++ Added `beta.ONNXRuntimeInferenceSessionMetadata` class to compile ONNXRuntime inference sessions for inference.
++ Added `beta.GGUFInferenceMetadata` class to compile GGUF models for LLM inference.
 
 ## 0.0.45
 + Added `fxn source` CLI command to retrieve the native source code for a given prediction.
