@@ -15,7 +15,7 @@ def test_populate_predictor_spec():
         targets=["android", "macos"],
         hidden_attribute="kept"
     )
-    def predictor () -> str:
+    def predictor() -> str:
         return "Hello world"
     spec: PredictorSpec = predictor.__predictor_spec
     assert spec is not None

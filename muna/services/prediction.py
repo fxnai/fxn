@@ -60,7 +60,7 @@ class PredictionService:
             tag (str): Predictor tag.
             inputs (dict): Input values.
             acceleration (Acceleration): Prediction acceleration.
-            client_id (str): Function client identifier. Specify this to override the current client identifier.
+            client_id (str): Muna client identifier. Specify this to override the current client identifier.
             configuration_id (str): Configuration identifier. Specify this to override the current client configuration identifier.
 
         Returns:
@@ -216,7 +216,7 @@ class PredictionService:
             view = memoryview(view_or_bytes) if not isinstance(view_or_bytes, memoryview) else view_or_bytes
             return CValue.create_binary(view, flags=flags)            
         else:
-            raise RuntimeError(f"Failed to convert object to Function value because object has an unsupported type: {type(value)}")
+            raise RuntimeError(f"Failed to convert object to Muna value because object has an unsupported type: {type(value)}")
 
     def __to_prediction(
         self,

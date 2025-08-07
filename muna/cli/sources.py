@@ -15,7 +15,7 @@ from ..logging import CustomProgress, CustomProgressTask
 from .auth import get_access_key
 
 def retrieve_source(
-    prediction: Annotated[str, Option(help="Prediction identifier. If specified, this MUST be from a prediction returned by the Function API.")] = None,
+    prediction: Annotated[str, Option(help="Prediction identifier. If specified, this MUST be from a prediction returned by the Muna API.")] = None,
     predictor: Annotated[str, Option(help="Predictor tag. If specified, a prediction will be made with this predictor before retrieving the source.")] = None,
     output: Annotated[Path, Option(help="Path to output source file.")] = Path("predictor.cpp")
 ):

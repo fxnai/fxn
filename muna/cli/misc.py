@@ -25,8 +25,8 @@ def _version(value: bool):
         raise Exit()
 
 def cli_options(
-    explore: bool = Option(None, "--explore", callback=_explore, help="Explore predictors on Function."),
-    learn: bool = Option(None, "--learn", callback=_learn, help="Learn about Function."),
-    version: bool = Option(None, "--version", callback=_version, help="Get the Function CLI version.")
+    explore: bool = Option(None, "--explore", callback=_explore, help="Explore predictors on Muna."),
+    learn: bool = Option(None, "--learn", callback=_learn, help="Learn about Muna."),
+    version: bool = Option(None, "--version", callback=_version, help="Get the Muna CLI version.")
 ):
     pass

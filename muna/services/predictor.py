@@ -3,7 +3,7 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ..client import MunaClient, FunctionAPIError
+from ..client import MunaClient, MunaAPIError
 from ..types import Predictor
 
 class PredictorService:
@@ -27,7 +27,7 @@ class PredictorService:
                 path=f"/predictors/{tag}",
                 response_type=Predictor
             )
-        except FunctionAPIError as error:
+        except MunaAPIError as error:
             if error.status_code == 404:
                 return None
             raise

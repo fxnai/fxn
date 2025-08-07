@@ -16,7 +16,7 @@ from typing import Callable, Literal
 from typing_extensions import Annotated
 from urllib.parse import urlparse, urlunparse
 
-from ..client import FunctionAPIError
+from ..client import MunaAPIError
 from ..compile import PredictorSpec
 from ..muna import Muna
 from ..sandbox import EntrypointCommand
@@ -83,7 +83,7 @@ async def _compile_predictor_async(
                             method="DELETE",
                             path=f"/predictors/{spec.tag}"
                         )
-                    except FunctionAPIError as error:
+                    except MunaAPIError as error:
                         if error.status_code != 404:
                             raise
                 predictor = muna.client.request(

@@ -30,7 +30,7 @@ class Parameter(BaseModel):
 
     Members:
         name (str): Parameter name.
-        type (Dtype): Parameter type. This is `None` if the type is unknown or unsupported by Function.
+        type (Dtype): Parameter type. This is `None` if the type is unknown or unsupported by Muna.
         description (str): Parameter description.
         optional (bool): Whether the parameter is optional.
         range (tuple): Parameter value range for numeric parameters.
@@ -38,7 +38,7 @@ class Parameter(BaseModel):
         value_schema (dict): Parameter JSON schema. This is only populated for `list` and `dict` parameters.
     """
     name: str = Field(description="Parameter name.")
-    type: Dtype | None = Field(default=None, description="Parameter type. This is `None` if the type is unknown or unsupported by Function.")
+    type: Dtype | None = Field(default=None, description="Parameter type. This is `None` if the type is unknown or unsupported by Muna.")
     description: str | None = Field(default=None, description="Parameter description.")
     optional: bool | None = Field(default=None, description="Whether the parameter is optional.")
     range: tuple[float, float] | None = Field(default=None, description="Parameter value range for numeric parameters.")

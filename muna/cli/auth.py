@@ -11,9 +11,9 @@ from ..muna import Muna
 
 app = Typer(no_args_is_help=True)
 
-@app.command(name="login", help="Login to Function.")
+@app.command(name="login", help="Login to Muna.")
 def login(
-    access_key: str=Argument(..., help="Function access key.", envvar="FXN_ACCESS_KEY")
+    access_key: str=Argument(..., help="Muna access key.", envvar="MUNA_ACCESS_KEY")
 ):
     muna = Muna(access_key=access_key)
     user = muna.users.retrieve()
@@ -28,10 +28,10 @@ def auth_status():
     user = user.model_dump() if user else None
     print_json(data=user)
 
-@app.command(name="logout", help="Logout from Function.")
+@app.command(name="logout", help="Logout from Muna.")
 def logout():
     _set_access_key(None)
-    print("Successfully logged out of Function")
+    print("Successfully logged out of Muna")
 
 def get_access_key() -> str:
     """

@@ -19,7 +19,7 @@ from ..beta.cli import llm_app, mcp_app
 # Define CLI
 typer.main.console_stderr = TracebackMarkupConsole()
 app = typer.Typer(
-    name=f"Function CLI {__version__}",
+    name=f"Muna CLI {__version__}",
     no_args_is_help=True,
     pretty_exceptions_show_locals=False,
     pretty_exceptions_short=True,

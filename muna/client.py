@@ -48,7 +48,7 @@ class MunaClient:
             return response_type(**data) if response_type is not None else None
         else:
             error = _ErrorResponse(**data).errors[0].message if isinstance(data, dict) else data
-            raise FunctionAPIError(error, response.status_code)
+            raise MunaAPIError(error, response.status_code)
         
     async def stream(
         self,
@@ -97,7 +97,7 @@ class MunaClient:
         if event or data:
             yield _parse_sse_event(event, data, response_type)
 
-class FunctionAPIError(Exception):
+class MunaAPIError(Exception):
 
     def __init__(self, message: str, status_code: int):
         super().__init__(message)
@@ -105,7 +105,7 @@ class FunctionAPIError(Exception):
         self.status_code = status_code
 
     def __str__(self):
-        return f"FunctionAPIError: {self.message} (Status Code: {self.status_code})"
+        return f"{self.message} (Status Code: {self.status_code})"
     
 class _APIError(BaseModel):
     message: str

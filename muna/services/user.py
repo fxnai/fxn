@@ -3,7 +3,7 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ..client import MunaClient, FunctionAPIError
+from ..client import MunaClient, MunaAPIError
 from ..types import User
 
 class UserService:
@@ -24,7 +24,7 @@ class UserService:
                 path="/users",
                 response_type=User
             )
-        except FunctionAPIError as error:
+        except MunaAPIError as error:
             if error.status_code == 401:
                 return None
             raise

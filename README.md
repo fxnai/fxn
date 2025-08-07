@@ -1,8 +1,8 @@
 # Muna for Python
 
-![function logo](https://raw.githubusercontent.com/fxnai/.github/main/logo_wide.png)
+![Muna logo](https://raw.githubusercontent.com/fxnai/.github/main/logo_wide.png)
 
-[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fy5vwgXkz2f%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&logo=discord&logoColor=white&label=Function%20community)](https://discord.gg/fxn)
+[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fy5vwgXkz2f%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&logo=discord&logoColor=white&label=Muna%20community)](https://discord.gg/muna)
 
 Run AI models in your Python apps, with full GPU acceleration and zero dependencies.
 

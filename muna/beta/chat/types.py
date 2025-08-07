@@ -29,7 +29,7 @@ class Choice(BaseModel):
 
 class StreamChoice(BaseModel):
     index: int
-    delta: DeltaMessage
+    delta: DeltaMessage | None
     finish_reason: Literal["stop", "length", "content_filter", "tool_calls"] | None = None
 
 class Message(BaseModel):

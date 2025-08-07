@@ -18,10 +18,10 @@ jobs:
         python3 -m pip install build twine
         python3 -m pip install -r requirements.txt
 
-    - name: Pull EdgeFunction
+    - name: Pull Function C
       run: python3 fxnc.py --version 0.0.36
 
-    - name: Build Function
+    - name: Build Muna
       run: python3 -m build
 
     - name: Publish to TestPyPi

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 class User(BaseModel):
     """
-    Function user profile.
+    Muna user profile.
 
     Members:
         username (str): Username.

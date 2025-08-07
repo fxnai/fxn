@@ -4,9 +4,14 @@
 #
 
 from ...services import PredictionService
+from ..remote.remote import RemotePredictionService
 from .completions import ChatCompletionsService
 
 class ChatService:
 
-    def __init__(self, predictions: PredictionService):
-        self.completions = ChatCompletionsService(predictions)
+    def __init__(
+        self,
+        predictions: PredictionService,
+        remote_predictions: RemotePredictionService
+    ):
+        self.completions = ChatCompletionsService(predictions, remote_predictions)

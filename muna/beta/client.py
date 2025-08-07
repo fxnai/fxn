@@ -29,7 +29,7 @@ class BetaClient:
         predictions: EdgePredictionService
     ):
         self.predictions = PredictionService(client)
-        self.chat = ChatService(predictions)
+        self.chat = ChatService(predictions, self.predictions.remote)
         self.__edge_predictions = predictions
 
     def predict( # INCOMPLETE # Preload

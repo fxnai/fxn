@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -46,7 +46,7 @@ def _validate_llama_cpp_model (model: "llama_cpp.llama.Llama") -> "llama_cpp.lla
 
 class CoreMLInferenceMetadata (BaseModel):
     """
-    Metadata required to lower a PyTorch model for inference on iOS, macOS, and visionOS with CoreML.
+    Metadata to compile a PyTorch model for inference with CoreML.
 
     Members:
         model (torch.nn.Module): PyTorch module to apply metadata to.
@@ -68,9 +68,28 @@ class CoreMLInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+class ExecuTorchInferenceMetadata(BaseModel):
+    """
+    Metadata to compile a PyTorch model for inference with ExecuTorch.
+
+    Members:
+        model (torch.nn.Module): PyTorch module to apply metadata to.
+        model_args (tuple[Tensor,...]): Positional inputs to the model.
+    """
+    kind: Literal["meta.inference.executorch"] = "meta.inference.executorch"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
+        description="PyTorch module to apply metadata to.",
+        exclude=True
+    )
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
+        description="Positional inputs to the model.",
+        exclude=True
+    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
 class OnnxRuntimeInferenceMetadata (BaseModel):
     """
-    Metadata required to lower a PyTorch model for inference.
+    Metadata to compile a PyTorch model for inference with OnnxRuntime.
 
     Members:
         model (torch.nn.Module): PyTorch module to apply metadata to.
@@ -94,15 +113,15 @@ class OnnxRuntimeInferenceMetadata (BaseModel):
 
 class OnnxRuntimeInferenceSessionMetadata (BaseModel):
     """
-    Metadata required to lower an ONNXRuntime `InferenceSession` for inference.
+    Metadata to compile an OnnxRuntime `InferenceSession` for inference.
 
     Members:
-        session (onnxruntime.InferenceSession): ONNXRuntime inference session to apply metadata to.
+        session (onnxruntime.InferenceSession): OnnxRuntime inference session to apply metadata to.
         model_path (str | Path): ONNX model path. The model must exist at this path in the compiler sandbox.
     """
     kind: Literal["meta.inference.onnxruntime"] = "meta.inference.onnxruntime"
     session: Annotated[object, BeforeValidator(_validate_ort_inference_session)] = Field(
-        description="ONNXRuntime inference session to apply metadata to.",
+        description="OnnxRuntime inference session to apply metadata to.",
         exclude=True
     )
     model_path: str | Path = Field(
@@ -113,7 +132,7 @@ class OnnxRuntimeInferenceSessionMetadata (BaseModel):
 
 class LiteRTInferenceMetadata (BaseModel):
     """
-    Metadata required to lower PyTorch model for inference with LiteRT (fka TensorFlow Lite).
+    Metadata to compile a PyTorch model for inference with LiteRT.
 
     Members:
         model (torch.nn.Module): PyTorch module to apply metadata to.
@@ -137,7 +156,7 @@ class LiteRTInferenceMetadata (BaseModel):
 
 class OpenVINOInferenceMetadata (BaseModel):
     """
-    Metadata required to lower PyTorch model for interence with Intel OpenVINO.
+    Metadata to compile a PyTorch model for inference with Intel OpenVINO.
 
     Members:
         model (torch.nn.Module): PyTorch module to apply metadata to.
@@ -164,7 +183,7 @@ QnnInferenceQuantization = Literal["w8a8", "w8a16", "w4a8", "w4a16"]
 
 class QnnInferenceMetadata (BaseModel):
     """
-    Metadata required to lower a PyTorch model for inference on Qualcomm accelerators with QNN SDK.
+    Metadata to compile a PyTorch model for inference on Qualcomm accelerators with QNN SDK.
 
     Members:
         model (torch.nn.Module): PyTorch module to apply metadata to.
@@ -209,7 +228,7 @@ TensorRTPrecision = Literal["fp32", "fp16", "int8", "int4"]
 
 class TensorRTInferenceMetadata (BaseModel):
     """
-    Metadata required to lower a PyTorch model for inference on Nvidia GPUs with TensorRT.
+    Metadata to compile a PyTorch model for inference on Nvidia GPUs with TensorRT.
 
     Members:
         model (torch.nn.Module): PyTorch module to apply metadata to.
