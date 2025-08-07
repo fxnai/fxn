@@ -1,9 +1,9 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ...client import FunctionClient
+from ...client import MunaClient
 from .remote import RemotePredictionService
 
 class PredictionService:
@@ -12,5 +12,5 @@ class PredictionService:
     """
     remote: RemotePredictionService
 
-    def __init__ (self, client: FunctionClient):
+    def __init__(self, client: MunaClient):
         self.remote = RemotePredictionService(client)

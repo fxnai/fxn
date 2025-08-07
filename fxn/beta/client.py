@@ -1,5 +1,5 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -7,10 +7,11 @@ from functools import wraps
 from inspect import signature as get_signature, Signature
 from typing import get_origin, Callable, Generator, Iterator, TypeVar
 
-from ..client import FunctionClient
+from ..client import MunaClient
 from ..services import PredictionService as EdgePredictionService
 from ..types import Acceleration
-from .services import ChatService, PredictionService, RemoteAcceleration
+from .chat import ChatService
+from .remote import PredictionService, RemoteAcceleration
 
 F = TypeVar("F", bound=Callable[..., object])
 
@@ -21,17 +22,17 @@ class BetaClient:
     predictions: PredictionService
     chat: ChatService
     
-    def __init__ (
+    def __init__(
         self,
-        client: FunctionClient,
+        client: MunaClient,
         *,
         predictions: EdgePredictionService
     ):
         self.predictions = PredictionService(client)
-        self.chat = ChatService(None)
+        self.chat = ChatService(predictions)
         self.__edge_predictions = predictions
 
-    def predict ( # INCOMPLETE # Preload
+    def predict( # INCOMPLETE # Preload
         self,
         tag: str,
         *,

@@ -1,5 +1,5 @@
-# 
-#   Function
+#
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -16,8 +16,8 @@ from typing import Literal
 from urllib.request import urlopen
 
 from ...c import Configuration
-from ...client import FunctionClient
-from ...services.prediction import Value
+from ...client import MunaClient
+from ...services import Value
 from ...types import Dtype, Prediction
 
 RemoteAcceleration = Literal["remote_auto", "remote_cpu", "remote_a40", "remote_a100"]
@@ -27,10 +27,10 @@ class RemotePredictionService:
     Make remote predictions.
     """
 
-    def __init__ (self, client: FunctionClient):
+    def __init__(self, client: MunaClient):
         self.client = client
 
-    def create (
+    def create(
         self,
         tag: str,
         *,
@@ -58,22 +58,22 @@ class RemotePredictionService:
                 "acceleration": acceleration,
                 "clientId": Configuration.get_client_id()
             },
-            response_type=RemotePrediction
+            response_type=_RemotePrediction
         )
         results = list(map(self.__to_object, prediction.results)) if prediction.results is not None else None
         prediction = Prediction(**{ **prediction.model_dump(), "results": results })
         return prediction
 
-    def __to_value (
+    def __to_value(
         self,
         obj: Value,
         *,
         name: str,
         max_data_url_size: int=4 * 1024 * 1024
-    ) -> RemoteValue:
+    ) -> _RemoteValue:
         obj = self.__try_ensure_serializable(obj)
         if obj is None:
-            return RemoteValue(data=None, type=Dtype.null)
+            return _RemoteValue(data=None, type=Dtype.null)
         elif isinstance(obj, float):
             obj = array(obj, dtype=Dtype.float32)
             return self.__to_value(obj, name=name, max_data_url_size=max_data_url_size)
@@ -86,33 +86,33 @@ class RemotePredictionService:
         elif isinstance(obj, ndarray):
             buffer = BytesIO(obj.tobytes())
             data = self.__upload(buffer, name=name, max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=obj.dtype.name, shape=list(obj.shape))
+            return _RemoteValue(data=data, type=obj.dtype.name, shape=list(obj.shape))
         elif isinstance(obj, str):
             buffer = BytesIO(obj.encode())
             data = self.__upload(buffer, name=name, mime="text/plain", max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=Dtype.string)
+            return _RemoteValue(data=data, type=Dtype.string)
         elif isinstance(obj, list):
             buffer = BytesIO(dumps(obj).encode())
             data = self.__upload(buffer, name=name, mime="application/json", max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=Dtype.list)
+            return _RemoteValue(data=data, type=Dtype.list)
         elif isinstance(obj, dict):
             buffer = BytesIO(dumps(obj).encode())
             data = self.__upload(buffer, name=name, mime="application/json", max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=Dtype.dict)
+            return _RemoteValue(data=data, type=Dtype.dict)
         elif isinstance(obj, Image.Image):
             buffer = BytesIO()
             format = "PNG" if obj.mode == "RGBA" else "JPEG"
             mime = f"image/{format.lower()}"
             obj.save(buffer, format=format)
             data = self.__upload(buffer, name=name, mime=mime, max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=Dtype.image)
+            return _RemoteValue(data=data, type=Dtype.image)
         elif isinstance(obj, BytesIO):
             data = self.__upload(obj, name=name, max_data_url_size=max_data_url_size)
-            return RemoteValue(data=data, type=Dtype.binary)
+            return _RemoteValue(data=data, type=Dtype.binary)
         else:
             raise ValueError(f"Failed to serialize value '{obj}' of type `{type(obj)}` because it is not supported")
 
-    def __to_object (self, value: RemoteValue) -> Value:
+    def __to_object(self, value: _RemoteValue) -> Value:
         if value.type == Dtype.null:
             return None
         buffer = self.__download(value.data)
@@ -135,7 +135,7 @@ class RemotePredictionService:
         else:
             raise ValueError(f"Failed to deserialize value with type `{value.type}` because it is not supported")
 
-    def __upload (
+    def __upload(
         self,
         data: BytesIO,
         *,
@@ -150,7 +150,7 @@ class RemotePredictionService:
             method="POST",
             path="/values",
             body={ "name": name },
-            response_type=CreateValueResponse
+            response_type=_CreateValueResponse
         )
         put(
             value.upload_url,
@@ -159,7 +159,7 @@ class RemotePredictionService:
         ).raise_for_status()
         return value.download_url
 
-    def __download (self, url: str) -> BytesIO:
+    def __download(self, url: str) -> BytesIO:
         if url.startswith("data:"):
             with urlopen(url) as response:
                 return BytesIO(response.read())
@@ -169,7 +169,7 @@ class RemotePredictionService:
         return result
 
     @classmethod
-    def __try_ensure_serializable (cls, obj: object) -> object:
+    def __try_ensure_serializable(cls, obj: object) -> object:
         if obj is None:
             return obj
         if isinstance(obj, list):
@@ -180,20 +180,20 @@ class RemotePredictionService:
             return obj.model_dump(mode="json", by_alias=True)
         return obj
 
-class RemoteValue (BaseModel):
+class _RemoteValue(BaseModel):
     data: str | None
     type: Dtype
     shape: list[int] | None = None
 
-class RemotePrediction (BaseModel):
+class _RemotePrediction(BaseModel):
     id: str
     tag: str
     created: str
-    results: list[RemoteValue] | None
+    results: list[_RemoteValue] | None
     latency: float | None
     error: str | None
     logs: str | None
 
-class CreateValueResponse (BaseModel):
+class _CreateValueResponse(BaseModel):
     upload_url: str = Field(validation_alias="uploadUrl")
     download_url: str = Field(validation_alias="downloadUrl")

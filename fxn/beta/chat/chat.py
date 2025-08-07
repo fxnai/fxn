@@ -1,9 +1,9 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from .. import PredictionService
+from ...services import PredictionService
 from .completions import ChatCompletionsService
 
 class ChatService:

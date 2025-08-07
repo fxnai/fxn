@@ -1,10 +1,12 @@
 # 
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from ....services import PredictionService
-from ....types import Acceleration
+from ...services import PredictionService
+from ...types import Acceleration
+from ..remote import RemoteAcceleration
+from .types import Message, _MessageDict
 
 class ChatCompletionsService:
 
@@ -14,14 +16,16 @@ class ChatCompletionsService:
     def create(
         self,
         *,
-        messages: list[object],
+        messages: list[Message | _MessageDict],
         model: str,
         max_tokens: int | None = None,
-        acceleration: Acceleration="auto"
+        acceleration: Acceleration | RemoteAcceleration="auto"
     ) -> object:
         """
         Create a chat completion.
         """
+        # Parse messages
+        
         # Do any required input message massaging here
 
         # Make a prediction with the compiled LLM

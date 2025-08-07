@@ -12,7 +12,7 @@ from types import ModuleType
 from typing import Callable, Literal, ParamSpec, TypeVar, cast
 
 from .beta import (
-    CoreMLInferenceMetadata, LiteRTInferenceMetadata, OnnxInferenceMetadata,
+    CoreMLInferenceMetadata, LiteRTInferenceMetadata, OnnxRuntimeInferenceMetadata,
     OnnxRuntimeInferenceSessionMetadata, OpenVINOInferenceMetadata,
     QnnInferenceMetadata, TensorRTInferenceMetadata
 )
@@ -32,7 +32,7 @@ CompileTarget = Literal[
 CompileMetadata = (
     CoreMLInferenceMetadata             |
     LiteRTInferenceMetadata             |
-    OnnxInferenceMetadata               |
+    OnnxRuntimeInferenceMetadata        |
     OnnxRuntimeInferenceSessionMetadata |
     OpenVINOInferenceMetadata           |
     QnnInferenceMetadata                |

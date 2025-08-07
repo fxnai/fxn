@@ -68,7 +68,7 @@ class CoreMLInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-class OnnxInferenceMetadata (BaseModel):
+class OnnxRuntimeInferenceMetadata (BaseModel):
     """
     Metadata required to lower a PyTorch model for inference.
 
@@ -242,7 +242,3 @@ class TensorRTInferenceMetadata (BaseModel):
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
-
-# DEPRECATED
-ONNXInferenceMetadata = OnnxInferenceMetadata
-ONNXRuntimeInferenceSessionMetadata = OnnxRuntimeInferenceSessionMetadata

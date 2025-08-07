@@ -1,5 +1,5 @@
 #
-#   Function
+#   Muna
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
@@ -31,7 +31,7 @@ def _load_fxnc () -> CDLL:
     arch = machine().lower()
     arch = "arm64" if arch == "aarch64" else arch
     arch = "x86_64" if arch in ["x64", "amd64"] else arch
-    package = f"fxn.lib.{os}.{arch}"
+    package = f"muna.lib.{os}.{arch}"
     resource = "libFunction.so"
     resource = "Function.dylib" if os == "macos" else resource
     resource = "Function.dll" if os == "windows" else resource
