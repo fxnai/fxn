@@ -1,3 +1,7 @@
+## 0.0.57
++ Fixed CLI error caused by missing `mcp` dependency.
++ Muna now requires Python 3.11+.
+
 ## 0.0.56
 + Added `beta.ExecuTorchInferenceMetadata` class to compile PyTorch models for inference with ExecuTorch.
 + Refactored `beta.RemoteAcceleration` constants to use a `remote_` prefix.
