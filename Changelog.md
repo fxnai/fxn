@@ -1,3 +1,6 @@
+## 0.0.58
+*INCOMPLETE*
+
 ## 0.0.57
 + Fixed CLI error caused by missing `mcp` dependency.
 + Muna now requires Python 3.11+.
