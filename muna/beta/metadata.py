@@ -140,7 +140,7 @@ class LiteRTInferenceMetadata (BaseModel):
     """
     kind: Literal["meta.inference.litert"] = "meta.inference.litert"
     model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
-        description="PyTorch module to apply metadata to.",
+        description="PyTorch module to apply metadata to. Note that this does not support `torch.jit.script`.",
         exclude=True
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
