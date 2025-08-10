@@ -68,6 +68,8 @@ class CoreMLInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+ExecuTorchInferenceBackend = Literal["xnnpack", "vulkan"]
+
 class ExecuTorchInferenceMetadata(BaseModel):
     """
     Metadata to compile a PyTorch model for inference with ExecuTorch.
@@ -83,6 +85,16 @@ class ExecuTorchInferenceMetadata(BaseModel):
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
         description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
+        exclude=True
+    )
+    backend: ExecuTorchInferenceBackend = Field(
+        default="xnnpack",
+        description="ExecuTorch backend to execute the model.",
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)

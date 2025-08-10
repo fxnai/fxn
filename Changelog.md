@@ -1,5 +1,5 @@
 ## 0.0.58
-*INCOMPLETE*
++ Added `beta.ExecuTorchInferenceMetadata.backend` field for specifying [ExecuTorch backend](https://docs.pytorch.org/executorch/stable/backends-overview.html).
 
 ## 0.0.57
 + Fixed CLI error caused by missing `mcp` dependency.

@@ -8,9 +8,11 @@ from .chat import (
     StreamChoice, Message, DeltaMessage, Usage
 )
 from .metadata import (
-    CoreMLInferenceMetadata, ExecuTorchInferenceMetadata, LiteRTInferenceMetadata,
+    CoreMLInferenceMetadata, ExecuTorchInferenceMetadata,
+    ExecuTorchInferenceBackend, LiteRTInferenceMetadata,
     OnnxRuntimeInferenceMetadata, OnnxRuntimeInferenceSessionMetadata,
-    OpenVINOInferenceMetadata, QnnInferenceMetadata, QnnInferenceBackend,
-    QnnInferenceQuantization, TensorRTInferenceMetadata    
+    OpenVINOInferenceMetadata, QnnInferenceMetadata,
+    QnnInferenceBackend, QnnInferenceQuantization,
+    TensorRTInferenceMetadata    
 )
 from .remote import RemoteAcceleration
