@@ -7,9 +7,9 @@ dist/
 *.egg-info/
 
 # Libs
-fxn/**/*.dll
-fxn/**/*.dylib
-fxn/**/*.so
+muna/**/*.dll
+muna/**/*.dylib
+muna/**/*.so
 
 # IDE
 .vscode
