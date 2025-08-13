@@ -3,16 +3,15 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from pathlib import Path
-from pydantic import BaseModel, TypeAdapter
+from pydantic import TypeAdapter
 from rich import print as print_rich
 from rich.prompt import Prompt
 from typer import Argument, Option, Typer
-from typing import Literal
 from typing_extensions import Annotated
 
 from ...muna import Muna
 from ...cli.auth import get_access_key
+from .types import Message
 
 app = Typer(no_args_is_help=True)
 
@@ -31,11 +30,11 @@ def chat(
     muna = Muna(get_access_key())
     muna.predictions.create(tag=tag, inputs={ })
     # Start loop
-    adapter = TypeAdapter(list[_ChatMessage])
-    history = list[_ChatMessage]()
+    adapter = TypeAdapter(list[Message])
+    history = list[Message]()
     while True:
         prompt = Prompt.ask("[dodger_blue2](user)[/dodger_blue2]")
-        user_message = _ChatMessage(role="user", content=prompt)
+        user_message = Message(role="user", content=prompt)
         history.append(user_message)
         response = ""
         print_rich("[hot_pink](assistant)[/hot_pink]: ", end="")
@@ -56,10 +55,3 @@ def serve(
     port: Annotated[int, Option(help="Port to start the server on.")] = 11435
 ):
     pass
-
-class _ChatMessage(BaseModel):
-    """
-    Chat message.
-    """
-    role: Literal["assistant", "developer", "system", "user"]
-    content: str

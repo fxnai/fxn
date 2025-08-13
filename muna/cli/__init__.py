@@ -14,7 +14,8 @@ from .misc import cli_options
 from .predictions import create_prediction
 from .predictors import archive_predictor, delete_predictor, retrieve_predictor
 from .sources import retrieve_source
-from ..beta.cli import llm_app, mcp_app
+from ..beta.llm.cli import app as llm_app
+from ..beta.mcp.cli import app as mcp_app
 
 # Define CLI
 typer.main.console_stderr = TracebackMarkupConsole()

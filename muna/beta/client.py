@@ -10,7 +10,7 @@ from typing import get_origin, Callable, Generator, Iterator, TypeVar
 from ..client import MunaClient
 from ..services import PredictionService as EdgePredictionService
 from ..types import Acceleration
-from .chat import ChatService
+from .llm import ChatService
 from .remote import PredictionService, RemoteAcceleration
 
 F = TypeVar("F", bound=Callable[..., object])

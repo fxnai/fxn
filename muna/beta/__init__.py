@@ -3,7 +3,7 @@
 #   Copyright © 2025 NatML Inc. All Rights Reserved.
 #
 
-from .chat import (
+from .llm import (
     ChatCompletion, ChatCompletionChunk, Choice,
     StreamChoice, Message, DeltaMessage, Usage
 )

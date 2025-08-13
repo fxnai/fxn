@@ -23,7 +23,6 @@ def main ():
     args = parser.parse_args()
     LIB_PATH_BASE = Path("muna") / "lib"
     DOWNLOADS = [
-        ("Function-macos-x86_64.dylib", LIB_PATH_BASE / "macos" / "x86_64" / "Function.dylib"),
         ("Function-macos-arm64.dylib", LIB_PATH_BASE / "macos" / "arm64" / "Function.dylib"),
         ("Function-win-x86_64.dll", LIB_PATH_BASE / "windows" / "x86_64" / "Function.dll"),
         ("Function-win-arm64.dll", LIB_PATH_BASE / "windows" / "arm64" / "Function.dll"),
