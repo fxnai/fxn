@@ -1,4 +1,5 @@
 ## 0.0.58
++ Added `beta.IREEInferenceMetadata` class to compile PyTorch models for inference with [IREE](https://iree.dev/).
 + Added `beta.ExecuTorchInferenceMetadata.backend` field for specifying [ExecuTorch backend](https://docs.pytorch.org/executorch/stable/backends-overview.html).
 + Upgraded to Function C 0.0.37.
 
@@ -7,7 +8,7 @@
 + Muna now requires Python 3.11+.
 
 ## 0.0.56
-+ Added `beta.ExecuTorchInferenceMetadata` class to compile PyTorch models for inference with ExecuTorch.
++ Added `beta.ExecuTorchInferenceMetadata` class to compile PyTorch models for inference with [ExecuTorch](https://docs.pytorch.org/executorch/stable/index.html).
 + Refactored `beta.RemoteAcceleration` constants to use a `remote_` prefix.
 + Removed `beta.LlamaCppInferenceMetadata` metadata type as it is no longer needed.
 + Removed `beta.ONNXInferenceMetadata` metadata type. Use `beta.OnnxInferenceMetadata` instead.

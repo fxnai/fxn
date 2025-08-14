@@ -44,6 +44,49 @@ def _validate_llama_cpp_model (model: "llama_cpp.llama.Llama") -> "llama_cpp.lla
     except ImportError:
         raise ImportError("Llama-cpp-python is required to create this metadata but it is not installed.")
 
+class OnnxRuntimeInferenceMetadata (BaseModel):
+    """
+    Metadata to compile a PyTorch model for inference with OnnxRuntime.
+
+    Members:
+        model (torch.nn.Module): PyTorch module to apply metadata to.
+        model_args (tuple[Tensor,...]): Positional inputs to the model.
+    """
+    kind: Literal["meta.inference.onnx"] = "meta.inference.onnx"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
+        description="PyTorch module to apply metadata to.",
+        exclude=True
+    )
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
+        description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
+        exclude=True
+    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
+class OnnxRuntimeInferenceSessionMetadata (BaseModel):
+    """
+    Metadata to compile an OnnxRuntime `InferenceSession` for inference.
+
+    Members:
+        session (onnxruntime.InferenceSession): OnnxRuntime inference session to apply metadata to.
+        model_path (str | Path): ONNX model path. The model must exist at this path in the compiler sandbox.
+    """
+    kind: Literal["meta.inference.onnxruntime"] = "meta.inference.onnxruntime"
+    session: Annotated[object, BeforeValidator(_validate_ort_inference_session)] = Field(
+        description="OnnxRuntime inference session to apply metadata to.",
+        exclude=True
+    )
+    model_path: str | Path = Field(
+        description="ONNX model path. The model must exist at this path in the compiler sandbox.",
+        exclude=True
+    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
 class CoreMLInferenceMetadata (BaseModel):
     """
     Metadata to compile a PyTorch model for inference with CoreML.
@@ -99,49 +142,6 @@ class ExecuTorchInferenceMetadata(BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-class OnnxRuntimeInferenceMetadata (BaseModel):
-    """
-    Metadata to compile a PyTorch model for inference with OnnxRuntime.
-
-    Members:
-        model (torch.nn.Module): PyTorch module to apply metadata to.
-        model_args (tuple[Tensor,...]): Positional inputs to the model.
-    """
-    kind: Literal["meta.inference.onnx"] = "meta.inference.onnx"
-    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
-        description="PyTorch module to apply metadata to.",
-        exclude=True
-    )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
-        description="Positional inputs to the model.",
-        exclude=True
-    )
-    output_keys: list[str] | None = Field(
-        default=None,
-        description="Model output dictionary keys. Use this if the model returns a dictionary.",
-        exclude=True
-    )
-    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
-
-class OnnxRuntimeInferenceSessionMetadata (BaseModel):
-    """
-    Metadata to compile an OnnxRuntime `InferenceSession` for inference.
-
-    Members:
-        session (onnxruntime.InferenceSession): OnnxRuntime inference session to apply metadata to.
-        model_path (str | Path): ONNX model path. The model must exist at this path in the compiler sandbox.
-    """
-    kind: Literal["meta.inference.onnxruntime"] = "meta.inference.onnxruntime"
-    session: Annotated[object, BeforeValidator(_validate_ort_inference_session)] = Field(
-        description="OnnxRuntime inference session to apply metadata to.",
-        exclude=True
-    )
-    model_path: str | Path = Field(
-        description="ONNX model path. The model must exist at this path in the compiler sandbox.",
-        exclude=True
-    )
-    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
-
 class LiteRTInferenceMetadata (BaseModel):
     """
     Metadata to compile a PyTorch model for inference with LiteRT.
@@ -153,30 +153,6 @@ class LiteRTInferenceMetadata (BaseModel):
     kind: Literal["meta.inference.litert"] = "meta.inference.litert"
     model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
         description="PyTorch module to apply metadata to. Note that this does not support `torch.jit.script`.",
-        exclude=True
-    )
-    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
-        description="Positional inputs to the model.",
-        exclude=True
-    )
-    output_keys: list[str] | None = Field(
-        default=None,
-        description="Model output dictionary keys. Use this if the model returns a dictionary.",
-        exclude=True
-    )
-    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
-
-class OpenVINOInferenceMetadata (BaseModel):
-    """
-    Metadata to compile a PyTorch model for inference with Intel OpenVINO.
-
-    Members:
-        model (torch.nn.Module): PyTorch module to apply metadata to.
-        model_args (tuple[Tensor,...]): Positional inputs to the model.
-    """
-    kind: Literal["meta.inference.openvino"] = "meta.inference.openvino"
-    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
-        description="PyTorch module to apply metadata to.",
         exclude=True
     )
     model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
@@ -229,6 +205,30 @@ class QnnInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+class OpenVINOInferenceMetadata (BaseModel):
+    """
+    Metadata to compile a PyTorch model for inference with Intel OpenVINO.
+
+    Members:
+        model (torch.nn.Module): PyTorch module to apply metadata to.
+        model_args (tuple[Tensor,...]): Positional inputs to the model.
+    """
+    kind: Literal["meta.inference.openvino"] = "meta.inference.openvino"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
+        description="PyTorch module to apply metadata to.",
+        exclude=True
+    )
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
+        description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
+        exclude=True
+    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
 CudaArchitecture = Literal[
     "sm_80", "sm_86", "sm_87",  # Ampere (A100)
     "sm_89",                    # Ada Lovelace (L40)
@@ -270,6 +270,37 @@ class TensorRTInferenceMetadata (BaseModel):
     precision: TensorRTPrecision = Field(
         default="fp16",
         description="TensorRT engine inference precision.",
+        exclude=True
+    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
+IREEInferenceTarget = Literal["vulkan"]
+
+class IREEInferenceMetadata(BaseModel):
+    """
+    Metadata to compile a PyTorch model for inference with IREE.
+
+    Members:
+        model (torch.nn.Module): PyTorch module to apply metadata to.
+        model_args (tuple[Tensor,...]): Positional inputs to the model.
+    """
+    kind: Literal["meta.inference.iree"] = "meta.inference.iree"
+    model: Annotated[object, BeforeValidator(_validate_torch_module)] = Field(
+        description="PyTorch module to apply metadata to.",
+        exclude=True
+    )
+    model_args: Annotated[list[object], BeforeValidator(_validate_torch_tensor_args)] = Field(
+        description="Positional inputs to the model.",
+        exclude=True
+    )
+    output_keys: list[str] | None = Field(
+        default=None,
+        description="Model output dictionary keys. Use this if the model returns a dictionary.",
+        exclude=True
+    )
+    target: IREEInferenceTarget = Field(
+        default="vulkan",
+        description="IREE HAL target to execute the model.",
         exclude=True
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
