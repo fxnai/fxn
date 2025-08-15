@@ -1,3 +1,6 @@
+## 0.0.59
+*INCOMPLETE*
+
 ## 0.0.58
 + Added `beta.IREEInferenceMetadata` class to compile PyTorch models for inference with [IREE](https://iree.dev/).
 + Added `beta.ExecuTorchInferenceMetadata.backend` field for specifying [ExecuTorch backend](https://docs.pytorch.org/executorch/stable/backends-overview.html).
