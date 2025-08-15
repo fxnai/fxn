@@ -8,11 +8,10 @@ from .llm import (
     StreamChoice, Message, DeltaMessage, Usage
 )
 from .metadata import (
-    CoreMLInferenceMetadata, ExecuTorchInferenceMetadata,
-    ExecuTorchInferenceBackend, LiteRTInferenceMetadata,
+    CoreMLInferenceMetadata, ExecuTorchInferenceBackend, ExecuTorchInferenceMetadata,
+    IREEInferenceBackend, IREEInferenceMetadata, LiteRTInferenceMetadata,
     OnnxRuntimeInferenceMetadata, OnnxRuntimeInferenceSessionMetadata,
-    OpenVINOInferenceMetadata, QnnInferenceMetadata,
-    QnnInferenceBackend, QnnInferenceQuantization,
-    TensorRTInferenceMetadata    
+    OpenVINOInferenceMetadata, QnnInferenceMetadata, QnnInferenceBackend,
+    QnnInferenceQuantization, TensorRTInferenceMetadata    
 )
 from .remote import RemoteAcceleration

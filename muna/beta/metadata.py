@@ -274,7 +274,7 @@ class TensorRTInferenceMetadata (BaseModel):
     )
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-IREEInferenceTargetBackend = Literal["vulkan"]
+IREEInferenceBackend = Literal["vulkan"]
 
 class IREEInferenceMetadata(BaseModel):
     """
@@ -298,7 +298,7 @@ class IREEInferenceMetadata(BaseModel):
         description="Model output dictionary keys. Use this if the model returns a dictionary.",
         exclude=True
     )
-    backend: IREEInferenceTargetBackend = Field(
+    backend: IREEInferenceBackend = Field(
         default="vulkan",
         description="IREE HAL target backend to execute the model.",
         exclude=True

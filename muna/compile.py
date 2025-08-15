@@ -12,8 +12,8 @@ from types import ModuleType
 from typing import Callable, Literal, ParamSpec, TypeVar, cast
 
 from .beta import (
-    CoreMLInferenceMetadata, LiteRTInferenceMetadata, ExecuTorchInferenceMetadata,
-    OnnxRuntimeInferenceMetadata, OnnxRuntimeInferenceSessionMetadata,
+    CoreMLInferenceMetadata, ExecuTorchInferenceMetadata, LiteRTInferenceMetadata,
+    IREEInferenceMetadata, OnnxRuntimeInferenceMetadata, OnnxRuntimeInferenceSessionMetadata,
     OpenVINOInferenceMetadata, QnnInferenceMetadata, TensorRTInferenceMetadata
 )
 from .sandbox import Sandbox
@@ -32,6 +32,7 @@ CompileTarget = Literal[
 CompileMetadata = (
     CoreMLInferenceMetadata             |
     ExecuTorchInferenceMetadata         |
+    IREEInferenceMetadata               |
     LiteRTInferenceMetadata             |
     OnnxRuntimeInferenceMetadata        |
     OnnxRuntimeInferenceSessionMetadata |
