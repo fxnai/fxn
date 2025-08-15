@@ -6,7 +6,7 @@
 from pydantic import TypeAdapter
 from typing import overload, Iterator, Literal
 
-from ...services import PredictionService, Value
+from ...services import PredictionService
 from ...types import Acceleration, Prediction
 from ..remote import RemoteAcceleration
 from ..remote.remote import RemotePredictionService
@@ -73,54 +73,26 @@ class ChatCompletionsService:
         }
         # Predict
         if stream:
-            prediction_stream = self.__stream_prediction(
+            if acceleration.startswith("remote_"):
+                raise ValueError(f"Streaming predictions are not supported with remote acceleration")
+            prediction_stream = self.__predictions.stream(
                 tag=model,
                 inputs=inputs,
                 acceleration=acceleration
             )
             yield from map(self.__parse_response, prediction_stream)
         else:
-            prediction = self.__create_prediction(
+            create_prediction_func = (
+                self.__remote_predictions.create
+                if acceleration.startswith("remote_")
+                else self.__predictions.create
+            )
+            prediction = create_prediction_func(
                 tag=model,
                 inputs=inputs,
                 acceleration=acceleration
             )
             return self.__parse_response(prediction)
-    
-    def __create_prediction(
-        self,
-        *,
-        tag: str,
-        inputs: dict[str, Value],
-        acceleration: Acceleration | RemoteAcceleration
-    ) -> Prediction:
-        if acceleration.startswith("remote_"):
-            return self.__remote_predictions.create(
-                tag=tag,
-                inputs=inputs,
-                acceleration=acceleration
-            )
-        else:
-            return self.__predictions.create(
-                tag=tag,
-                inputs=inputs,
-                acceleration=acceleration
-            )
-        
-    def __stream_prediction(
-        self,
-        *,
-        tag: str,
-        inputs: dict[str, Value],
-        acceleration: Acceleration | RemoteAcceleration
-    ) -> Iterator[Prediction]:
-        if acceleration.startswith("remote_"):
-            raise ValueError(f"Streaming predictions are not supported with remote acceleration")
-        return self.__predictions.stream(
-            tag=tag,
-            inputs=inputs,
-            acceleration=acceleration
-        )
     
     def __parse_response(
         self,

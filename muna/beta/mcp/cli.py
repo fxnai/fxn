@@ -75,10 +75,15 @@ def _create_prediction(
         MCPPrediction: Prediction.
     """
     input_map = { key: _to_value(value) for key, value in inputs.items() }
-    prediction = (
-        muna.beta.predictions.remote.create(tag=tag, inputs=input_map, acceleration=acceleration)
+    create_prediction_func = (
+        muna.beta.predictions.remote.create
         if acceleration.startswith("remote_")
-        else muna.predictions.create(tag=tag, inputs=input_map, acceleration=acceleration)
+        else muna.predictions.create
+    )
+    prediction = create_prediction_func(
+        tag=tag,
+        inputs=input_map,
+        acceleration=acceleration
     )
     return _to_mcp_prediction(prediction)
 

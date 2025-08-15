@@ -13,6 +13,7 @@ from .compile import compile_predictor, triage_predictor
 from .misc import cli_options
 from .predictions import create_prediction
 from .predictors import archive_predictor, delete_predictor, retrieve_predictor
+from .resources import app as resources_app
 from .sources import retrieve_source
 from ..beta.llm.cli import app as llm_app
 from ..beta.mcp.cli import app as mcp_app
@@ -94,6 +95,13 @@ app.command(
     rich_help_panel="Insiders",
     hidden=True
 )(triage_predictor)
+app.add_typer(
+    resources_app,
+    name="resources",
+    help="Manage prediction resources.",
+    rich_help_panel="Insiders",
+    hidden=True
+)
 
 # Run
 if __name__ == "__main__":
