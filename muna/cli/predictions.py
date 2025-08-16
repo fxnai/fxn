@@ -36,7 +36,7 @@ async def _predict_async(tag: str, quiet: bool, context: Context):
         with CustomProgressTask(loading_text="Making prediction..."):
             inputs = { }
             for i in range(0, len(context.args), 2):
-                name = context.args[i].replace("-", "")
+                name = context.args[i].lstrip("-").replace("-", "_")
                 value = _parse_value(context.args[i+1])
                 inputs[name] = value
             prediction = muna.predictions.create(tag, inputs=inputs)

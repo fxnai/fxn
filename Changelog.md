@@ -1,5 +1,5 @@
 ## 0.0.59
-*INCOMPLETE*
++ Fixed CLI prediction inputs with hyphen characters not being parsed correctly.
 
 ## 0.0.58
 + Added `beta.IREEInferenceMetadata` class to compile PyTorch models for inference with [IREE](https://iree.dev/).
