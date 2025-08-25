@@ -59,7 +59,7 @@ ___
 
 ## Useful Links
 - [Discover predictors to use in your apps](https://muna.ai/explore).
-- [Join our Discord community](https://discord.gg/muna).
+- [Join our Slack community](https://muna.ai/slack).
 - [Check out our docs](https://docs.muna.ai).
 - Learn more about us [on our blog](https://blog.muna.ai).
 - Reach out to us at [hi@muna.ai](mailto:hi@muna.ai).
